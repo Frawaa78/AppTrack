@@ -95,6 +95,19 @@
 | related_application_id| INT, FK     | Related application (applications.id)|
 | relation_type         | VARCHAR(100)| Type of relation (optional)        |
 
+## Table: audit_log
+| Field         | Type         | Description                                 |
+|-------------- |-------------|---------------------------------------------|
+| id            | INT, PK     | Audit log entry ID                          |
+| table_name    | VARCHAR(100)| Name of the table where change occurred      |
+| record_id     | INT         | ID of the affected record                    |
+| field_name    | VARCHAR(100)| Name of the field that was changed           |
+| old_value     | TEXT        | Value before the change                      |
+| new_value     | TEXT        | Value after the change                       |
+| changed_by    | INT, FK     | User who made the change (users.id)          |
+| changed_at    | DATETIME    | When the change was made                     |
+| action        | ENUM        | 'INSERT', 'UPDATE', 'DELETE'                 |
+
 ## Relationships
 - `applications.phase_id` → `phases.id`
 - `applications.status_id` → `statuses.id`
@@ -108,6 +121,7 @@
 - `work_notes.user_id` → `users.id`
 - `application_relations.application_id` → `applications.id`
 - `application_relations.related_application_id` → `applications.id`
+- `audit_log.changed_by` → `users.id`
 
 ---
 
