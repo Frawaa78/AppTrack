@@ -19,8 +19,31 @@ $applications = $db->query('SELECT * FROM applications ORDER BY id DESC')->fetch
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Applications Dashboard | AppTrack</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        .profile-img {
+            width: 36px;
+            height: 36px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .search-bar {
+            min-width: 350px;
+            max-width: 600px;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            .search-bar { min-width: 150px; }
+        }
+    </style>
 </head>
 <body class="bg-light">
+<!-- Topbar -->
+<?php include __DIR__ . '/shared/topbar.php'; ?>
+
 <div class="container-fluid mt-4">
     <h2 class="mb-4">Applications</h2>
     <div class="table-responsive">
@@ -41,7 +64,7 @@ $applications = $db->query('SELECT * FROM applications ORDER BY id DESC')->fetch
             </thead>
             <tbody>
             <?php if ($applications): foreach ($applications as $app): ?>
-                <tr>
+                <tr style="cursor:pointer;" onclick="window.location='app_view.php?id=<?php echo $app['id']; ?>'">
                     <td><?php echo htmlspecialchars($app['id']); ?></td>
                     <td><?php echo htmlspecialchars($app['short_description']); ?></td>
                     <td><?php echo htmlspecialchars($app['preops_portfolio'] ?? ''); ?></td>
@@ -60,5 +83,6 @@ $applications = $db->query('SELECT * FROM applications ORDER BY id DESC')->fetch
         </table>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

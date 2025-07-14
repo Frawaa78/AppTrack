@@ -20,6 +20,50 @@ The system enables users to register, update, and view relevant information abou
 
 ---
 
+## 🆕 Current Status & Recent Changes
+
+### Implemented Features
+- ✅ **User Authentication**: Registration, login, logout with secure password hashing
+- ✅ **Database-Driven Forms**: Phase and status values are dynamically fetched from database tables
+- ✅ **Responsive UI**: Modern Bootstrap interface with ServiceNow-like design
+- ✅ **Application Management**: Create, edit, view applications with comprehensive form fields
+- ✅ **Shared Components**: Consistent navigation bar across all pages
+- ✅ **Security**: Input validation, prepared statements, session management
+- ✅ **Data Import**: ServiceNow CSV import capability
+- ✅ **Audit Trail**: Database structure for tracking changes
+
+### Database Modernization
+- Phases and statuses are now stored in dedicated lookup tables (`phases`, `statuses`)
+- Form dropdowns dynamically populate from database instead of hardcoded arrays
+- Normalized database structure with proper relationships
+
+### Current Project Structure
+```
+AppTrack/
+├── public/                 # Web-accessible files
+│   ├── index.php          # Welcome/landing page
+│   ├── login.php          # User authentication
+│   ├── register.php       # User registration
+│   ├── dashboard.php      # Main application overview
+│   ├── app_form.php       # Create/edit application form
+│   ├── app_view.php       # Read-only application details
+│   ├── users_admin.php    # User administration (planned)
+│   └── shared/
+│       └── topbar.php     # Shared navigation component
+├── src/                   # Backend logic
+│   ├── config/
+│   │   └── config.php     # Database configuration
+│   ├── db/
+│   │   └── db.php         # PDO database singleton class
+│   ├── models/            # Data models (planned)
+│   └── controllers/       # Business logic (planned)
+├── docs/
+│   └── database.md        # Complete database documentation
+└── README.md
+```
+
+---
+
 ## 🔑 Key Features
 
 - **User-friendly interface**: View, register, and update applications via intuitive tables, forms, and dashboards.
@@ -58,68 +102,174 @@ Three user groups are supported:
 
 ---
 
-## ⚙️ Backend Setup
+## ⚙️ Technical Architecture
 
-- **PHP** is used for form handling and CRUD operations
-- **MySQL** as the database engine
+### Backend Components
+- **PHP 8+**: Server-side logic with modern features
+- **MySQL 8.0**: Relational database with normalized structure
+- **PDO**: Database abstraction layer with prepared statements for security
 
-### Required Files
+### Frontend Components
+- **Bootstrap 5.3**: Responsive CSS framework
+- **Vanilla JavaScript**: Form interactions and dynamic content
+- **Choices.js**: Enhanced multi-select dropdowns
 
-- `config.php` – database connection settings
-- PHP scripts for Create, Read, Update, Delete
-- Form validation and data sanitation logic
+### Security Implementation
+- Password hashing using PHP's `password_hash()`
+- Prepared statements for all database queries
+- Input validation and sanitization
+- Session-based authentication
+- CSRF protection (planned)
 
----
+### Database Design
+- Normalized structure with lookup tables
+- Foreign key relationships for data integrity
+- Audit logging capability
+- Support for file attachments and work notes
 
-## 🗃️ Database Structure (MySQL)
-
-Main table: `applications`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| id | INT (PK, Auto Increment) | Unique ID |
-| short_description | VARCHAR | Application name |
-| application_service | VARCHAR | Linked ServiceNow entry |
-| relevant_for | ENUM | To be decided / Yggdrasil / Not Relevant |
-| phase | ENUM | Need / Solution / Build / Implement / Operate |
-| status | ENUM | Status indicator |
-| handover_status | INT | 10%–100% slider |
-| contract_number | VARCHAR | Contract reference |
-| contract_responsible | VARCHAR | Person |
-| information_space | TEXT | URL |
-| ba_sharepoint | TEXT | URL |
-| relationship_yggdrasil | JSON / Join table | Linked apps |
-| assigned_to | VARCHAR | User ID |
-| preops_portfolio | ENUM | Yggdrasil portfolios |
-| application_portfolio | ENUM | Aker BP portfolios |
-| delivery_responsible | VARCHAR | Lead party |
-| corporator_link | TEXT | URL |
-| project_manager | VARCHAR | Name |
-| product_owner | VARCHAR | Name |
-| due_date | DATE | Go-live date |
-| deployment_model | ENUM | SaaS, Hybrid, etc. |
-| integrations | BOOLEAN | Yes/No |
-| sa_document | TEXT | Link to technical spec |
-| business_need | TEXT | Short description |
-| created_at / updated_at | TIMESTAMP | Record history |
+For detailed database schema, see `docs/database.md`
 
 ---
 
-## 🚧 Future Enhancements
+## 🗃️ Core Data Fields
 
-- User authentication (Entra ID)
-- Version and change tracking (audit trail)
-- Advanced reporting and export
-- Dynamic relationship visualization
-- API for external system integration
+The application captures comprehensive information about each application:
+
+### Basic Information
+- **Short Description**: Application name/identifier
+- **Application Service**: Reference to ServiceNow CMDB entry
+- **Relevant for**: Yggdrasil relevance classification
+- **Business Need**: Plain-language justification (max 350 characters)
+
+### Project Management
+- **Phase**: Delivery model stage (Need → Solution → Build → Implement → Operate)
+- **Status**: Current progress (Unknown, Not started, Ongoing Work, On Hold, Completed)
+- **Handover Status**: 10-step progress slider (0-100%)
+- **Due Date**: Target go-live date
+- **Project Manager**: Responsible for project activities
+- **Product Owner**: Business need owner
+- **Delivery Responsible**: Lead vendor/alliance
+
+### Technical Details
+- **Deployment Model**: SaaS, On-premise, Externally hosted, Client Application
+- **Integrations**: Data pipeline/integration indicator
+- **S.A. Document**: Solution Architecture documentation link
+
+### Business Context
+- **Pre-ops Portfolio**: Yggdrasil project portfolio
+- **Application Portfolio**: Target IT operations portfolio
+- **Contract Number**: Reference to commercial agreement
+- **Contract Responsible**: Commercial lead
+- **Corporator Link**: Project management system reference
+
+### Documentation & Relationships
+- **Information Space**: SharePoint/documentation area
+- **BA SharePoint List**: Business analyst maintained list
+- **Relationship in Yggdrasil**: Connected applications
+- **Assigned To**: Data maintenance responsibility
 
 ---
 
-## 🌐 Hosting & Deployment
+## 🚧 Development Roadmap
 
-- Target domain: [apptrack.no](https://apptrack.no)
-- Bootstrap ensures mobile responsiveness
-- GitHub Copilot assists development
+### Phase 1: Core Foundation ✅ (Complete)
+- User registration and authentication
+- Database structure and relationships
+- Basic CRUD operations for applications
+- Responsive UI with Bootstrap
+- Dynamic form fields from database
+
+### Phase 2: Enhanced Features (In Progress)
+- [ ] Universal search functionality (`search.php`)
+- [ ] User administration interface (`users_admin.php`)
+- [ ] Work notes and comment system
+- [ ] File upload and attachment management
+- [ ] Role-based access control implementation
+
+### Phase 3: Advanced Integration (Planned)
+- [ ] ServiceNow API integration
+- [ ] Entra ID authentication
+- [ ] Advanced reporting and analytics
+- [ ] Workflow automation
+- [ ] API endpoints for external integrations
+
+### Phase 4: Enterprise Features (Future)
+- [ ] Multi-tenant support
+- [ ] Advanced audit trail with rollback
+- [ ] Real-time notifications
+- [ ] Dashboard analytics and charts
+- [ ] Mobile application
+
+---
+
+## 🔧 Installation & Setup
+
+### Prerequisites
+- PHP 8.0 or higher
+- MySQL 8.0 or higher
+- Web server (Apache/Nginx)
+
+### Quick Start
+1. Clone the repository
+2. Configure database settings in `src/config/config.php`
+3. Import database schema (see `docs/database.md`)
+4. Populate lookup tables with default values:
+   ```sql
+   INSERT INTO phases (name) VALUES 
+   ('Need'), ('Solution'), ('Build'), ('Implement'), ('Operate');
+   
+   INSERT INTO statuses (name) VALUES
+   ('Unknown'), ('Not started'), ('Ongoing Work'), ('On Hold'), ('Completed');
+   ```
+5. Point web server document root to `/public` directory
+6. Create first admin user via registration
+
+---
+
+## 📊 Database Integration
+
+### Lookup Tables
+The system uses normalized lookup tables for consistent data:
+- `phases`: Delivery model phases
+- `statuses`: Application status values
+- `deployment_models`: Technical deployment types
+- `portfolios`: Business and technical portfolios
+
+### Dynamic Form Population
+Forms automatically populate dropdowns from database tables, eliminating hardcoded values and enabling easy maintenance.
+
+### Audit Trail
+All changes are logged in the `audit_log` table with:
+- What changed (table, field, old/new values)
+- Who made the change
+- When the change occurred
+
+---
+
+## 🌐 Deployment & Hosting
+
+### Target Environment
+- **Production URL**: [apptrack.no](https://apptrack.no)
+- **Technology Stack**: LAMP (Linux, Apache, MySQL, PHP)
+- **Responsive Design**: Mobile-first Bootstrap implementation
+
+### Development Tools
+- **GitHub Copilot**: AI-assisted development
+- **VS Code**: Primary development environment
+- **phpMyAdmin**: Database administration
+
+---
+
+## 📚 Documentation
+
+### Primary Documentation
+- `README.md`: Project overview and setup guide
+- `docs/database.md`: Complete database schema and relationships
+
+### Code Documentation
+- Inline comments in critical functions
+- Security implementation notes
+- Database query documentation
 
 ---
 
