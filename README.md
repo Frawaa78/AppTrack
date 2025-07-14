@@ -1,6 +1,9 @@
 # AppTrack
 
-**AppTrack** is a web-based application management tool developed for the Yggdrasil project in Aker BP. Its purpose is to replace manual spreadsheets and fragmented documentation by offering a centralized and structured application registry.
+**AppTrack** is a web-based application management tool developed for the Yggdrasil project in Aker BP. Its purpose is to replace manual spreadsheets and fragmented documentation by offering a centralized a3. Configure database settings in `src/config/config.php`
+4. Import database schema (see `docs/database.md`)
+5. Add missing columns if needed using `fix_database_schema.sql`
+6. Populate lookup tables with default values:structured application registry.
 
 ---
 
@@ -31,11 +34,13 @@ The system enables users to register, update, and view relevant information abou
 - ✅ **Security**: Input validation, prepared statements, session management
 - ✅ **Data Import**: ServiceNow CSV import capability
 - ✅ **Audit Trail**: Database structure for tracking changes
+- ✅ **Complete Database Schema**: All application form fields now properly mapped to database columns
 
-### Database Modernization
-- Phases and statuses are now stored in dedicated lookup tables (`phases`, `statuses`)
-- Form dropdowns dynamically populate from database instead of hardcoded arrays
-- Normalized database structure with proper relationships
+### Database Schema Resolution
+- **Issue Fixed**: Missing database columns (`contract_number`, `contract_responsible`) have been added
+- All form fields now correctly map to corresponding database columns
+- Application form can successfully save and update data without errors
+- Database structure is now fully aligned with the application requirements
 
 ### Current Project Structure
 ```
@@ -59,6 +64,7 @@ AppTrack/
 │   └── controllers/       # Business logic (planned)
 ├── docs/
 │   └── database.md        # Complete database documentation
+├── fix_database_schema.sql # SQL script for adding missing columns
 └── README.md
 ```
 
@@ -178,6 +184,8 @@ The application captures comprehensive information about each application:
 - Basic CRUD operations for applications
 - Responsive UI with Bootstrap
 - Dynamic form fields from database
+- Complete database schema with all required columns
+- Form validation and error handling
 
 ### Phase 2: Enhanced Features (In Progress)
 - [ ] Universal search functionality (`search.php`)
@@ -221,8 +229,8 @@ The application captures comprehensive information about each application:
    INSERT INTO statuses (name) VALUES
    ('Unknown'), ('Not started'), ('Ongoing Work'), ('On Hold'), ('Completed');
    ```
-5. Point web server document root to `/public` directory
-6. Create first admin user via registration
+6. Point web server document root to `/public` directory
+7. Create first admin user via registration
 
 ---
 

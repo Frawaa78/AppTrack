@@ -22,8 +22,34 @@ if (!$app) {
     header('Location: dashboard.php');
     exit;
 }
-if (isset($app['relationship_yggdrasil'])) {
+if (isset($app['relationship_yggdrasil']) && !empty($app['relationship_yggdrasil'])) {
     $app['relationship_yggdrasil'] = array_map('trim', explode(',', $app['relationship_yggdrasil']));
+    
+    // Fetch related application details for display
+    if (!empty($app['relationship_yggdrasil'])) {
+        $placeholders = implode(',', array_fill(0, count($app['relationship_yggdrasil']), '?'));
+        $stmt = $db->prepare("SELECT id, short_description, application_service FROM applications WHERE id IN ($placeholders)");
+        $stmt->execute($app['relationship_yggdrasil']);
+        $app['related_apps'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $app['related_apps'] = [];
+    }
+} else {
+    $app['relationship_yggdrasil'] = [];
+    $app['related_apps'] = [];
+}
+
+// Fetch phases from database
+$phases = $db->query('SELECT name FROM phases ORDER BY id')->fetchAll(PDO::FETCH_COLUMN);
+// Fetch statuses from database
+$statuses = $db->query('SELECT name FROM statuses ORDER BY id')->fetchAll(PDO::FETCH_COLUMN);
+
+// Fallback to hardcoded values if database is empty
+if (empty($phases)) {
+    $phases = ['Need', 'Solution', 'Build', 'Implement', 'Operate'];
+}
+if (empty($statuses)) {
+    $statuses = ['Unknown', 'Not started', 'Ongoing Work', 'On Hold', 'Completed'];
 }
 ?>
 <!DOCTYPE html>
@@ -90,6 +116,21 @@ if (isset($app['relationship_yggdrasil'])) {
       border: none;
       box-shadow: 0 0 2px rgba(0,0,0,0.2);
     }
+    
+    /* Enhanced active state for disabled buttons */
+    .btn.active:disabled {
+      background-color: #0d6efd !important;
+      border-color: #0d6efd !important;
+      color: white !important;
+      opacity: 1 !important;
+    }
+    
+    .btn-outline-secondary.active:disabled {
+      background-color: #6c757d !important;
+      border-color: #6c757d !important;
+      color: white !important;
+      opacity: 1 !important;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -127,19 +168,23 @@ if (isset($app['relationship_yggdrasil'])) {
         </div>
         <div class="mb-3">
           <label class="form-label d-block">Phase</label>
-          <input type="hidden" name="phase" id="phase_input" value="<?php echo htmlspecialchars($app['phase']); ?>">
+          <input type="hidden" name="phase" id="phase_input" value="<?php echo htmlspecialchars($app['phase'] ?? ''); ?>">
           <div class="btn-group w-100" role="group" aria-label="Phase">
-            <?php foreach (["Need","Solution","Build","Implement","Operate"] as $phase): ?>
-              <button type="button" class="btn btn-outline-primary<?php if($app['phase']===$phase) echo ' active'; ?>" disabled><?php echo $phase; ?></button>
+            <?php foreach ($phases as $phase): 
+                $isActive = (trim($app['phase'] ?? '') === trim($phase));
+            ?>
+              <button type="button" class="btn btn-outline-primary<?php if($isActive) echo ' active'; ?>" disabled><?php echo $phase; ?></button>
             <?php endforeach; ?>
           </div>
         </div>
         <div class="mb-3">
           <label class="form-label d-block">Status</label>
-          <input type="hidden" name="status" id="status_input" value="<?php echo htmlspecialchars($app['status']); ?>">
+          <input type="hidden" name="status" id="status_input" value="<?php echo htmlspecialchars($app['status'] ?? ''); ?>">
           <div class="btn-group w-100" role="group" aria-label="Status">
-            <?php foreach (["Unknown","Not started","Ongoing Work","On Hold","Completed"] as $status): ?>
-              <button type="button" class="btn btn-outline-secondary<?php if($app['status']===$status) echo ' active'; ?>" disabled><?php echo $status; ?></button>
+            <?php foreach ($statuses as $status): 
+                $isActive = (trim($app['status'] ?? '') === trim($status));
+            ?>
+              <button type="button" class="btn btn-outline-secondary<?php if($isActive) echo ' active'; ?>" disabled><?php echo $status; ?></button>
             <?php endforeach; ?>
           </div>
         </div>
@@ -161,14 +206,22 @@ if (isset($app['relationship_yggdrasil'])) {
           <label for="informationSpace">Information Space</label>
         </div>
         <div class="form-floating mb-3">
-          <input type="text" class="form-control" id="baSharepoint" name="ba_sharepoint" placeholder="BA Sharepoint list" value="<?php echo htmlspecialchars($app['ba_sharepoint']); ?>" readonly>
+          <input type="text" class="form-control" id="baSharepoint" name="ba_sharepoint_list" placeholder="BA Sharepoint list" value="<?php echo htmlspecialchars($app['ba_sharepoint_list'] ?? ''); ?>" readonly>
           <label for="baSharepoint">BA Sharepoint list</label>
         </div>
         <div class="mb-3">
+          <label for="relationshipYggdrasil" class="form-label">Related applications</label>
           <select class="form-select" id="relationshipYggdrasil" name="relationship_yggdrasil[]" multiple disabled>
-            <?php foreach (["Engineering Base","AIM Tool","SolutionSeeker","Energy Components","Infield"] as $rel): ?>
-              <option<?php if(in_array($rel, (array)$app['relationship_yggdrasil'])) echo ' selected'; ?>><?php echo $rel; ?></option>
-            <?php endforeach; ?>
+            <?php if (!empty($app['related_apps'])): ?>
+              <?php foreach ($app['related_apps'] as $relApp): ?>
+                <option value="<?php echo $relApp['id']; ?>" selected>
+                  <?php echo htmlspecialchars($relApp['short_description']); ?>
+                  <?php if (!empty($relApp['application_service'])): ?>
+                    (<?php echo htmlspecialchars($relApp['application_service']); ?>)
+                  <?php endif; ?>
+                </option>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </select>
         </div>
       </div>
