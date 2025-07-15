@@ -4,7 +4,9 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 ?>
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 sticky-top" style="z-index: 1030; margin-bottom:0; padding-top:0; padding-bottom:0;">
   <div class="container-fluid px-0">
-    <a class="navbar-brand" href="dashboard.php">AppTrack</a>
+    <a class="navbar-brand" href="dashboard.php">
+      <img src="../assets/logo.png" alt="AppTrack" style="height: 40px;">
+    </a>
     <div class="flex-grow-1 d-flex justify-content-center">
       <form class="d-flex w-100" method="get" action="search.php" style="max-width:600px;">
         <input class="form-control me-2 search-bar" type="search" name="q" placeholder="Search applications, users, ..." aria-label="Search" <?php if(isset($topbar_search_disabled) && $topbar_search_disabled) echo 'readonly'; ?>>
