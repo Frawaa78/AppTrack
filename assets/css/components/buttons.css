@@ -1,0 +1,38 @@
+/* Button Components Styling */
+
+/* Button group text styling */
+.btn-group .btn {
+  font-size: 0.77rem;
+  height: 38px;
+  line-height: 1.5;
+}
+
+/* Enhanced active state for disabled buttons */
+.btn.active {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  color: white !important;
+}
+
+.btn-outline-secondary.active {
+  background-color: #6c757d !important;
+  border-color: #6c757d !important;
+  color: white !important;
+}
+
+/* Header with buttons styling */
+.header-with-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header-with-buttons h2 {
+  margin: 0;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 0.5rem;
+}

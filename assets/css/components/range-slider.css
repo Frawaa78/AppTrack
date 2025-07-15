@@ -1,0 +1,102 @@
+/* Range Slider Component Styling */
+
+.form-range {
+  width: 100%;
+  background-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+/* Range slider container with markers */
+.range-container {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* Range markers */
+.range-markers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.range-marker {
+  width: 2px;
+  height: 12px;
+  background-color: #dee2e6;
+  border-radius: 1px;
+  opacity: 1;
+}
+
+.range-marker.active {
+  opacity: 0;
+}
+
+/* Tooltip styling for handover status */
+.tooltip-follow {
+  font-size: 0.69rem;
+  position: absolute;
+  top: -14px;
+  background: #55595c;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  transform: translateX(-50%);
+  display: none;
+}
+
+/* Range slider track styling */
+.form-range::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  background: linear-gradient(to right, #B8D2F7 0%, #B8D2F7 var(--progress, 0%), #f1f3f5 var(--progress, 0%), #f1f3f5 100%);
+  border-radius: 0.25rem;
+}
+.form-range::-moz-range-track {
+  height: 0.5rem;
+  background: #f1f3f5;
+  border-radius: 0.25rem;
+}
+.form-range::-moz-range-progress {
+  height: 0.5rem;
+  background: #B8D2F7;
+  border-radius: 0.25rem;
+}
+.form-range::-ms-fill-lower {
+  height: 0.5rem;
+  background: #B8D2F7;
+  border-radius: 0.25rem;
+}
+.form-range::-ms-fill-upper {
+  height: 0.5rem;
+  background: #f1f3f5;
+  border-radius: 0.25rem;
+}
+
+/* Range slider thumb styling */
+.form-range:focus {
+  outline: none;
+  box-shadow: none;
+}
+.form-range::-webkit-slider-thumb {
+  background: #0d6efd;
+  border: none;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+.form-range::-moz-range-thumb {
+  background: #0d6efd;
+  border: none;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+.form-range::-ms-thumb {
+  background: #0d6efd;
+  border: none;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}

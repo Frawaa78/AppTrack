@@ -1,9 +1,6 @@
 # AppTrack
 
-**AppTrack** is a web-based application management tool developed for the Yggdrasil project in Aker BP. Its purpose is to replace manual spreadsheets and fragmented documentation by offering a centralized a3. Configure database settings in `src/config/config.php`
-4. Import database schema (see `docs/database.md`)
-5. Add missing columns if needed using `fix_database_schema.sql`
-6. Populate lookup tables with default values:structured application registry.
+**AppTrack** is a web-based application management tool developed for the Yggdrasil project in Aker BP. Its purpose is to replace manual spreadsheets and fragmented documentation by offering a centralized, structured application registry.
 
 ---
 
@@ -11,352 +8,527 @@
 
 The goal is to build a modular full-stack web application using:
 
-- **PHP** (backend)
-- **MySQL** (database)
-- **Bootstrap** (frontend)
+- **PHP 8+** (backend)
+- **MySQL 8.0** (database)
+- **Bootstrap 5.3** (frontend framework)
+- **Choices.js** (enhanced multi-select components)
+- **Vanilla JavaScript** (interactive functionality)
 
 The system enables users to register, update, and view relevant information about applications that are part of or affected by the Yggdrasil project. It is designed to scale and evolve, supporting new fields and future integrations, such as:
 
 - **ServiceNow CMDB** integration (Aker BP)
 - **Entra ID** authentication
-- **ChatGPT** for AI-enhanced functionality
+- **AI-enhanced functionality** integration
 
 ---
 
 ## 🆕 Current Status & Recent Changes
 
-### Implemented Features
-- ✅ **User Authentication**: Registration, login, logout with secure password hashing
-- ✅ **Database-Driven Forms**: Phase and status values are dynamically fetched from database tables
-- ✅ **Modern Responsive UI**: Space-efficient horizontal form layout with Bootstrap integration
-- ✅ **Application Management**: Create, edit, view applications with comprehensive form fields
-- ✅ **Enhanced Form Experience**: 
-  - Static labels with consistent positioning and alignment
+### Implemented Features ✅
+- **User Authentication**: Registration, login, logout with secure password hashing
+- **Database-Driven Forms**: Phase and status values are dynamically fetched from database tables
+- **Modern Responsive UI**: Space-efficient horizontal form layout with Bootstrap 5.3 integration
+- **Application Management**: Create, edit, view applications with comprehensive form validation
+- **Enhanced Form Experience**: 
+  - Horizontal layout with fixed-width labels (160px) for perfect alignment
   - Clear buttons for URL fields with intuitive X icons
-  - Interactive handover slider with visual progress markers
-  - Centered tooltips and real-time progress feedback
-- ✅ **Advanced Search**: Related applications field with database search functionality
-- ✅ **Shared Components**: Consistent navigation bar and styling across all pages
-- ✅ **Security**: Input validation, prepared statements, session management
-- ✅ **Data Import**: ServiceNow CSV import capability
-- ✅ **Audit Trail**: Database structure for tracking changes
-- ✅ **Complete Database Schema**: All application form fields properly mapped to database columns
-- ✅ **Cross-Page Consistency**: Identical styling and behavior between form and view modes
-- ✅ **JavaScript Functionality**: Reliable form interactions with proper event handling
+  - Interactive handover slider with 11 visual progress markers (0-100%)
+  - Centered tooltips with precise positioning and descriptive text
+  - Real-time progress feedback and dynamic marker highlighting
+- **Advanced Search**: Related applications field with real-time database search via Choices.js
+- **Shared Components**: Consistent navigation bar and styling across all pages
+- **Security**: Input validation, prepared statements, session management
+- **Cross-Page Consistency**: Identical styling and behavior between form and view modes
+- **Reliable JavaScript**: Window-scoped functions with proper error handling
 
-### Latest Updates (July 2025)
-- **Enhanced Form UI**: Complete redesign of form interface with horizontal layout for space efficiency
-- **Visual Improvements**: 
-  - Removed blue glow effects from form elements for cleaner appearance
-  - Implemented static labels positioned to the left of inputs
-  - Added clear (X) buttons to URL fields for better user experience
-  - Reduced spacing between labels and inputs by 50% for more compact design
-- **Interactive Elements**:
-  - Enhanced handover status slider with 11 visual markers (0-100% in 10% increments)
-  - Centered tooltip positioning over slider thumb with precise calculations
-  - Dynamic marker highlighting showing progress in real-time
-- **Layout Optimization**: 
-  - Converted from vertical to horizontal form layout saving significant screen space
-  - Consistent styling between form editing (app_form.php) and read-only view (app_view.php)
-  - Form labels right-aligned with 160px fixed width for perfect alignment
-- **JavaScript Enhancements**:
-  - Fixed Phase/Status button functionality with proper event handling
-  - Restored Related applications multiselect with working search functionality
-  - Window-scoped functions for reliable onclick handlers
-  - Improved error handling with try/catch blocks
-- **Search Functionality**: Enhanced Related applications field with Choices.js for database search
-- **Cross-Page Consistency**: Both form and view pages now have identical styling and behavior
+### Latest Major Update: Version 2.0 (July 2025)
+Complete UI/UX redesign focusing on space efficiency and user experience:
 
-### Current Project Structure
+#### **Form Layout Revolution**
+- **50% space reduction**: Horizontal layout vs. previous vertical design
+- **Perfect alignment**: Fixed-width labels with right-alignment for visual consistency
+- **Responsive design**: Adapts seamlessly to different screen sizes
+
+#### **Interactive Enhancements**
+- **Enhanced Handover Slider**: 11 visual markers, dynamic highlighting, centered tooltips
+- **Clear Buttons**: X buttons for quick field clearing on URL inputs
+- **Smart Search**: Real-time application search with formatted dropdown results
+- **Improved UX**: Removed blue glow effects, consistent styling, better button feedback
+
+#### **Technical Improvements**
+- **Modular CSS Architecture**: Component-based styling with organized imports
+- **Reliable JavaScript**: Fixed event handling, window-scoped functions, proper error handling
+- **API Integration**: RESTful search endpoint for related applications
+- **Cross-Platform Consistency**: Identical experience between edit and view modes
+
+### Current Architecture Overview
 ```
 AppTrack/
-├── public/                 # Web-accessible files
-│   ├── index.php          # Welcome/landing page
-│   ├── login.php          # User authentication
-│   ├── register.php       # User registration
-│   ├── dashboard.php      # Main application overview
-│   ├── app_form.php       # Create/edit application form
-│   ├── app_view.php       # Read-only application details
-│   ├── users_admin.php    # User administration (planned)
+├── public/                     # Web-accessible files
+│   ├── index.php              # Welcome/landing page  
+│   ├── login.php              # User authentication
+│   ├── register.php           # User registration
+│   ├── dashboard.php          # Main application overview
+│   ├── app_form.php           # Create/edit application form
+│   ├── app_view.php           # Read-only application details
+│   ├── users_admin.php        # User administration
 │   ├── api/
-│   │   └── search_applications.php  # Application search endpoint
+│   │   └── search_applications.php  # RESTful search endpoint
 │   └── shared/
-│       └── topbar.php     # Shared navigation component
-├── src/                   # Backend logic
+│       └── topbar.php         # Consistent navigation component
+├── src/                       # Backend logic  
 │   ├── config/
-│   │   └── config.php     # Database configuration
+│   │   └── config.php         # Database configuration
 │   ├── db/
-│   │   └── db.php         # PDO database singleton class
-│   ├── models/            # Data models (planned)
-│   └── controllers/       # Business logic (planned)
-├── docs/
-│   └── database.md        # Complete database documentation
-├── asstes/                # Static assets (CSS, JS, images)
-└── README.md
+│   │   └── db.php             # PDO database singleton class
+│   ├── models/                # Data models (future)
+│   └── controllers/           # Business logic (future)
+├── assets/                    # Organized static assets
+│   ├── css/
+│   │   ├── main.css          # Primary stylesheet with imports
+│   │   ├── components/       # Component-specific styles
+│   │   │   ├── forms.css     # Form layout and styling
+│   │   │   ├── buttons.css   # Button components
+│   │   │   ├── choices.css   # Multi-select dropdown styling
+│   │   │   └── range-slider.css # Slider component styling
+│   │   └── pages/            # Page-specific styles
+│   └── js/
+│       ├── main.js           # Core JavaScript functionality
+│       ├── components/       # Reusable JavaScript components
+│       │   ├── form-handlers.js   # Form interaction logic
+│       │   └── choices-init.js    # Multi-select initialization
+│       └── pages/            # Page-specific JavaScript
+├── docs/                      # Comprehensive documentation
+│   ├── database.md           # Complete database schema
+│   └── ui-implementation.md  # UI/UX technical guide
+└── README.md                 # This file
 ```
 
 ---
 
 ## 🔑 Key Features
 
-- **User-friendly interface**: View, register, and update applications via intuitive tables, forms, and dashboards.
-- **Structured data fields**, including:
-  - `Short Description`: Application name
-  - `Application Service`: Linked to ServiceNow CMDB
-  - `Relevant for`: Indicates if the application is relevant for Yggdrasil
-  - `Phase`: Based on the Yggdrasil Delivery Model (Need, Solution, Build, Implement, Operate)
-  - `Status`: Status options (Unknown, Not started, Ongoing, On hold, Completed)
-  - `Handover Status`: A 10-step slider tracking handover progress
-  - `Information Space`: Link to SharePoint/Viva or other documentation areas
-  - `BA SharePoint List`: Link to a list maintained by Business Analysts
-  - `Relationship in Yggdrasil`: Links to related applications in the system
-  - `Assigned To`: Person responsible for keeping data up to date
-  - `Pre-ops Portfolio`: Portfolio ownership within the Yggdrasil project
-  - `Application Portfolio`: Target portfolio for IT Operations (e.g. HR, SCM, Digital, etc.)
-  - `Delivery Responsible`: Lead alliance/project/vendor responsible for delivery
-  - `Link to Corporater`: If available, link to project info in Corporater
-  - `Project Manager`: Responsible for project activities involving the application
-  - `Product Owner`: Owns the business need and ensures the application meets that need
-  - `Due Date`: Target date for go-live or operational use
-  - `Deployment Model`: SaaS, On-prem, Externally Hosted, Client App, Hybrid, etc.
-  - `Integrations`: Indicates whether the app is part of a data pipeline or has integrations
-  - `S.A. Document`: Solution Architect documentation link
-  - `Business Need`: Plain-language summary of why the application is needed (max 350 characters)
-  - `Work Notes`: Log of comments, decisions, and automatic audit trail of changes
+### User Interface & Experience
+- **Modern Horizontal Layout**: Space-efficient design with 50% less vertical scrolling
+- **Perfect Visual Alignment**: Fixed-width labels (160px) with right-alignment for consistency
+- **Interactive Form Elements**: 
+  - Enhanced handover slider with 11 visual progress markers (0-100%)
+  - Real-time tooltip positioning with descriptive progress text
+  - Clear (X) buttons for quick URL field clearing
+  - Dynamic visual feedback for all interactive elements
+- **Cross-Platform Consistency**: Identical styling between edit and view modes
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+
+### Data Management & Search
+- **Comprehensive Application Registry**: Complete tracking of all Yggdrasil-related applications
+- **Advanced Search Functionality**: Real-time database search with formatted results
+- **Smart Relationships**: Related applications linking with bidirectional updates
+- **Form Validation**: Client-side and server-side validation with user-friendly error messages
+- **Data Import**: ServiceNow CSV import capability for bulk data entry
+
+### Application Data Fields
+The system captures comprehensive information structured around the Yggdrasil Delivery Model:
+
+#### **Basic Information**
+- **Short Description**: Application name/identifier
+- **Application Service**: Reference to ServiceNow CMDB entry
+- **Relevant for**: Yggdrasil relevance classification (To be decided, Yggdrasil, Not relevant)
+- **Business Need**: Plain-language justification (max 350 characters)
+
+#### **Project Management**
+- **Phase**: Delivery model stage (Need → Solution → Build → Implement → Operate)
+- **Status**: Current progress (Unknown, Not started, Ongoing Work, On Hold, Completed)
+- **Handover Status**: Interactive 10-step progress slider (0-100%) with descriptive tooltips
+- **Due Date**: Target go-live date with date picker
+- **Project Manager**: Responsible for project activities
+- **Product Owner**: Business need owner
+- **Delivery Responsible**: Lead vendor/alliance
+
+#### **Technical Details**
+- **Deployment Model**: SaaS, On-premise, Externally hosted, Client Application
+- **Integrations**: Data pipeline/integration indicator with conditional S.A. Document field
+- **S.A. Document**: Solution Architecture documentation link (appears when Integrations = "Yes")
+
+#### **Business Context & Contracts**
+- **Pre-ops Portfolio**: Yggdrasil project portfolio assignment
+- **Application Portfolio**: Target IT operations portfolio (HR, SCM, Digital, etc.)
+- **Contract Number**: Reference to commercial agreement
+- **Contract Responsible**: Commercial lead contact
+- **Corporator Link**: Project management system reference
+
+#### **Documentation & Relationships**
+- **Information Space**: SharePoint/Viva documentation area with clickable links
+- **BA SharePoint List**: Business analyst maintained list with external link support
+- **Related Applications**: Multi-select search with real-time database lookup
+- **Assigned To**: Data maintenance responsibility with user search
 
 ---
 
-## 👥 User Roles
+## 👥 User Roles & Security
 
-Three user groups are supported:
-- **Admin**: Full access (view/edit/delete)
-- **Editor**: View and edit applications
-- **Viewer**: Read-only access
+### Role-Based Access Control
+- **Admin**: Full access (view/edit/delete all applications and user management)
+- **Editor**: View and edit applications (cannot manage users)
+- **Viewer**: Read-only access to all application data
+
+### Security Implementation
+- **Password Security**: BCrypt hashing with salt for all user passwords
+- **Database Security**: Prepared statements preventing SQL injection attacks
+- **Session Management**: Secure session handling with proper timeout
+- **Input Validation**: Client-side and server-side validation with sanitization
+- **Authorization**: Role-based page access control
+- **CSRF Protection**: Planned implementation for form submissions
 
 ---
 
 ## ⚙️ Technical Architecture
 
-### Backend Components
-- **PHP 8+**: Server-side logic with modern features
-- **MySQL 8.0**: Relational database with normalized structure
-- **PDO**: Database abstraction layer with prepared statements for security
+### Backend Technology Stack
+- **PHP 8+**: Modern server-side logic with type declarations and improved performance
+- **MySQL 8.0**: Relational database with optimized query performance
+- **PDO Database Layer**: Secure database abstraction with prepared statements
+- **RESTful API**: Clean API endpoints for search and data operations
 
-### Frontend Components
-- **Bootstrap 5.3**: Responsive CSS framework with custom horizontal form layouts
-- **Vanilla JavaScript**: Form interactions, dynamic content, and real-time updates
-- **Choices.js**: Enhanced multi-select dropdowns with search functionality
-- **Interactive UI Elements**: 
-  - Visual progress indicators with dynamic marker highlighting
-  - Centered tooltips with precise positioning calculations
-  - Clear buttons for improved user experience
-  - Consistent styling across form and view modes
+### Frontend Technology Stack
+- **Bootstrap 5.3**: Latest responsive CSS framework with enhanced components
+- **Vanilla JavaScript (ES6+)**: Modern JavaScript without dependencies for core functionality
+- **Choices.js**: Enhanced multi-select dropdowns with search capabilities
+- **Custom CSS Architecture**: Modular component-based styling system
 
-### Security Implementation
-- Password hashing using PHP's `password_hash()`
-- Prepared statements for all database queries
-- Input validation and sanitization
-- Session-based authentication
-- CSRF protection (planned)
+### Database Design Principles
+- **Normalized Structure**: Lookup tables for phases, statuses, and deployment models
+- **Foreign Key Relationships**: Data integrity with proper constraints
+- **Audit Trail Capability**: Complete change tracking for compliance
+- **Performance Optimization**: Indexed fields for fast search operations
+- **Extensible Schema**: Easy addition of new fields and relationships
 
-### Database Design
-- Normalized structure with lookup tables
-- Foreign key relationships for data integrity
-- Audit logging capability
-- Support for file attachments and work notes
+### CSS Architecture
+```
+assets/css/
+├── main.css              # Primary import file
+├── components/           # Reusable component styles
+│   ├── forms.css        # Form layout and styling
+│   ├── buttons.css      # Button components
+│   ├── choices.css      # Multi-select dropdown styling
+│   └── range-slider.css # Interactive slider components
+└── pages/               # Page-specific styling
+```
 
-For detailed database schema, see `docs/database.md`
+### JavaScript Architecture
+```
+assets/js/
+├── main.js              # Core functionality and initialization
+├── components/          # Reusable JavaScript modules
+│   ├── form-handlers.js # Form interaction logic
+│   └── choices-init.js  # Multi-select initialization
+└── pages/              # Page-specific JavaScript
+```
 
 ---
 
-## 🗃️ Core Data Fields
+## 🗃️ Complete Data Schema
 
-The application captures comprehensive information about each application:
+### Applications Table Structure
+All form fields are properly mapped to database columns with appropriate data types:
 
-### Basic Information
-- **Short Description**: Application name/identifier
-- **Application Service**: Reference to ServiceNow CMDB entry
-- **Relevant for**: Yggdrasil relevance classification
-- **Business Need**: Plain-language justification (max 350 characters)
+| Category | Fields | Database Implementation |
+|----------|--------|------------------------|
+| **Identity** | Short Description, Application Service | VARCHAR(255), NOT NULL + NULL |
+| **Classification** | Relevant For, Phase, Status | VARCHAR(255) with lookup table references |
+| **Progress** | Handover Status | INT (0-100) with default 0 |
+| **Contracts** | Contract Number, Contract Responsible | VARCHAR(255), both nullable |
+| **Documentation** | Information Space, BA SharePoint, S.A. Document | TEXT fields supporting long URLs |
+| **Relationships** | Related Applications, Assigned To | TEXT (comma-separated) + VARCHAR(255) |
+| **Portfolios** | Pre-ops Portfolio, Application Portfolio | VARCHAR(255) for both |
+| **Management** | Delivery Responsible, Project Manager, Product Owner | VARCHAR(255) for all |
+| **Technical** | Deployment Model, Integrations | VARCHAR(255) with predefined options |
+| **Timeline** | Due Date | DATE type |
+| **Description** | Business Need | TEXT for extended content |
 
-### Project Management
-- **Phase**: Delivery model stage (Need → Solution → Build → Implement → Operate)
-- **Status**: Current progress (Unknown, Not started, Ongoing Work, On Hold, Completed)
-- **Handover Status**: 10-step progress slider (0-100%)
-- **Due Date**: Target go-live date
-- **Project Manager**: Responsible for project activities
-- **Product Owner**: Business need owner
-- **Delivery Responsible**: Lead vendor/alliance
+### Lookup Tables
+- **phases**: Need, Solution, Build, Implement, Operate
+- **statuses**: Unknown, Not started, Ongoing Work, On Hold, Completed  
+- **deployment_models**: Client Application, On-premise, SaaS, Externally hosted
 
-### Technical Details
-- **Deployment Model**: SaaS, On-premise, Externally hosted, Client Application
-- **Integrations**: Data pipeline/integration indicator
-- **S.A. Document**: Solution Architecture documentation link
-
-### Business Context
-- **Pre-ops Portfolio**: Yggdrasil project portfolio
-- **Application Portfolio**: Target IT operations portfolio
-- **Contract Number**: Reference to commercial agreement
-- **Contract Responsible**: Commercial lead
-- **Corporator Link**: Project management system reference
-
-### Documentation & Relationships
-- **Information Space**: SharePoint/documentation area
-- **BA SharePoint List**: Business analyst maintained list
-- **Relationship in Yggdrasil**: Connected applications
-- **Assigned To**: Data maintenance responsibility
+For complete database documentation, see `docs/database.md`
 
 ---
 
 ## 🚧 Development Roadmap
 
-### Phase 1: Core Foundation ✅ (Complete)
-- User registration and authentication
-- Database structure and relationships
-- Basic CRUD operations for applications
-- Modern responsive UI with horizontal form layout
-- Dynamic form fields from database
-- Complete database schema with all required columns
-- Form validation and error handling
-- Enhanced form experience with:
-  - Static labels and consistent positioning
-  - Clear buttons for URL fields
-  - Interactive handover status slider with visual markers
-  - Centered tooltips with precise positioning
-  - Database search for related applications
-- Cross-page styling consistency between form and view modes
-- Reliable JavaScript functionality with proper event handling
+### Phase 1: Core Foundation ✅ (COMPLETE)
+- [x] User registration and authentication system
+- [x] Complete database structure with all required columns
+- [x] Modern responsive UI with horizontal form layout
+- [x] Dynamic form fields populated from database
+- [x] Enhanced form experience with interactive elements
+- [x] Real-time search for related applications
+- [x] Cross-page styling consistency
+- [x] Reliable JavaScript with proper error handling
+- [x] Form validation and security implementation
 
-### Phase 2: Enhanced Features (In Progress)
-- [ ] Universal search functionality (`search.php`)
-- [ ] User administration interface (`users_admin.php`)
-- [ ] Work notes and comment system
+### Phase 2: Enhanced Features 🔄 (IN PROGRESS)
+- [ ] Universal search functionality across all applications
+- [ ] User administration interface with role management
+- [ ] Work notes and comment system for applications
 - [ ] File upload and attachment management
-- [ ] Role-based access control implementation
+- [ ] Advanced audit trail with change rollback capability
+- [ ] Export functionality (PDF, Excel, CSV)
 
-### Phase 3: Advanced Integration (Planned)
-- [ ] ServiceNow API integration
-- [ ] Entra ID authentication
-- [ ] Advanced reporting and analytics
-- [ ] Workflow automation
-- [ ] API endpoints for external integrations
+### Phase 3: Integration & Automation 📋 (PLANNED)
+- [ ] ServiceNow CMDB API integration for real-time data sync
+- [ ] Entra ID authentication for single sign-on
+- [ ] Advanced reporting with charts and analytics
+- [ ] Workflow automation for status changes
+- [ ] Email notifications for important updates
+- [ ] Dashboard analytics with visual progress indicators
 
-### Phase 4: Enterprise Features (Future)
-- [ ] Multi-tenant support
-- [ ] Advanced audit trail with rollback
-- [ ] Real-time notifications
-- [ ] Dashboard analytics and charts
-- [ ] Mobile application
+### Phase 4: Enterprise Features 🚀 (FUTURE)
+- [ ] Multi-tenant support for multiple organizations
+- [ ] Advanced permissions with field-level access control
+- [ ] Real-time collaboration features
+- [ ] Mobile application with offline capabilities
+- [ ] API ecosystem for third-party integrations
+- [ ] Advanced analytics and business intelligence
 
 ---
 
 ## 🔧 Installation & Setup
 
-### Prerequisites
-- PHP 8.0 or higher
-- MySQL 8.0 or higher
-- Web server (Apache/Nginx)
+### System Requirements
+- **PHP 8.0+** with PDO MySQL extension
+- **MySQL 8.0+** or MariaDB 10.4+
+- **Web Server**: Apache 2.4+ or Nginx 1.18+
+- **Modern Browser**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
 
-### Quick Start
-1. Clone the repository
-2. Configure database settings in `src/config/config.php`
-3. Import database schema (see `docs/database.md`)
-4. Populate lookup tables with default values:
+### Quick Installation
+1. **Clone Repository**
+   ```bash
+   git clone [repository-url]
+   cd AppTrack
+   ```
+
+2. **Configure Database**
+   ```php
+   // src/config/config.php
+   define('DB_HOST', 'localhost');
+   define('DB_NAME', 'apptrack');
+   define('DB_USER', 'your_username');
+   define('DB_PASS', 'your_password');
+   ```
+
+3. **Import Database Schema**
+   ```bash
+   mysql -u username -p apptrack < docs/database_schema.sql
+   ```
+
+4. **Populate Lookup Tables**
    ```sql
    INSERT INTO phases (name) VALUES 
    ('Need'), ('Solution'), ('Build'), ('Implement'), ('Operate');
    
    INSERT INTO statuses (name) VALUES
    ('Unknown'), ('Not started'), ('Ongoing Work'), ('On Hold'), ('Completed');
+   
+   INSERT INTO deployment_models (name) VALUES
+   ('Client Application'), ('On-premise'), ('SaaS'), ('Externally hosted');
    ```
-5. Point web server document root to `/public` directory
-6. Create first admin user via registration
 
-### Development Files to Remove
-Before deploying to production, remove these temporary development files:
-- `fix_database_schema.sql`
-- `fix_missing_columns.sql`
-- `fix_sa_document_column.sql`
-- `public/api/test.php`
+5. **Configure Web Server**
+   - Point document root to `/public` directory
+   - Enable URL rewriting (if using clean URLs)
+   - Set appropriate file permissions
 
----
+6. **Create Admin User**
+   - Navigate to `/register.php`
+   - Create first user account
+   - Manually set role to 'admin' in database if needed
 
-## 📊 Database Integration
-
-### Lookup Tables
-The system uses normalized lookup tables for consistent data:
-- `phases`: Delivery model phases
-- `statuses`: Application status values
-- `deployment_models`: Technical deployment types
-- `portfolios`: Business and technical portfolios
-
-### Dynamic Form Population
-Forms automatically populate dropdowns from database tables, eliminating hardcoded values and enabling easy maintenance.
-
-### Audit Trail
-All changes are logged in the `audit_log` table with:
-- What changed (table, field, old/new values)
-- Who made the change
-- When the change occurred
+### Production Deployment Checklist
+- [ ] Remove development files (`*.sql` scripts, test files)
+- [ ] Configure proper error logging (disable display_errors)
+- [ ] Set up SSL certificate for HTTPS
+- [ ] Configure database backups
+- [ ] Set up monitoring and alerting
+- [ ] Review file permissions and security settings
 
 ---
 
-## 🌐 Deployment & Hosting
+## 📊 API Documentation
 
-### Target Environment
-- **Production URL**: [apptrack.no](https://apptrack.no)
-- **Technology Stack**: LAMP (Linux, Apache, MySQL, PHP)
-- **Responsive Design**: Mobile-first Bootstrap implementation
+### Search Endpoint
+**GET** `/api/search_applications.php`
 
-### Development Tools
-- **GitHub Copilot**: AI-assisted development
-- **VS Code**: Primary development environment
-- **phpMyAdmin**: Database administration
+Search for applications with real-time filtering:
+
+```javascript
+// Example usage
+fetch('/api/search_applications.php?q=finance&exclude=5&selected=1,3,7')
+  .then(response => response.json())
+  .then(applications => {
+    // Handle search results
+  });
+```
+
+**Parameters:**
+- `q` (string): Search query (minimum 2 characters)
+- `exclude` (int): Application ID to exclude from results
+- `selected` (string): Comma-separated list of already selected IDs
+
+**Response Format:**
+```json
+[
+  {
+    "value": "123",
+    "label": "Finance System (SAP ERP)",
+    "customProperties": {
+      "service": "SAP ERP",
+      "description": "Finance System"
+    }
+  }
+]
+```
 
 ---
 
-## 📚 Documentation
+## 🌐 Browser Compatibility & Performance
+
+### Supported Browsers
+- **Chrome**: 90+ (recommended)
+- **Firefox**: 88+
+- **Safari**: 14+
+- **Edge**: 90+
+- **Mobile**: iOS Safari 14+, Chrome Mobile 90+
+
+### Performance Features
+- **Optimized CSS**: Component-based architecture for faster loading
+- **Efficient JavaScript**: Minimal DOM manipulation with event delegation
+- **Database Optimization**: Indexed search fields and prepared statements
+- **Responsive Images**: Properly sized assets for different screen densities
+- **Caching Strategy**: Browser caching for static assets
+
+---
+
+## 📚 Documentation Structure
 
 ### Primary Documentation
-- `README.md`: Project overview and setup guide
-- `docs/database.md`: Complete database schema and relationships
+- **README.md**: Complete project overview and setup guide
+- **docs/database.md**: Comprehensive database schema and relationships
+- **docs/ui-implementation.md**: Technical UI/UX implementation guide
+- **CHANGELOG.md**: Detailed version history and feature updates
 
 ### Code Documentation
-- Inline comments in critical functions
-- Security implementation notes
-- Database query documentation
+- **Inline Comments**: Critical functions and complex logic explained
+- **Security Notes**: Implementation details for security features
+- **API Documentation**: Endpoint specifications and usage examples
+- **Database Queries**: Complex query explanations and optimization notes
 
 ---
 
-## 📦 Delivery Model
+## 📦 Yggdrasil Delivery Model Integration
 
-The system is aligned with Yggdrasil’s structured **Delivery Model**:
+The system is perfectly aligned with Aker BP's **Yggdrasil Delivery Model**, providing structured tracking through each phase:
 
-1. **Need** – Recognize business needs
-2. **Solution** – Explore technical and commercial solutions
+### Phase Structure
+1. **Need** – Recognize and document business needs
+   - Business justification captured in Business Need field
+   - Initial stakeholder identification and requirements gathering
+   
+2. **Solution** – Explore technical and commercial solutions  
+   - Solution architecture documentation via S.A. Document field
+   - Deployment model selection and technical planning
+   
 3. **Build** – Develop, test, and configure the application
-4. **Implement** – Prepare the organization and IT for operations
-5. **Operate** – The application is live and in production
+   - Project management through assigned roles and timelines
+   - Integration planning and technical implementation
+   
+4. **Implement** – Prepare organization and IT for operations
+   - Handover status tracking with detailed 10-step progress monitoring
+   - Portfolio assignment and operational readiness
+   
+5. **Operate** – Application is live and in production
+   - Ongoing maintenance responsibility assignment
+   - Continuous monitoring and updates
 
-This phased model ensures clear ownership and traceability from idea to operation.
+### Progress Tracking Features
+- **Phase Management**: Visual button interface for current delivery phase
+- **Status Monitoring**: Granular status tracking (Unknown → Not started → Ongoing → On Hold → Completed)
+- **Handover Progress**: Interactive slider with 11 markers providing detailed handover status from 0% to 100%
+- **Timeline Management**: Due date tracking with calendar integration
+- **Stakeholder Clarity**: Clear role assignments (Project Manager, Product Owner, Delivery Responsible)
+
+This phased approach ensures clear ownership, accountability, and traceability from initial business need to full operational status.
 
 ---
 
 ## 📄 License
 
-TBD
+**Proprietary Software** - Aker BP ASA
+
+This software is developed for internal use within Aker BP and its approved contractors. All rights reserved.
 
 ---
 
-## 🤝 Contributions
+## 🤝 Contributing
 
-Contributions and pull requests are welcome. Please fork the repository and open an issue before submitting major changes.
+### Development Guidelines
+- Follow established coding standards (PSR-12 for PHP)
+- Write comprehensive comments for complex functionality
+- Include database migration scripts for schema changes
+- Test thoroughly across supported browsers
+- Update documentation for any feature changes
+
+### Pull Request Process
+1. Fork the repository and create a feature branch
+2. Make changes with appropriate tests and documentation
+3. Ensure all existing functionality remains intact
+4. Submit pull request with detailed description of changes
+5. Code review and approval process before merging
 
 ---
 
-## 📬 Contact
+## 📞 Support & Contact
 
-Project Lead: `frank.waaland@akerbp.com` (or your placeholder contact)
+### Primary Contacts
+- **Project Lead**: `frank.waaland@akerbp.com`
+- **Technical Support**: IT Service Desk
+- **Business Queries**: Yggdrasil Project Office
+
+### Development Environment
+- **Repository**: Internal Aker BP GitLab/GitHub
+- **Issue Tracking**: Integrated with repository
+- **Documentation**: Maintained in `/docs` directory
+- **Updates**: Regular releases with changelog documentation
+
+---
+
+## 🔄 Version History
+
+**Current Version**: 2.0.0 (July 2025)
+- Complete UI/UX redesign with horizontal layout
+- Enhanced interactive elements and search functionality
+- Improved cross-browser compatibility and performance
+
+**Previous Versions**:
+- 1.5.0: Enhanced read-only views and database optimization
+- 1.0.0: Initial release with core functionality
+
+For detailed version history, see `CHANGELOG.md`
+
+---
+
+## 🎯 Future Vision
+
+AppTrack is designed to evolve into a comprehensive application lifecycle management platform, supporting:
+
+- **Enterprise Integration**: Full ServiceNow CMDB synchronization
+- **Advanced Analytics**: Business intelligence and reporting dashboards  
+- **Workflow Automation**: Intelligent routing and approval processes
+- **Mobile Excellence**: Native mobile applications for field teams
+- **AI Enhancement**: Intelligent recommendations and automated data entry
+- **Ecosystem Integration**: APIs for third-party tool connectivity
+
+The foundation established in version 2.0 provides a robust platform for these future enhancements while maintaining the core focus on user experience and data integrity.
 
 ---
 

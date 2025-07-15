@@ -1,0 +1,48 @@
+/* AppTrack - Main Styles */
+
+/* Base styles and typography */
+body { 
+  font-size: 0.9rem; 
+}
+
+/* Navigation and header elements */
+.profile-img { 
+  width: 36px; 
+  height: 36px; 
+  object-fit: cover; 
+  border-radius: 50%; 
+}
+
+.navbar-brand { 
+  font-weight: bold; 
+  letter-spacing: 1px; 
+}
+
+.search-bar { 
+  min-width: 350px; 
+  max-width: 600px; 
+  width: 100%; 
+}
+
+/* Header with buttons styling */
+.header-with-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.header-with-buttons h2 {
+  margin: 0;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) { 
+  .search-bar { min-width: 150px; }
+  .row { gap: 0 !important; }
+}
