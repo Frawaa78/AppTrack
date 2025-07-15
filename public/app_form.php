@@ -320,7 +320,21 @@ if (empty($statuses)) {
     
     .tooltip-follow { position: absolute; top: -14px; transform: translateX(-50%); background: #55595c; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.69rem; white-space: nowrap; display: none; pointer-events: none; z-index: 1000; }
     .input-group .btn.info-btn { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-    .choices__inner { min-height: calc(3.5rem + 2px); padding-top: 1rem; }
+    
+    /* Consistent height for all Choices.js fields */
+    .choices__inner { 
+      min-height: 38px !important; 
+      padding: 0.375rem 0.75rem !important;
+      padding-top: 0.375rem !important;
+      border: 1px solid #dee2e6 !important;
+      border-radius: 0.375rem !important;
+    }
+    
+    .choices[data-type*="select-one"] .choices__inner {
+      height: 38px !important;
+      min-height: 38px !important;
+      padding: 0.375rem 0.75rem !important;
+    }
     .form-range {
       width: 100%;
       background-color: transparent;
@@ -434,6 +448,70 @@ if (empty($statuses)) {
       border-left: 4px solid #2196f3 !important;
       padding-left: 16px !important;
       box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15) !important;
+      transform: translateX(2px) !important;
+    }
+    
+    /* Specific hover styles for user choices */
+    .choices[data-type="select-one"] .choices__item--choice:hover,
+    .choices[data-type="select-one"] .choices__item--choice.is-highlighted {
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;
+      border-left: 4px solid #2196f3 !important;
+      padding-left: 16px !important;
+      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2) !important;
+      transform: translateX(3px) scale(1.02) !important;
+    }
+    
+    /* Enhanced spacing and hover effects specifically for Assigned to field */
+    #assignedTo + .choices .choices__list--dropdown .choices__item--choice {
+      padding: 18px 20px !important;
+      margin: 3px 6px !important;
+      border-radius: 8px !important;
+      min-height: 65px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    #assignedTo + .choices .choices__list--dropdown .choices__item--choice:hover,
+    #assignedTo + .choices .choices__list--dropdown .choices__item--choice.is-highlighted {
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+      color: #1565c0 !important;
+      border-left: 5px solid #2196f3 !important;
+      padding-left: 18px !important;
+      box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3) !important;
+      transform: translateX(5px) scale(1.04) !important;
+      border-radius: 10px !important;
+      margin: 3px 3px !important;
+    }
+    
+    /* Better spacing for the Assigned to dropdown container */
+    #assignedTo + .choices .choices__list--dropdown {
+      padding: 6px 4px !important;
+    }
+    
+    /* Hover effect for the name part in Assigned to dropdown */
+    #assignedTo + .choices .choices__item--choice:hover strong,
+    #assignedTo + .choices .choices__item--choice.is-highlighted strong {
+      color: #0d47a1 !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+    }
+    
+    /* Hover effect for the role/email part in Assigned to dropdown */
+    #assignedTo + .choices .choices__item--choice:hover small,
+    #assignedTo + .choices .choices__item--choice.is-highlighted small {
+      color: #1976d2 !important;
+      font-weight: 500 !important;
+    }
+    
+    /* General hover effect for all choice items */
+    .choices__list--dropdown .choices__item--choice:hover,
+    .choices__list--dropdown .choices__item--choice.is-highlighted {
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;
+      color: #1976d2 !important;
+      border-left: 4px solid #2196f3 !important;
+      padding-left: 16px !important;
+      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2) !important;
+      transform: translateX(3px) scale(1.02) !important;
+      transition: all 0.2s ease !important;
     }
     
     .choice-content {
@@ -698,15 +776,14 @@ if (empty($statuses)) {
       <div class="col-md-6">
         <div class="form-group-horizontal">
           <label for="assignedTo" class="form-label">Assigned to</label>
-          <div class="input-group">
-            <input type="text" class="form-control" id="assignedTo" name="assigned_to" placeholder="Assigned to" value="<?php echo htmlspecialchars($app['assigned_to'] ?? ''); ?>">
-            <button type="button" class="btn btn-outline-secondary info-btn" tabindex="0"
-              data-bs-toggle="popover"
-              data-bs-placement="bottom"
-              title="Assigned to"
-              data-bs-content="Specify the name of the person or team responsible for this application.">
-              <i class="bi bi-info-circle"></i>
-            </button>
+          <div style="flex: 1;">
+            <select class="form-select" id="assignedTo" name="assigned_to">
+              <?php if (!empty($app['assigned_to'])): ?>
+                <option value="<?php echo htmlspecialchars($app['assigned_to']); ?>" selected>
+                  <?php echo htmlspecialchars($app['assigned_to']); ?>
+                </option>
+              <?php endif; ?>
+            </select>
           </div>
         </div>
         <div class="form-group-horizontal">
@@ -873,7 +950,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Initialize Choices.js for multiple select
   const relationshipSelect = document.getElementById('relationshipYggdrasil');
   if (relationshipSelect) {
-    console.log('Initializing Choices.js...');
+    console.log('Initializing Choices.js for Related applications...');
     
     try {
       const relationshipChoices = new Choices(relationshipSelect, {
@@ -942,12 +1019,145 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 300);
       });
       
-      console.log('Choices.js initialized successfully');
+      console.log('Choices.js for Related applications initialized successfully');
     } catch (error) {
-      console.error('Error initializing Choices.js:', error);
+      console.error('Error initializing Choices.js for Related applications:', error);
     }
   } else {
     console.error('relationshipYggdrasil element not found');
+  }
+  
+  // Initialize Choices.js for Assigned to field
+  const assignedToSelect = document.getElementById('assignedTo');
+  if (assignedToSelect) {
+    console.log('Initializing Choices.js for Assigned to...');
+    
+    try {
+      const assignedToChoices = new Choices(assignedToSelect, {
+        removeItemButton: false,
+        placeholder: true,
+        placeholderValue: 'Søk etter brukere...',
+        searchEnabled: true,
+        searchChoices: false,
+        searchFloor: 2,
+        searchResultLimit: 10,
+        renderChoiceLimit: -1,
+        shouldSort: false,
+        allowHTML: true,
+        callbackOnCreateTemplates: function (template) {
+          return {
+            item: (classNames, data) => {
+              // For selected items, use only the value (just the name)
+              const displayText = data.value || data.label || '';
+              
+              return template(`
+                <div class="${classNames.item} ${
+                data.highlighted
+                  ? classNames.highlightedState
+                  : classNames.itemSelectable
+                } ${
+                data.placeholder ? classNames.placeholder : ''
+              }" data-item data-id="${data.id}" data-value="${data.value}" ${
+                data.active ? 'aria-selected="true"' : ''
+              } ${data.disabled ? 'aria-disabled="true"' : ''}>
+                ${displayText}
+              </div>
+              `);
+            },
+            choice: (classNames, data) => {
+              // For dropdown choices, show full info (name + role + email)
+              return template(`
+                <div class="${classNames.item} ${classNames.itemChoice} ${
+                data.disabled ? classNames.itemDisabled : classNames.itemSelectable
+              }" data-select-text="${this.config.itemSelectText}" data-choice ${
+                data.disabled
+                  ? 'data-choice-disabled aria-disabled="true"'
+                  : 'data-choice-selectable'
+              } data-id="${data.id}" data-value="${data.value}" ${
+                data.groupId > 0 ? 'role="treeitem"' : 'role="option"'
+              }>
+                ${data.label}
+              </div>
+              `);
+            }
+          };
+        }
+      });
+
+      // Clear search results after selection
+      assignedToSelect.addEventListener('choice', function(e) {
+        console.log('User selected:', e.detail);
+        assignedToChoices.clearChoices();
+      });
+
+      // Search functionality for users
+      let userSearchTimeout;
+      assignedToSelect.addEventListener('search', function(e) {
+        const query = e.detail.value;
+        console.log('User search query:', query);
+        
+        if (query.length < 2) {
+          assignedToChoices.clearChoices();
+          return;
+        }
+
+        clearTimeout(userSearchTimeout);
+        userSearchTimeout = setTimeout(() => {
+          const url = `api/search_users.php?q=${encodeURIComponent(query)}`;
+          
+          console.log('Fetching users from:', url);
+          
+          fetch(url)
+            .then(response => {
+              console.log('User search response status:', response.status);
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log('User search results received:', data);
+              if (data.error) {
+                console.error('User API Error:', data);
+                return;
+              }
+              
+              // Get currently selected value to exclude from results  
+              const selectedValue = assignedToChoices.getValue(true);
+              console.log('Currently selected user value:', selectedValue);
+              
+              // Filter out the currently selected user from search results
+              const filteredData = data.filter(item => {
+                const isFiltered = selectedValue && item.value === selectedValue;
+                if (isFiltered) {
+                  console.log('Filtering out selected user:', item.label);
+                }
+                return !isFiltered;
+              });
+              
+              console.log('Filtered user search results:', filteredData);
+              
+              assignedToChoices.clearChoices();
+              assignedToChoices.setChoices(filteredData, 'value', 'label', true);
+            })
+            .catch(error => {
+              console.error('User search error:', error);
+              assignedToChoices.clearChoices();
+              assignedToChoices.setChoices([{
+                value: '',
+                label: 'Feil ved søking: ' + error.message,
+                disabled: true
+              }], 'value', 'label', true);
+            });
+        }, 300);
+      });
+      
+      console.log('Choices.js for Assigned to initialized successfully');
+    } catch (error) {
+      console.error('Error initializing Choices.js for Assigned to:', error);
+    }
+  } else {
+    console.error('assignedTo element not found');
   }
 });
 </script>
