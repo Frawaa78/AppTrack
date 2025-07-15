@@ -67,15 +67,139 @@ if (empty($statuses)) {
     .search-bar { min-width: 350px; max-width: 600px; width: 100%; }
     @media (max-width: 768px) { .search-bar { min-width: 150px; } }
     body { font-size: 0.9rem; }
-    .form-floating > .input-group > .form-control, .form-floating > .input-group > .form-select { height: calc(3.5rem + 2px); line-height: 1.25; }
-    .form-floating > .input-group > .form-control:focus, .form-floating > .input-group > .form-control:not(:placeholder-shown) { border-color: #86b7fe; box-shadow: 0 0 0 .2rem rgba(13,110,253,.25); }
-    .form-floating > .input-group > label { left: 0.75rem; z-index: 2; pointer-events: none; transition: all .1s ease-in-out; opacity: .65; background: white; padding: 0 .25em; }
-    .form-floating > .input-group > .form-control:focus ~ label, .form-floating > .input-group > .form-control:not(:placeholder-shown) ~ label { opacity: 1; transform: scale(.85) translateY(-0.85rem) translateX(0.15rem); background: white; padding: 0 .25em; z-index: 3; }
-    .form-floating .input-group-text, .form-floating .btn { z-index: 4; }
+    
+    /* Form styling with consistent borders and no blue glow */
+    .form-control, .form-select, textarea.form-control {
+      border-color: #dee2e6 !important;
+      background-color: white !important;
+    }
+    
+    .form-control:focus, .form-select:focus, textarea.form-control:focus,
+    .form-control:active, .form-select:active, textarea.form-control:active {
+      border-color: #dee2e6 !important;
+      box-shadow: none !important;
+      outline: none !important;
+      background-color: white !important;
+    }
+    
+    /* Form labels positioned to the left */
+    .form-label {
+      font-weight: 400;
+      color: #6c757d;
+      margin-bottom: 0;
+      display: inline-block;
+      width: 160px;
+      text-align: right;
+      padding-right: 10px;
+      vertical-align: top;
+      padding-top: 0.375rem;
+    }
+    
+    /* Horizontal form layout */
+    .form-group-horizontal {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    
+    .form-group-horizontal .form-control,
+    .form-group-horizontal .form-select,
+    .form-group-horizontal .input-group {
+      flex: 1;
+    }
+    
+    .form-group-horizontal textarea.form-control {
+      resize: vertical;
+    }
+    
+    /* Button groups need special handling */
+    .form-group-horizontal .btn-group {
+      flex: 1;
+    }
+    
+    /* Button group text styling */
+    .btn-group .btn {
+      font-size: 0.77rem;
+      height: 38px;
+      line-height: 1.5;
+    }
+    
+    /* Range input special handling */
+    .form-group-horizontal .form-range {
+      flex: 1;
+      margin-top: 0.375rem;
+      position: relative;
+    }
+    
+    /* Range input label styling */
+    .form-group-horizontal.position-relative .form-label {
+      font-size: inherit;
+      padding-top: 0.375rem;
+      margin-top: 0;
+    }
+    
+    /* Range slider container with markers */
+    .range-container {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    
+    /* Range markers */
+    .range-markers {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .range-marker {
+      width: 2px;
+      height: 12px;
+      background-color: #dee2e6;
+      border-radius: 1px;
+      opacity: 1;
+    }
+    
+    .range-marker.active {
+      opacity: 0;
+    }
+    
+    /* Tooltip styling for handover status */
+    .tooltip-follow {
+      font-size: 0.69rem;
+      position: absolute;
+      top: -14px;
+      background: #55595c;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 1000;
+      transform: translateX(-50%);
+    }
+    
+    /* Input group styling for info buttons */
+    .input-group .btn.info-btn { 
+      border-color: #dee2e6 !important;
+      background-color: #f8f9fa;
+      color: #6c757d;
+    }
+    .input-group .form-control { 
+      border-right: 0; 
+      border-color: #dee2e6 !important;
+    }
+    .input-group .btn { 
+      border-left: 0; 
+      border-color: #dee2e6 !important;
+    }
+    
     .input-group .btn.info-btn { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-    .input-group .form-control { border-right: 0; }
-    .input-group .btn { border-left: 0; }
-    .choices__inner { min-height: calc(3.5rem + 2px); padding-top: 1rem; }
     @media (max-width: 767px) { .row { gap: 0 !important; } }
     .form-range {
       width: 100%;
@@ -84,7 +208,7 @@ if (empty($statuses)) {
     }
     .form-range::-webkit-slider-runnable-track {
       height: 0.5rem;
-      background: #f1f3f5;
+      background: linear-gradient(to right, #A9ADAF 0%, #A9ADAF var(--progress, 0%), #f1f3f5 var(--progress, 0%), #f1f3f5 100%);
       border-radius: 0.25rem;
     }
     .form-range::-moz-range-track {
@@ -92,7 +216,17 @@ if (empty($statuses)) {
       background: #f1f3f5;
       border-radius: 0.25rem;
     }
-    .form-range::-ms-fill-lower, .form-range::-ms-fill-upper {
+    .form-range::-moz-range-progress {
+      height: 0.5rem;
+      background: #A9ADAF;
+      border-radius: 0.25rem;
+    }
+    .form-range::-ms-fill-lower {
+      height: 0.5rem;
+      background: #A9ADAF;
+      border-radius: 0.25rem;
+    }
+    .form-range::-ms-fill-upper {
       height: 0.5rem;
       background: #f1f3f5;
       border-radius: 0.25rem;
@@ -131,18 +265,67 @@ if (empty($statuses)) {
       color: white !important;
       opacity: 1 !important;
     }
+    
+    /* Header with buttons styling */
+    .header-with-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .header-with-buttons h2 {
+      margin: 0;
+    }
+    
+    .header-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    /* Clickable URL links styling */
+    a.form-control {
+      background-color: #f8f9fa !important;
+      border: 1px solid #dee2e6 !important;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    a.form-control:hover {
+      background-color: #e3f2fd !important;
+      border-color: #2196f3 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    a.form-control:focus {
+      box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25) !important;
+      border-color: #2196f3 !important;
+    }
   </style>
 </head>
 <body class="bg-light">
 <!-- Topbar -->
 <?php $topbar_search_disabled = true; include __DIR__ . '/shared/topbar.php'; ?>
 <div class="container">
-  <h2>View Application</h2>
+  <div class="header-with-buttons">
+    <div></div>
+    <div class="header-buttons">
+      <a href="dashboard.php" class="btn btn-secondary">Back</a>
+      <?php if (isset($_SESSION['user_role'])) { $role = $_SESSION['user_role']; } else { $role = null; } ?>
+      <?php if ($role === 'admin' || $role === 'editor') : ?>
+        <a href="app_form.php?id=<?php echo $id; ?>" class="btn btn-primary">Edit</a>
+      <?php endif; ?>
+    </div>
+  </div>
   <form autocomplete="off">
     <div class="row g-3">
       <!-- Venstre kolonne -->
       <div class="col-md-6">
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="shortDescription" class="form-label">Short description</label>
           <div class="input-group">
             <input type="text" class="form-control" id="shortDescription" name="short_description" placeholder="Short description" value="<?php echo htmlspecialchars($app['short_description']); ?>" readonly>
             <button type="button" class="btn btn-outline-secondary info-btn" tabindex="-1" disabled
@@ -154,21 +337,20 @@ if (empty($statuses)) {
             </button>
           </div>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="applicationService" class="form-label">Application service</label>
           <input type="text" class="form-control" id="applicationService" name="application_service" placeholder="Application service" value="<?php echo htmlspecialchars($app['application_service']); ?>" readonly>
-          <label for="applicationService">Application service</label>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="relevantFor" class="form-label">Relevant for</label>
           <select class="form-select" id="relevantFor" name="relevant_for" disabled>
             <option<?php if($app['relevant_for']==='To be decided') echo ' selected'; ?>>To be decided</option>
             <option<?php if($app['relevant_for']==='Yggdrasil') echo ' selected'; ?>>Yggdrasil</option>
             <option<?php if($app['relevant_for']==='Not relevant') echo ' selected'; ?>>Not relevant</option>
           </select>
-          <label for="relevantFor">Relevant for</label>
         </div>
-        <div class="mb-3">
-          <label class="form-label d-block">Phase</label>
-          <input type="hidden" name="phase" id="phase_input" value="<?php echo htmlspecialchars($app['phase'] ?? ''); ?>">
+        <div class="form-group-horizontal">
+          <label class="form-label">Phase</label>
           <div class="btn-group w-100" role="group" aria-label="Phase">
             <?php foreach ($phases as $phase): 
                 $isActive = (trim($app['phase'] ?? '') === trim($phase));
@@ -177,9 +359,8 @@ if (empty($statuses)) {
             <?php endforeach; ?>
           </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label d-block">Status</label>
-          <input type="hidden" name="status" id="status_input" value="<?php echo htmlspecialchars($app['status'] ?? ''); ?>">
+        <div class="form-group-horizontal">
+          <label class="form-label">Status</label>
           <div class="btn-group w-100" role="group" aria-label="Status">
             <?php foreach ($statuses as $status): 
                 $isActive = (trim($app['status'] ?? '') === trim($status));
@@ -188,46 +369,78 @@ if (empty($statuses)) {
             <?php endforeach; ?>
           </div>
         </div>
-        <div class="mb-3 position-relative">
-          <label class="form-label d-block">Handover status</label>
-          <input type="range" class="form-range" min="0" max="100" step="10" name="handover_status" value="<?php echo htmlspecialchars($app['handover_status']); ?>" disabled>
-          <div id="handoverTooltip" class="tooltip-follow">Tooltip</div>
+        <div class="form-group-horizontal position-relative">
+          <label class="form-label">Handover status</label>
+          <div class="range-container" style="flex: 1;">
+            <input type="range" class="form-range" min="0" max="100" step="10" name="handover_status" value="<?php echo htmlspecialchars($app['handover_status']); ?>" disabled>
+            <div class="range-markers">
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+              <div class="range-marker"></div>
+            </div>
+            <div id="handoverTooltip" class="tooltip-follow">Tooltip</div>
+          </div>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="contractNumber" class="form-label">Contract number</label>
           <input type="text" class="form-control" id="contractNumber" name="contract_number" placeholder="Contract number" value="<?php echo htmlspecialchars($app['contract_number']); ?>" readonly>
-          <label for="contractNumber">Contract number</label>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="contractResponsible" class="form-label">Contract responsible</label>
           <input type="text" class="form-control" id="contractResponsible" name="contract_responsible" placeholder="Contract responsible" value="<?php echo htmlspecialchars($app['contract_responsible']); ?>" readonly>
-          <label for="contractResponsible">Contract responsible</label>
         </div>
-        <div class="form-floating mb-3">
-          <input type="url" class="form-control" id="informationSpace" name="information_space" placeholder="Information Space" value="<?php echo htmlspecialchars($app['information_space']); ?>" readonly>
-          <label for="informationSpace">Information Space</label>
+        <div class="form-group-horizontal">
+          <label for="informationSpace" class="form-label">Information Space</label>
+          <?php if (!empty($app['information_space'])): ?>
+            <a href="<?php echo htmlspecialchars($app['information_space']); ?>" target="_blank" rel="noopener noreferrer" class="form-control" style="display: flex; align-items: center; text-decoration: none; color: #0d6efd;">
+              <?php echo htmlspecialchars($app['information_space']); ?>
+              <i class="bi bi-box-arrow-up-right ms-2"></i>
+            </a>
+          <?php else: ?>
+            <input type="url" class="form-control" id="informationSpace" name="information_space" placeholder="Information Space" value="" readonly>
+          <?php endif; ?>
         </div>
-        <div class="form-floating mb-3">
-          <input type="text" class="form-control" id="baSharepoint" name="ba_sharepoint_list" placeholder="BA Sharepoint list" value="<?php echo htmlspecialchars($app['ba_sharepoint_list'] ?? ''); ?>" readonly>
-          <label for="baSharepoint">BA Sharepoint list</label>
+        <div class="form-group-horizontal">
+          <label for="baSharepoint" class="form-label">BA Sharepoint list</label>
+          <?php if (!empty($app['ba_sharepoint_list'])): ?>
+            <a href="<?php echo htmlspecialchars($app['ba_sharepoint_list']); ?>" target="_blank" rel="noopener noreferrer" class="form-control" style="display: flex; align-items: center; text-decoration: none; color: #0d6efd;">
+              <?php echo htmlspecialchars($app['ba_sharepoint_list']); ?>
+              <i class="bi bi-box-arrow-up-right ms-2"></i>
+            </a>
+          <?php else: ?>
+            <input type="text" class="form-control" id="baSharepoint" name="ba_sharepoint_list" placeholder="BA Sharepoint list" value="" readonly>
+          <?php endif; ?>
         </div>
-        <div class="mb-3">
+        <div class="form-group-horizontal">
           <label for="relationshipYggdrasil" class="form-label">Related applications</label>
-          <select class="form-select" id="relationshipYggdrasil" name="relationship_yggdrasil[]" multiple disabled>
-            <?php if (!empty($app['related_apps'])): ?>
-              <?php foreach ($app['related_apps'] as $relApp): ?>
-                <option value="<?php echo $relApp['id']; ?>" selected>
-                  <?php echo htmlspecialchars($relApp['short_description']); ?>
-                  <?php if (!empty($relApp['application_service'])): ?>
-                    (<?php echo htmlspecialchars($relApp['application_service']); ?>)
-                  <?php endif; ?>
-                </option>
-              <?php endforeach; ?>
-            <?php endif; ?>
-          </select>
+          <div style="flex: 1;">
+            <select class="form-select" id="relationshipYggdrasil" name="relationship_yggdrasil[]" multiple disabled>
+              <?php if (!empty($app['related_apps'])): ?>
+                <?php foreach ($app['related_apps'] as $relApp): ?>
+                  <option value="<?php echo $relApp['id']; ?>" selected>
+                    <?php echo htmlspecialchars($relApp['short_description']); ?>
+                    <?php if (!empty($relApp['application_service'])): ?>
+                      (<?php echo htmlspecialchars($relApp['application_service']); ?>)
+                    <?php endif; ?>
+                  </option>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </select>
+          </div>
         </div>
       </div>
       <!-- Høyre kolonne -->
       <div class="col-md-6">
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="assignedTo" class="form-label">Assigned to</label>
           <div class="input-group">
             <input type="text" class="form-control" id="assignedTo" name="assigned_to" placeholder="Assigned to" value="<?php echo htmlspecialchars($app['assigned_to']); ?>" readonly>
             <button type="button" class="btn btn-outline-secondary info-btn" tabindex="-1" disabled
@@ -239,66 +452,73 @@ if (empty($statuses)) {
             </button>
           </div>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="preOpsPortfolio" class="form-label">Pre-ops portfolio</label>
           <input type="text" class="form-control" id="preOpsPortfolio" name="preops_portfolio" placeholder="Pre-ops portfolio" value="<?php echo htmlspecialchars($app['preops_portfolio']); ?>" readonly>
-          <label for="preOpsPortfolio">Pre-ops portfolio</label>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="applicationPortfolio" class="form-label">Application Portfolio</label>
           <input type="text" class="form-control" id="applicationPortfolio" name="application_portfolio" placeholder="Application Portfolio" value="<?php echo htmlspecialchars($app['application_portfolio']); ?>" readonly>
-          <label for="applicationPortfolio">Application Portfolio</label>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="deliveryResponsible" class="form-label">Delivery responsible</label>
           <input type="text" class="form-control" id="deliveryResponsible" name="delivery_responsible" placeholder="Delivery responsible" value="<?php echo htmlspecialchars($app['delivery_responsible']); ?>" readonly>
-          <label for="deliveryResponsible">Delivery responsible</label>
         </div>
-        <div class="form-floating mb-3">
-          <input type="url" class="form-control" id="corporatorLink" name="corporator_link" placeholder="Link to Corporator" value="<?php echo htmlspecialchars($app['corporator_link']); ?>" readonly>
-          <label for="corporatorLink">Link to Corporator</label>
+        <div class="form-group-horizontal">
+          <label for="corporatorLink" class="form-label">Link to Corporator</label>
+          <?php if (!empty($app['corporator_link'])): ?>
+            <a href="<?php echo htmlspecialchars($app['corporator_link']); ?>" target="_blank" rel="noopener noreferrer" class="form-control" style="display: flex; align-items: center; text-decoration: none; color: #0d6efd;">
+              <?php echo htmlspecialchars($app['corporator_link']); ?>
+              <i class="bi bi-box-arrow-up-right ms-2"></i>
+            </a>
+          <?php else: ?>
+            <input type="url" class="form-control" id="corporatorLink" name="corporator_link" placeholder="Link to Corporator" value="" readonly>
+          <?php endif; ?>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="projectManager" class="form-label">Project manager</label>
           <input type="text" class="form-control" id="projectManager" name="project_manager" placeholder="Project manager" value="<?php echo htmlspecialchars($app['project_manager']); ?>" readonly>
-          <label for="projectManager">Project manager</label>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="productOwner" class="form-label">Product owner</label>
           <input type="text" class="form-control" id="productOwner" name="product_owner" placeholder="Product owner" value="<?php echo htmlspecialchars($app['product_owner']); ?>" readonly>
-          <label for="productOwner">Product owner</label>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="dueDate" class="form-label">Due date</label>
           <input type="date" class="form-control" id="dueDate" name="due_date" placeholder="Due date" value="<?php echo htmlspecialchars($app['due_date']); ?>" readonly>
-          <label for="dueDate">Due date</label>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="deploymentModel" class="form-label">Deployment model</label>
           <select class="form-select" id="deploymentModel" name="deployment_model" disabled>
             <?php foreach (["Client Application","On-premise","SaaS","Externally hosted"] as $model): ?>
               <option<?php if($app['deployment_model']===$model) echo ' selected'; ?>><?php echo $model; ?></option>
             <?php endforeach; ?>
           </select>
-          <label for="deploymentModel">Deployment model</label>
         </div>
-        <div class="form-floating mb-3">
+        <div class="form-group-horizontal">
+          <label for="integrations" class="form-label">Integrations</label>
           <select class="form-select" id="integrations" name="integrations" disabled>
             <?php foreach (["Not defined","Yes","No"] as $opt): ?>
               <option<?php if($app['integrations']===$opt) echo ' selected'; ?>><?php echo $opt; ?></option>
             <?php endforeach; ?>
           </select>
-          <label for="integrations">Integrations</label>
         </div>
-        <div class="form-floating mb-3" id="sa_document_group" style="display: <?php echo ($app['integrations']==='Yes') ? 'block' : 'none'; ?>;">
-          <input type="url" class="form-control" id="saDocument" name="sa_document" placeholder="S.A. Document" value="<?php echo htmlspecialchars($app['sa_document']); ?>" readonly>
-          <label for="saDocument">S.A. Document</label>
+        <div class="form-group-horizontal" id="sa_document_group" style="display: <?php echo ($app['integrations']==='Yes') ? 'flex' : 'none'; ?>;">
+          <label for="saDocument" class="form-label">S.A. Document</label>
+          <?php if (!empty($app['sa_document'])): ?>
+            <a href="<?php echo htmlspecialchars($app['sa_document']); ?>" target="_blank" rel="noopener noreferrer" class="form-control" style="display: flex; align-items: center; text-decoration: none; color: #0d6efd;">
+              <?php echo htmlspecialchars($app['sa_document']); ?>
+              <i class="bi bi-box-arrow-up-right ms-2"></i>
+            </a>
+          <?php else: ?>
+            <input type="url" class="form-control" id="saDocument" name="sa_document" placeholder="S.A. Document" value="" readonly>
+          <?php endif; ?>
         </div>
       </div>
     </div>
-    <div class="form-floating mb-3">
+    <div class="form-group-horizontal">
+      <label for="businessNeed" class="form-label">Business need</label>
       <textarea class="form-control" id="businessNeed" name="business_need" style="height: 100px" placeholder="Business need" readonly><?php echo htmlspecialchars($app['business_need']); ?></textarea>
-      <label for="businessNeed">Business need</label>
-    </div>
-    <div class="d-flex gap-2 mt-3">
-      <a href="dashboard.php" class="btn btn-secondary">Back</a>
-      <?php if (isset($_SESSION['user_role'])) { $role = $_SESSION['user_role']; } else { $role = null; } ?>
-      <?php if ($role === 'admin' || $role === 'editor') : ?>
-        <a href="app_form.php?id=<?php echo $id; ?>" class="btn btn-primary">Edit</a>
-      <?php endif; ?>
     </div>
   </form>
 </div>
@@ -310,17 +530,45 @@ const tooltipMap = {
 };
 function updateHandoverTooltip(slider) {
   const tooltip = document.getElementById('handoverTooltip');
+  const container = slider.parentElement;
   const value = parseInt(slider.value);
-  const sliderWidth = slider.offsetWidth;
-  const offset = sliderWidth * (value / 100);
-  tooltip.style.left = `${offset}px`;
+  
+  // Update CSS custom property for progress
+  const progress = ((value - slider.min) / (slider.max - slider.min)) * 100;
+  slider.style.setProperty('--progress', `${progress}%`);
+  
+  // Calculate position based on slider thumb position
+  const sliderRect = slider.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const thumbPosition = ((value - slider.min) / (slider.max - slider.min)) * slider.offsetWidth;
+  
+  // Position tooltip relative to container
+  tooltip.style.left = `${thumbPosition}px`;
   tooltip.innerText = tooltipMap[value];
   tooltip.style.display = tooltipMap[value] ? 'block' : 'none';
+  
+  // Update markers
+  const markers = container.querySelectorAll('.range-marker');
+  markers.forEach((marker, index) => {
+    const markerValue = index * 10;
+    if (markerValue <= value) {
+      marker.classList.add('active');
+    } else {
+      marker.classList.remove('active');
+    }
+  });
 }
 document.addEventListener('DOMContentLoaded', function () {
   // Show tooltip for handover status
   const slider = document.querySelector('input[type="range"][name="handover_status"]');
-  if (slider) updateHandoverTooltip(slider);
+  if (slider) {
+    // Initialize progress CSS property
+    const value = parseInt(slider.value);
+    const progress = ((value - slider.min) / (slider.max - slider.min)) * 100;
+    slider.style.setProperty('--progress', `${progress}%`);
+    
+    updateHandoverTooltip(slider);
+  }
   // Choices.js for multiple select (readonly)
   new Choices('#relationshipYggdrasil', {
     removeItemButton: false,
