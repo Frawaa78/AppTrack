@@ -84,10 +84,10 @@ try {
         }
         
         // IMPORTANT: Only display name goes in value (what gets saved)
-        // Full info with email/role goes in label (what shows in dropdown)
+        // Display name also goes in label (without HTML formatting)
         $results[] = [
             'value' => $displayName, // Only the name - this is what gets stored in the form
-            'label' => $displayName . ($subtitle ? '<br><small style="color: #666; font-size: 11px;">' . htmlspecialchars($subtitle) . '</small>' : ''),
+            'label' => $displayName, // Just the name, no HTML formatting
             'customProperties' => [
                 'id' => $user['id'],
                 'email' => $user['email'] ?? '',

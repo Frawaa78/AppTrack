@@ -51,17 +51,19 @@
 .choices__list--dropdown {
   border: 1px solid #dee2e6 !important;
   border-radius: 0.375rem !important;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15) !important;
   margin-top: 2px !important;
   max-height: 244px !important; /* Exactly 4 items: 4 × 60px + 4px for borders */
   overflow-y: scroll !important;
   overflow-x: hidden !important;
   background: white !important;
-  z-index: 1050 !important;
+  z-index: 9999 !important; /* Higher z-index to ensure it's on top */
   position: absolute !important;
   width: 100% !important;
   scrollbar-width: none !important; /* Firefox */
   -ms-overflow-style: none !important; /* IE and Edge */
+  top: 100% !important; /* Position right below the input */
+  left: 0 !important;
 }
 
 /* Hide all scrollbars completely and use custom one */
@@ -122,9 +124,18 @@
   margin-bottom: 4rem !important;
 }
 
-/* Add extra spacing specifically for the choices container when open */
+/* Prevent dropdown from affecting layout when opened */
 .choices.is-open {
-  margin-bottom: 2rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Ensure the dropdown doesn't create extra space */
+.choices.is-open .choices__list--dropdown {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
 }
 
 /* Choice items styling */
@@ -259,4 +270,9 @@
 /* Ensure proper container height */
 .choices[data-type*="select-multiple"] {
   min-height: 38px !important;
+}
+
+/* Ensure Choices.js container has relative positioning for absolute dropdown */
+.choices {
+  position: relative !important;
 }

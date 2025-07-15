@@ -1,0 +1,187 @@
+/* Bootstrap Dropdown Styling for User Selection */
+
+.dropdown-results {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 transparent;
+}
+
+.dropdown-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-results::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.dropdown-results::-webkit-scrollbar-thumb:hover {
+  background: #a0a0a0;
+}
+
+/* User option styling */
+.user-option {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f1f3f4;
+  transition: all 0.2s ease;
+  display: block;
+  color: #333;
+  text-decoration: none;
+}
+
+.user-option:last-child {
+  border-bottom: none;
+}
+
+.user-option:hover {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;
+  color: #1976d2 !important;
+  border-left: 4px solid #2196f3;
+  padding-left: 12px !important;
+  transform: translateX(2px);
+}
+
+.user-option:focus {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%) !important;
+  color: #1976d2 !important;
+  outline: none;
+}
+
+/* User name and details styling */
+.user-option .user-name {
+  font-size: 1.2rem !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  margin-bottom: 2px !important;
+  color: #333 !important;
+}
+
+.user-option .user-details {
+  font-size: 0.8rem !important;
+  color: #666 !important;
+  line-height: 1.2 !important;
+  font-weight: 400 !important;
+}
+
+/* Clear selection option */
+.clear-selection {
+  background-color: #fff5f5 !important;
+}
+
+.clear-selection:hover {
+  background-color: #fed7d7 !important;
+  color: #c53030 !important;
+}
+
+/* Search input styling */
+#userSearchInput {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+#userSearchInput:focus {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 0.2rem rgba(33, 150, 243, 0.25);
+  outline: none;
+}
+
+/* Dropdown menu positioning and sizing */
+.dropdown-menu {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+}
+
+/* Assigned to button styling - match form controls with higher specificity */
+.dropdown #assignedToDropdown,
+#assignedToDropdown.btn.btn-outline-secondary,
+.dropdown-toggle#assignedToDropdown {
+  background-color: white !important;
+  border: 1px solid #dee2e6 !important;
+  color: #495057 !important;
+  font-weight: 400 !important;
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+  padding: 0.375rem 0.75rem !important;
+  box-shadow: none !important;
+}
+
+.dropdown #assignedToDropdown:hover,
+#assignedToDropdown.btn.btn-outline-secondary:hover,
+.dropdown-toggle#assignedToDropdown:hover {
+  background-color: white !important;
+  border-color: #adb5bd !important;
+  color: #495057 !important;
+  box-shadow: none !important;
+}
+
+.dropdown #assignedToDropdown:focus,
+#assignedToDropdown.btn.btn-outline-secondary:focus,
+.dropdown-toggle#assignedToDropdown:focus {
+  background-color: white !important;
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  outline: 0 !important;
+  color: #495057 !important;
+}
+
+.dropdown #assignedToDropdown.show,
+#assignedToDropdown.btn.btn-outline-secondary.show,
+.dropdown-toggle#assignedToDropdown.show {
+  background-color: white !important;
+  border-color: #86b7fe !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  color: #495057 !important;
+}
+
+/* Override Bootstrap's btn-outline-secondary styles specifically */
+.btn-outline-secondary#assignedToDropdown {
+  background-color: white !important;
+  border-color: #dee2e6 !important;
+  color: #495057 !important;
+}
+
+/* Force override all Bootstrap button styles for assigned to dropdown */
+button#assignedToDropdown[data-bs-toggle="dropdown"] {
+  background-color: white !important;
+  background-image: none !important;
+  border: 1px solid #dee2e6 !important;
+  color: #495057 !important;
+  font-weight: 400 !important;
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+  padding: 0.375rem 0.75rem !important;
+  box-shadow: none !important;
+  text-align: left !important;
+  justify-content: space-between !important;
+}
+
+button#assignedToDropdown[data-bs-toggle="dropdown"] span {
+  text-align: left !important;
+  width: 100% !important;
+}
+
+button#assignedToDropdown[data-bs-toggle="dropdown"]:hover {
+  background-color: white !important;
+  background-image: none !important;
+  border-color: #adb5bd !important;
+  color: #495057 !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+
+button#assignedToDropdown[data-bs-toggle="dropdown"]:focus,
+button#assignedToDropdown[data-bs-toggle="dropdown"]:active {
+  background-color: white !important;
+  background-image: none !important;
+  border-color: #86b7fe !important;
+  color: #495057 !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+  text-align: left !important;
+}

@@ -163,6 +163,7 @@ if (empty($statuses)) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components/user-dropdown.css">
 </head>
 <body class="bg-light">
 <!-- Topbar -->
@@ -292,13 +293,37 @@ if (empty($statuses)) {
         <div class="form-group-horizontal">
           <label for="assignedTo" class="form-label">Assigned to</label>
           <div style="flex: 1;">
-            <select class="form-select" id="assignedTo" name="assigned_to">
-              <?php if (!empty($app['assigned_to'])): ?>
-                <option value="<?php echo htmlspecialchars($app['assigned_to']); ?>" selected>
-                  <?php echo htmlspecialchars($app['assigned_to']); ?>
-                </option>
-              <?php endif; ?>
-            </select>
+            <!-- Bootstrap Dropdown for Assigned To -->
+            <div class="dropdown w-100">
+              <input type="hidden" id="assignedToValue" name="assigned_to" 
+                     value="<?php echo htmlspecialchars($app['assigned_to'] ?? ''); ?>">
+              
+              <button class="btn btn-outline-light dropdown-toggle w-100 text-start" 
+                      type="button" 
+                      id="assignedToDropdown" 
+                      data-bs-toggle="dropdown" 
+                      aria-expanded="false"
+                      style="height: 38px; display: flex; align-items: center; justify-content: space-between; background-color: white !important; border: 1px solid #dee2e6 !important; color: #495057 !important;">
+                <span id="assignedToDisplay">
+                  <?php echo !empty($app['assigned_to']) ? htmlspecialchars($app['assigned_to']) : 'Select user...'; ?>
+                </span>
+              </button>
+              
+              <div class="dropdown-menu w-100 p-0" aria-labelledby="assignedToDropdown" style="max-width: 100%;">
+                <div class="p-2 border-bottom">
+                  <input type="text" 
+                         class="form-control form-control-sm" 
+                         id="userSearchInput" 
+                         placeholder="Search for users..." 
+                         autocomplete="off">
+                </div>
+                <div id="userDropdownResults" class="dropdown-results" style="max-height: 200px; overflow-y: auto;">
+                  <div class="p-3 text-muted text-center">
+                    <small>Type at least 2 letters to search</small>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="form-group-horizontal">

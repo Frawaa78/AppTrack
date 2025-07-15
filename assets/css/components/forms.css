@@ -32,6 +32,8 @@
   display: flex;
   align-items: flex-start;
   margin-bottom: 1rem;
+  position: relative; /* Enable proper positioning for dropdown elements */
+  overflow: visible; /* Allow dropdowns to extend beyond container */
 }
 
 .form-group-horizontal .form-control,
