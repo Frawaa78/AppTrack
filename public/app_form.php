@@ -69,26 +69,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data['relationship_yggdrasil'] = implode(',', $relationship_ids);
         
         $db = Database::getInstance()->getConnection();
+        
+        // Handle bidirectional relationships
+        $currentAppId = $id > 0 ? $id : null;
+        $newRelationshipIds = $relationship_ids;
+        
         if ($id > 0) {
-            // Update
+            // Update existing application
             $set = '';
             foreach ($fields as $f) { $set .= "$f = :$f, "; }
             $set .= "relationship_yggdrasil = :relationship_yggdrasil";
             $stmt = $db->prepare("UPDATE applications SET $set WHERE id = :id");
             $data['id'] = $id;
             $stmt->execute($data);
-            // Redirect to view page for existing application
-            header('Location: app_view.php?id=' . $id);
+            $currentAppId = $id;
         } else {
-            // Insert
+            // Insert new application
             $cols = implode(',', array_merge($fields, ['relationship_yggdrasil']));
             $vals = ':' . implode(',:', array_merge($fields, ['relationship_yggdrasil']));
             $stmt = $db->prepare("INSERT INTO applications ($cols) VALUES ($vals)");
             $stmt->execute($data);
-            // Get the ID of the newly created application
-            $newId = $db->lastInsertId();
-            // Redirect to view page for new application
-            header('Location: app_view.php?id=' . $newId);
+            $currentAppId = $db->lastInsertId();
+        }
+        
+        // Update bidirectional relationships
+        if (!empty($newRelationshipIds) && $currentAppId) {
+            foreach ($newRelationshipIds as $relatedAppId) {
+                // Get current relationships of the related application
+                $stmt = $db->prepare("SELECT relationship_yggdrasil FROM applications WHERE id = :id");
+                $stmt->execute([':id' => $relatedAppId]);
+                $relatedApp = $stmt->fetch();
+                
+                if ($relatedApp) {
+                    // Parse existing relationships
+                    $existingRels = [];
+                    if (!empty($relatedApp['relationship_yggdrasil'])) {
+                        $existingRels = array_map('trim', explode(',', $relatedApp['relationship_yggdrasil']));
+                    }
+                    
+                    // Add current app to related app's relationships if not already present
+                    if (!in_array($currentAppId, $existingRels)) {
+                        $existingRels[] = $currentAppId;
+                        $updatedRels = implode(',', array_filter($existingRels));
+                        
+                        // Update the related application
+                        $stmt = $db->prepare("UPDATE applications SET relationship_yggdrasil = :relationships WHERE id = :id");
+                        $stmt->execute([
+                            ':relationships' => $updatedRels,
+                            ':id' => $relatedAppId
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Redirect to view page
+        if ($id > 0) {
+            header('Location: app_view.php?id=' . $id);
+        } else {
+            header('Location: app_view.php?id=' . $currentAppId);
         }
         exit;
     } catch (Exception $e) {
@@ -555,8 +594,8 @@ document.addEventListener('DOMContentLoaded', function () {
     searchEnabled: true,
     searchChoices: false,
     searchFloor: 2,
-    searchResultLimit: 4, // Limit to 4 visible results
-    renderChoiceLimit: 4, // Limit rendered choices to 4
+    searchResultLimit: 20, // Allow more results from API
+    renderChoiceLimit: -1, // Render all choices, let CSS handle scrolling
     shouldSort: false,
     callbackOnCreateTemplates: function(template) {
       return {
@@ -574,6 +613,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Clear search results after selection
+  document.getElementById('relationshipYggdrasil').addEventListener('choice', function(e) {
+    // Clear the search results dropdown after selecting an item
+    relationshipChoices.clearChoices();
+  });
+
   // Search functionality
   let searchTimeout;
   document.getElementById('relationshipYggdrasil').addEventListener('search', function(e) {
@@ -587,7 +632,15 @@ document.addEventListener('DOMContentLoaded', function () {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
       const currentAppId = <?php echo $id; ?>;
-      const url = `api/search_applications.php?q=${encodeURIComponent(query)}&exclude=${currentAppId}`;
+      
+      // Get currently selected values to exclude from search
+      const selectedValues = relationshipChoices.getValue(true); // Get array of selected values
+      const selectedIds = selectedValues.length > 0 ? selectedValues.join(',') : '';
+      
+      let url = `api/search_applications.php?q=${encodeURIComponent(query)}&exclude=${currentAppId}`;
+      if (selectedIds) {
+        url += `&selected=${encodeURIComponent(selectedIds)}`;
+      }
       
       console.log('Making API request to:', url); // Debug output
       
