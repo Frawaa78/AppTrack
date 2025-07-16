@@ -10,11 +10,8 @@ function ucfirst(str) {
 function initializeRelatedApplicationsChoice() {
   const relationshipSelect = document.getElementById('relationshipYggdrasil');
   if (!relationshipSelect) {
-    console.error('relationshipYggdrasil element not found');
     return null;
   }
-  
-  console.log('Initializing Choices.js for Related applications...');
   
   try {
     const relationshipChoices = new Choices(relationshipSelect, {
@@ -31,7 +28,6 @@ function initializeRelatedApplicationsChoice() {
 
     // Clear search results after selection
     relationshipSelect.addEventListener('choice', function(e) {
-      console.log('Choice selected:', e.detail);
       relationshipChoices.clearChoices();
     });
 
@@ -39,7 +35,6 @@ function initializeRelatedApplicationsChoice() {
     let searchTimeout;
     relationshipSelect.addEventListener('search', function(e) {
       const query = e.detail.value;
-      console.log('Search query:', query);
       
       if (query.length < 2) {
         relationshipChoices.clearChoices();
@@ -58,18 +53,14 @@ function initializeRelatedApplicationsChoice() {
           url += `&selected=${encodeURIComponent(selectedIds)}`;
         }
         
-        console.log('Fetching from:', url);
-        
         fetch(url)
           .then(response => {
-            console.log('Response status:', response.status);
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.json();
           })
           .then(data => {
-            console.log('Search results:', data);
             if (data.error) {
               console.error('API Error:', data);
               return;
@@ -83,7 +74,6 @@ function initializeRelatedApplicationsChoice() {
       }, 300);
     });
     
-    console.log('Choices.js for Related applications initialized successfully');
     return relationshipChoices;
   } catch (error) {
     console.error('Error initializing Choices.js for Related applications:', error);

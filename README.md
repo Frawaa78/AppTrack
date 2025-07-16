@@ -41,26 +41,46 @@ The system enables users to register, update, and view relevant information abou
 - **Cross-Page Consistency**: Identical styling and behavior between form and view modes
 - **Reliable JavaScript**: Window-scoped functions with proper error handling
 
-### Latest Major Update: Version 2.0 (July 2025)
-Complete UI/UX redesign focusing on space efficiency and user experience:
+### Latest Major Update: Version 2.1 (July 2025)
+Complete Activity Tracking System with Admin Controls:
+
+#### **Activity Tracking Revolution** 🆕
+- **Comprehensive Activity Feed**: Real-time tracking of all application changes and user interactions
+- **Work Notes System**: Manual entries with file attachments, categorized by type (Comment, Change, Problem)
+- **Automatic Audit Trail**: System-generated logs for all field modifications with before/after values
+- **File Upload Support**: Attach documents, images, and files (up to 10MB) to work notes
+- **Admin Hide Controls**: Administrators can hide sensitive activities from viewers and editors
+- **Confirmation Dialogs**: English confirmation prompts for hiding activities ("Are you sure you want to hide this activity?")
+- **Visual Activity States**: Hidden activities are visually dimmed with restore capability for admins
+- **Timestamp Repositioning**: Activity timestamps moved to bottom-right corner for better visual flow
+- **Filter Options**: "Work Notes Only" and "Show Hidden" filters for focused activity viewing
+- **User Attribution**: All activities linked to user accounts with email display
+- **Relative Time Display**: Human-friendly timestamps (e.g., "2 hours ago", "Yesterday")
+
+#### **Enhanced Admin Capabilities**
+- **Activity Management**: Hide/show functionality for controlling information visibility
+- **Role-Based Controls**: Admin-only features clearly separated from editor/viewer access
+- **Activity Oversight**: "Show Hidden" filter to review and manage hidden activities
+- **User Workflow Control**: Ability to hide irrelevant or sensitive activities from general users
 
 #### **Form Layout Revolution**
 - **50% space reduction**: Horizontal layout vs. previous vertical design
 - **Perfect alignment**: Fixed-width labels with right-alignment for visual consistency
 - **Responsive design**: Adapts seamlessly to different screen sizes
 
-#### **Activity Tracking System** 🆕
+#### **Activity Tracking System** ✅ (COMPLETE)
 - **Comprehensive Activity Feed**: Combines manual work notes and automatic audit logging
-- **Work Notes**: Manual entries with comments, problems, and changes
-- **Audit Trail**: Automatic logging of all field modifications
-- **File Attachments**: Support for uploading documents, images, and archives (up to 10MB)
-- **Priority System**: Visual indicators for low, medium, and high priority items
+- **Work Notes with Attachments**: Manual entries supporting file uploads (up to 10MB)
+- **Automatic Audit Trail**: System logging of all field modifications with change history
+- **File Management**: Support for documents, images, and archives with download functionality
+- **Admin Activity Controls**: Hide/show functionality for managing sensitive information visibility
+- **Confirmation Dialogs**: User-friendly prompts for admin actions with English text
+- **Visual States**: Hidden activities appear dimmed with restore capabilities for administrators
+- **Advanced Filtering**: "Work Notes Only" and "Show Hidden" options for focused viewing
+- **User Attribution**: All activities linked to users with email display and timestamps
+- **Responsive Design**: Bottom-right timestamp positioning and optimized mobile layout
 - **Real-time Updates**: Activities appear immediately without page refresh
-- **Filtering Options**: "Work Notes Only" filter for focused view
-- **Admin Controls**: Hide/show functionality for sensitive information
-- **User Attribution**: All activities linked to users with email display
-- **Relative Timestamps**: Human-friendly time formatting
-- **RESTful API**: Complete backend API for activity management
+- **RESTful API**: Complete backend API for activity management and file operations
 
 #### **Interactive Enhancements**
 - **Enhanced Handover Slider**: 11 visual markers, dynamic highlighting, centered tooltips
@@ -301,12 +321,16 @@ For complete database documentation, see `docs/database.md`
 - [x] Reliable JavaScript with proper error handling
 - [x] Form validation and security implementation
 
-### Phase 2: Enhanced Features 🔄 (IN PROGRESS)
+### Phase 2: Enhanced Features ✅ (COMPLETE)
+- [x] Comprehensive activity tracking system with work notes and audit trail
+- [x] File upload and attachment management with download functionality
+- [x] Admin controls for activity visibility and information management
+- [x] Advanced filtering system with multiple view options
+- [x] Real-time activity feed with automatic updates
+- [x] User attribution and timestamp management
+- [x] RESTful API for activity operations
 - [ ] Universal search functionality across all applications
 - [ ] User administration interface with role management
-- [ ] Work notes and comment system for applications
-- [ ] File upload and attachment management
-- [ ] Advanced audit trail with change rollback capability
 - [ ] Export functionality (PDF, Excel, CSV)
 
 ### Phase 3: Integration & Automation 📋 (PLANNED)
@@ -390,7 +414,7 @@ For complete database documentation, see `docs/database.md`
 
 ## 📊 API Documentation
 
-### Search Endpoint
+### Application Search Endpoint
 **GET** `/api/search_applications.php`
 
 Search for applications with real-time filtering:
@@ -422,6 +446,67 @@ fetch('/api/search_applications.php?q=finance&exclude=5&selected=1,3,7')
   }
 ]
 ```
+
+### Activity Tracking API Endpoints
+
+#### Get Activity Feed
+**GET** `/api/get_activity_feed.php`
+
+Retrieve paginated activity feed for an application:
+
+```javascript
+fetch('/api/get_activity_feed.php?application_id=123&offset=0&limit=10&show_work_notes_only=false&show_hidden=false')
+  .then(response => response.json())
+  .then(data => {
+    // Handle activity data
+  });
+```
+
+**Parameters:**
+- `application_id` (int): Target application ID
+- `offset` (int): Pagination offset (default: 0)
+- `limit` (int): Number of activities to return (default: 5)
+- `show_work_notes_only` (bool): Filter to work notes only
+- `show_hidden` (bool): Include hidden activities (admin only)
+
+#### Add Work Note
+**POST** `/api/add_work_note.php`
+
+Create a new work note with optional file attachment:
+
+```javascript
+const formData = new FormData();
+formData.append('application_id', '123');
+formData.append('note', 'Status update message');
+formData.append('type', 'comment'); // comment, change, problem
+formData.append('attachment', fileInput.files[0]); // optional
+
+fetch('/api/add_work_note.php', {
+  method: 'POST',
+  body: formData
+});
+```
+
+#### Admin Activity Controls
+**POST** `/api/hide_activity.php` | `/api/show_activity.php`
+
+Admin-only endpoints for managing activity visibility:
+
+```javascript
+fetch('/api/hide_activity.php', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    activity_type: 'work_note', // work_note or audit_log
+    activity_id: '456'
+  })
+});
+```
+
+#### File Download
+**GET** `/api/download_attachment.php?id={work_note_id}`
+
+Secure file download with proper headers and access control.
 
 ---
 
@@ -538,12 +623,14 @@ This software is developed for internal use within Aker BP and its approved cont
 
 ## 🔄 Version History
 
-**Current Version**: 2.0.0 (July 2025)
-- Complete UI/UX redesign with horizontal layout
-- Enhanced interactive elements and search functionality
-- Improved cross-browser compatibility and performance
+**Current Version**: 2.1.0 (July 2025)
+- Complete activity tracking system with admin controls
+- Enhanced file management and attachment capabilities
+- Advanced filtering and activity visibility controls
+- Optimized UI with repositioned timestamps and improved workflow
 
 **Previous Versions**:
+- 2.0.0: Complete UI/UX redesign with horizontal layout and enhanced interactive elements
 - 1.5.0: Enhanced read-only views and database optimization
 - 1.0.0: Initial release with core functionality
 

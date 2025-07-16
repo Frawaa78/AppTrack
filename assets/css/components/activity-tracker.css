@@ -1,25 +1,57 @@
 /* assets/css/components/activity-tracker.css */
 
+.work-notes-form {
+    margin-bottom: 20px;
+}
+
+/* Make work notes follow the same pattern as Business need */
+.work-notes-form .form-group-horizontal {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.work-notes-form .form-group-horizontal .form-label {
+    flex: 0 0 150px; /* Same width as other labels */
+    margin-bottom: 0;
+    padding-top: 0.375rem;
+    font-weight: 500;
+}
+
+.work-notes-form .form-group-horizontal > div {
+    flex: 1;
+}
+
 .activity-tracker {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
     margin-top: 20px;
 }
 
-.activity-header {
+/* Activity Tracker follows same alignment as form fields */
+.activity-tracker .activity-header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 20px;
-    border-bottom: 1px solid #dee2e6;
-    padding-bottom: 15px;
+    gap: 1rem;
+}
+
+.activity-tracker .activity-header h5 {
+    flex: 0 0 150px; /* Same width as labels */
+    margin: 0;
+    color: #495057;
+    font-weight: 500;
+    padding-top: 0.375rem;
+}
+
+.activity-tracker .activity-content-wrapper {
+    flex: 1;
 }
 
 .activity-filters {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+    margin-bottom: 15px;
 }
 
 .filter-btn {
@@ -27,29 +59,17 @@
     padding: 5px 12px;
 }
 
-.work-notes-form {
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-.work-notes-form h5 {
-    margin-bottom: 15px;
-    color: #495057;
-}
-
 .activity-feed {
-    background: #f8f9fa;
-    border-radius: 6px;
+    background: transparent;
     border: none;
-    padding: 15px;
+    padding: 0;
 }
 
 .load-more-container {
-    padding: 15px;
+    padding: 15px 0;
     text-align: center;
     border-top: 1px solid #f1f3f4;
-    background: #f8f9fa;
-    border-radius: 0 0 6px 6px;
+    margin-top: 15px;
 }
 
 .load-more-btn {
@@ -89,6 +109,14 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 8px;
+}
+
+.activity-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 5px;
 }
 
 .activity-user {

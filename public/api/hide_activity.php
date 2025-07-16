@@ -27,7 +27,7 @@ if (!$activity_type || !$activity_id) {
 
 try {
     $activityManager = new ActivityManager();
-    $success = $activityManager->hideActivity($activity_type, $activity_id, $_SESSION['role']);
+    $success = $activityManager->hideActivity($activity_type, $activity_id, $_SESSION['user_role']);
     
     if ($success) {
         echo json_encode(['success' => true]);

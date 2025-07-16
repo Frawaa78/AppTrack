@@ -2,8 +2,6 @@
 
 // View-specific functionality for readonly forms
 function initializeViewMode() {
-  console.log('Initializing view mode components...');
-  
   // Initialize handover tooltip for view mode
   const slider = document.querySelector('input[type="range"][name="handover_status"]');
   if (slider) {
@@ -25,7 +23,6 @@ function initializeViewMode() {
 // Force text truncation for URL links
 function initializeUrlTruncation() {
   const urlLinks = document.querySelectorAll('a.form-control[href]');
-  console.log(`Found ${urlLinks.length} URL links to truncate`);
   
   urlLinks.forEach(link => {
     // Force CSS properties for text truncation
@@ -46,8 +43,6 @@ function initializeUrlTruncation() {
       icon.style.setProperty('transform', 'translateY(-50%)', 'important');
       icon.style.setProperty('pointer-events', 'none', 'important');
     }
-    
-    console.log('Applied truncation styles to:', link.href);
   });
 }
 
@@ -55,8 +50,6 @@ function initializeUrlTruncation() {
 function initializeReadonlyChoices() {
   const relationshipSelect = document.getElementById('relationshipYggdrasil');
   if (relationshipSelect) {
-    console.log('Initializing readonly Choices.js for Related applications...');
-    
     try {
       const choices = new Choices(relationshipSelect, {
         removeItemButton: false,
@@ -76,8 +69,6 @@ function initializeReadonlyChoices() {
       
       // Disable the choices instance completely
       choices.disable();
-      
-      console.log('Readonly Choices.js initialized successfully');
     } catch (error) {
       console.error('Error initializing readonly Choices.js:', error);
     }
@@ -86,13 +77,9 @@ function initializeReadonlyChoices() {
 
 // DOM Content Loaded event handler
 document.addEventListener('DOMContentLoaded', function () {
-  console.log('DOM loaded, initializing app view components...');
-  
   // Small delay to ensure CSS is fully loaded
   setTimeout(() => {
     // Initialize view mode components
     initializeViewMode();
-    
-    console.log('App view initialization complete');
   }, 100);
 });

@@ -5,7 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2025-01-XX
+## [2.1.0] - 2025-07-16
+
+### Added
+- **Complete Activity Tracking System Implementation**
+  - Real-time activity feed combining work notes and audit logs
+  - Manual work note creation with file attachments (up to 10MB)
+  - Automatic audit trail for all field modifications with before/after values
+  - Support for document, image, and archive file uploads
+  - Secure file download functionality with proper access control
+  
+- **Admin Activity Management Controls**
+  - Hide/show functionality for activity visibility control
+  - English confirmation dialogs for admin actions ("Are you sure you want to hide this activity?")
+  - "Show Hidden" filter for administrators to view and manage hidden activities
+  - Visual dimming of hidden activities with restore capability for admins
+  
+- **Enhanced Activity User Experience**
+  - Activity timestamps repositioned to bottom-right corner for better visual flow
+  - "Work Notes Only" filter for focused activity viewing
+  - Real-time activity updates without page refresh
+  - User attribution with email display for all activities
+  - Human-friendly relative timestamps (e.g., "2 hours ago", "Yesterday")
+  
+- **RESTful API Expansion for Activity System**
+  - `GET /api/get_activity_feed.php` - Paginated activity retrieval with filtering
+  - `POST /api/add_work_note.php` - Work note creation with file upload support
+  - `POST /api/hide_activity.php` - Admin-only activity hiding functionality
+  - `POST /api/show_activity.php` - Admin-only activity restoration
+  - `GET /api/download_attachment.php` - Secure file downloads with access control
+
+### Changed
+- **Improved Work Notes Form Layout**
+  - Better column distribution (col-md-6, col-md-4, col-md-2) for optimal space usage
+  - Enhanced Post button alignment and positioning on same row as form fields
+  - Optimized file input and dropdown spacing for better horizontal utilization
+  - Reduced gaps between form elements with g-2 spacing
+
+- **Enhanced Admin UI Controls**
+  - Updated admin controls styling with proper hover effects
+  - Improved visibility of hide/show buttons with better contrast
+  - Admin controls now properly positioned and accessible
+
+### Fixed
+- **System Consistency and Reliability**
+  - Session variable consistency across all components (`$_SESSION['user_role']` standardized)
+  - Timezone synchronization between PHP and MySQL (Europe/Oslo)
+  - Activity tracker initialization and proper error handling
+  - User role validation in all API endpoints for security
+  
+- **UI/UX Improvements**
+  - Form field alignment and spacing optimization
+  - Proper button positioning and responsive behavior
+  - Activity item layout and timestamp positioning
+
+### Removed
+- **Development and Debug Files Cleanup**
+  - `debug_timezone.php` - No longer needed debug file
+  - Console.log statements from production JavaScript files
+  - Unnecessary development logging and debug output
+  - Unused test files and temporary development artifacts
+
+### Security
+- **Enhanced Access Control**
+  - Proper admin role validation for all activity management endpoints
+  - File upload security with type validation and size limits
+  - Secure session handling across activity tracking components
+
+## [3.0.0] - 2025-01-XX (PLANNED)
 
 ### Major Feature: Activity Tracking System
 Complete implementation of comprehensive activity tracking for all applications.

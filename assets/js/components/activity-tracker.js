@@ -116,8 +116,6 @@ class ActivityTracker {
             this.resetPagination();
         }
         
-        console.log('Loading activity feed, reset:', reset, 'filters:', this.currentFilters);
-        
         try {
             const response = await fetch('api/get_activity_feed.php', {
                 method: 'POST',
@@ -137,7 +135,6 @@ class ActivityTracker {
             }
             
             const data = await response.json();
-            console.log('Activity feed response:', data);
             
             if (data.success) {
                 // Update pagination info
@@ -147,11 +144,9 @@ class ActivityTracker {
                 if (reset) {
                     // Replace activities
                     this.activities = data.activities;
-                    console.log('Reset activities, new count:', this.activities.length);
                 } else {
                     // Append new activities
                     this.activities = [...this.activities, ...data.activities];
-                    console.log('Appended activities, total count:', this.activities.length);
                 }
                 
                 // Update offset for next load
@@ -224,7 +219,6 @@ class ActivityTracker {
             contentHtml = `
                 <div class="activity-header-row">
                     <span class="activity-user">${this.escapeHtml(activity.user_email || 'Unknown')}</span>
-                    <span class="activity-time">${this.formatDateTime(activity.created_at)}</span>
                 </div>
                 <div class="activity-type-badge type-${activity.type}">
                     ${activity.type || 'comment'}
@@ -233,18 +227,23 @@ class ActivityTracker {
                     ${this.escapeHtml(activity.content)}
                 </div>
                 ${this.renderAttachment(activity)}
+                <div class="activity-footer">
+                    <span class="activity-time">${this.formatDateTime(activity.created_at)}</span>
+                </div>
             `;
         } else {
             contentHtml = `
                 <div class="activity-header-row">
                     <span class="activity-user">${this.escapeHtml(activity.user_email || 'System')}</span>
-                    <span class="activity-time">${this.formatDateTime(activity.created_at)}</span>
                 </div>
                 <div class="activity-type-badge type-change">
                     Field Change
                 </div>
                 <div class="activity-content mt-2">
                     ${this.escapeHtml(activity.content)}
+                </div>
+                <div class="activity-footer">
+                    <span class="activity-time">${this.formatDateTime(activity.created_at)}</span>
                 </div>
             `;
         }
@@ -297,8 +296,6 @@ class ActivityTracker {
         const formData = new FormData(form);
         formData.append('application_id', this.applicationId);
         
-        console.log('Submitting work note for application:', this.applicationId);
-        
         try {
             const response = await fetch('api/add_work_note.php', {
                 method: 'POST',
@@ -306,22 +303,18 @@ class ActivityTracker {
             });
             
             const data = await response.json();
-            console.log('Work note response:', data);
             
             if (data.success) {
                 form.reset();
                 document.getElementById('file-info').innerHTML = '';
                 // Reset pagination and reload feed after adding work note
-                console.log('Work note added successfully, reloading activity feed...');
                 this.resetPagination();
                 await this.loadActivityFeed(true);
                 this.showSuccessMessage('Work note added successfully');
             } else {
-                console.error('Work note error:', data.error);
                 this.showErrorMessage(data.error || 'Error adding work note');
             }
         } catch (error) {
-            console.error('Error submitting work note:', error);
             this.showErrorMessage('Error submitting work note');
         }
     }
@@ -412,12 +405,14 @@ class ActivityTracker {
     }
     
     showSuccessMessage(message) {
-        // Implementer toast eller alert
-        console.log('Success:', message);
+        // Implementation for toast or alert
+        // Using browser alert for now, could be replaced with toast library
+        alert(message);
     }
     
     showErrorMessage(message) {
-        // Implementer toast eller alert
+        // Implementation for toast or alert
         console.error('Error:', message);
+        alert(message);
     }
 }

@@ -464,61 +464,66 @@ if (empty($statuses)) {
   </form>
   
   <?php if ($id > 0): ?>
-    <!-- Work Notes Form - Only show when editing existing applications -->
-    <?php 
-    $user_role = $_SESSION['user_role'] ?? 'viewer';
-    if ($user_role === 'editor' || $user_role === 'admin'): 
-    ?>
-      <div class="work-notes-form">
-        <h5>Add Work Note</h5>
-        <form id="work-notes-form" enctype="multipart/form-data">
-          <div class="form-group-horizontal">
-            <label for="work-note-text" class="form-label">Work Notes</label>
-            <textarea 
-              class="form-control" 
-              id="work-note-text" 
-              name="note" 
-              rows="3" 
-              placeholder="Add a comment, update, or note about this application..."
-              required></textarea>
-          </div>
-          
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="form-group-horizontal">
-                <label for="work-note-file" class="form-label">Attachment (Optional)</label>
-                <input type="file" class="form-control" id="work-note-file" name="attachment">
-                <div id="file-info" class="file-info"></div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group-horizontal">
-                <label for="work-note-type" class="form-label">Type of note</label>
-                <select class="form-select" id="work-note-type" name="type">
-                  <option value="comment">Comment</option>
-                  <option value="change">Change</option>
-                  <option value="problem">Problem</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          
-          <div class="d-flex justify-content-end mt-3">
-            <button type="submit" class="btn btn-primary">
-              Post
-            </button>
-          </div>
-        </form>
-      </div>
-    <?php endif; ?>
-    
-    <!-- Activity Tracker Section - Only show when editing existing applications -->
+    <!-- Work Notes and Activity Tracker Container - Only show when editing existing applications -->
     <div class="row mt-4">
       <div class="col-12">
-        <?php 
-        $application_id = $id; 
-        include __DIR__ . '/shared/activity_tracker.php'; 
-        ?>
+        <div class="work-activity-container">
+          <!-- Work Notes Form -->
+          <?php 
+          $user_role = $_SESSION['user_role'] ?? 'viewer';
+          if ($user_role === 'editor' || $user_role === 'admin'): 
+          ?>
+            <div class="work-notes-form">
+              <h5>Add Work Note</h5>
+              <form id="work-notes-form" enctype="multipart/form-data">
+                <div class="form-group-horizontal">
+                  <label for="work-note-text" class="form-label">Work Notes</label>
+                  <textarea 
+                    class="form-control" 
+                    id="work-note-text" 
+                    name="note" 
+                    rows="3" 
+                    placeholder="Add a comment, update, or note about this application..."
+                    required></textarea>
+                </div>
+                
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <div class="form-group-horizontal">
+                      <label for="work-note-file" class="form-label">Attachment</label>
+                      <input type="file" class="form-control" id="work-note-file" name="attachment">
+                      <div id="file-info" class="file-info"></div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form-group-horizontal">
+                      <label for="work-note-type" class="form-label">Type of note</label>
+                      <select class="form-select" id="work-note-type" name="type">
+                        <option value="comment">Comment</option>
+                        <option value="change">Change</option>
+                        <option value="problem">Problem</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="form-group-horizontal">
+                      <label class="form-label" style="visibility: hidden;">Button</label>
+                      <button type="submit" class="btn btn-primary w-100">
+                        Post
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          <?php endif; ?>
+          
+          <!-- Activity Tracker Section -->
+          <?php 
+          $application_id = $id; 
+          include __DIR__ . '/shared/activity_tracker.php'; 
+          ?>
+        </div>
       </div>
     </div>
   <?php endif; ?>
