@@ -1,9 +1,10 @@
 // assets/js/components/activity-tracker.js
 
 class ActivityTracker {
-    constructor(applicationId, userRole) {
+    constructor(applicationId, userRole, readOnly = false) {
         this.applicationId = applicationId;
         this.userRole = userRole;
+        this.readOnly = readOnly;
         this.currentFilters = {
             show_work_notes_only: false,
             show_hidden: false
@@ -24,6 +25,16 @@ class ActivityTracker {
     }
     
     bindEvents() {
+        // Skip most event binding in read-only mode
+        if (this.readOnly) {
+            // Only bind load more button for read-only mode
+            document.getElementById('load-more-btn')?.addEventListener('click', () => {
+                this.loadActivityFeed(false); // false = append to existing
+            });
+            return;
+        }
+        
+        // Full event binding for editable mode
         // Filter-knapper
         document.getElementById('filter-work-notes-only')?.addEventListener('click', () => {
             this.toggleFilter('show_work_notes_only');
@@ -248,7 +259,7 @@ class ActivityTracker {
             `;
         }
         
-        const adminControls = this.userRole === 'admin' ? this.renderAdminControls(activity) : '';
+        const adminControls = (!this.readOnly && this.userRole === 'admin') ? this.renderAdminControls(activity) : '';
         
         return `
             <div class="activity-item ${typeClass} ${priorityClass} ${hiddenClass}" data-id="${activity.id}">

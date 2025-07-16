@@ -63,6 +63,7 @@ if (empty($statuses)) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/pages/app-view.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="../assets/css/components/activity-tracker.css">>
   <style>
     /* Related Applications readonly styling */
     .choices--disabled {
@@ -426,12 +427,46 @@ if (empty($statuses)) {
       <textarea class="form-control" id="businessNeed" name="business_need" style="height: 100px" placeholder="Business need" readonly><?php echo htmlspecialchars($app['business_need']); ?></textarea>
     </div>
   </form>
+  
+  <!-- Read-only Activity Tracker -->
+  <div class="activity-tracker mt-4">
+    <div class="activity-header">
+      <h5>Activity History</h5>
+      <div class="activity-content-wrapper">
+        <div class="activity-feed" id="activity-feed-container">
+          <!-- Activity feed will be loaded here via JavaScript -->
+          <div class="text-center text-muted p-4">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            Loading activities...
+          </div>
+        </div>
+        
+        <div class="load-more-container" id="load-more-container" style="display: none;">
+          <button class="btn btn-outline-primary load-more-btn" id="load-more-btn">
+            Load More Activities
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="../assets/js/components/activity-tracker.js"></script>
 <script src="../assets/js/components/form-handlers.js"></script>
 <script src="../assets/js/pages/app-view.js"></script>
 <script>
+// Set current app ID for JavaScript modules
+window.currentAppId = <?php echo $id; ?>;
+
+// Initialize read-only Activity Tracker
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize activity tracker in read-only mode
+  const activityTracker = new ActivityTracker(<?php echo $id; ?>, 'viewer', true); // true = read-only mode
+});
+
 // Backup inline script for Related applications and Handover slider if external files fail
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Inline script: Initializing components...');
