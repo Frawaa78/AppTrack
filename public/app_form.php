@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../src/db/db.php';
+require_once __DIR__ . '/../src/managers/ActivityManager.php';
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -69,6 +70,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $data['relationship_yggdrasil'] = implode(',', $relationship_ids);
         
         $db = Database::getInstance()->getConnection();
+        $activityManager = new ActivityManager();
+        
+        // Store old values for change logging (only for updates)
+        $oldValues = [];
+        if ($id > 0) {
+            $stmt = $db->prepare('SELECT * FROM applications WHERE id = :id');
+            $stmt->execute([':id' => $id]);
+            $oldValues = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        }
         
         // Handle bidirectional relationships
         $currentAppId = $id > 0 ? $id : null;
@@ -83,6 +93,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $data['id'] = $id;
             $stmt->execute($data);
             $currentAppId = $id;
+            
+            // Log field changes
+            foreach ($fields as $field) {
+                if (isset($oldValues[$field]) && $oldValues[$field] !== $data[$field]) {
+                    $activityManager->logFieldChange(
+                        $currentAppId,
+                        $field,
+                        $oldValues[$field],
+                        $data[$field],
+                        $_SESSION['user_id']
+                    );
+                }
+            }
+            
+            // Log relationship changes
+            if (isset($oldValues['relationship_yggdrasil']) && $oldValues['relationship_yggdrasil'] !== $data['relationship_yggdrasil']) {
+                $activityManager->logFieldChange(
+                    $currentAppId,
+                    'relationship_yggdrasil',
+                    $oldValues['relationship_yggdrasil'],
+                    $data['relationship_yggdrasil'],
+                    $_SESSION['user_id']
+                );
+            }
         } else {
             // Insert new application
             $cols = implode(',', array_merge($fields, ['relationship_yggdrasil']));
@@ -90,6 +124,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare("INSERT INTO applications ($cols) VALUES ($vals)");
             $stmt->execute($data);
             $currentAppId = $db->lastInsertId();
+            
+            // Log creation
+            $activityManager->logFieldChange(
+                $currentAppId,
+                'application_created',
+                '',
+                'New application created',
+                $_SESSION['user_id'],
+                'INSERT'
+            );
         }
         
         // Update bidirectional relationships
@@ -173,6 +217,7 @@ if (empty($statuses)) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components/user-dropdown.css">
+  <link rel="stylesheet" href="../assets/css/components/activity-tracker.css">
 </head>
 <body class="bg-light">
 <!-- Topbar -->
@@ -417,6 +462,66 @@ if (empty($statuses)) {
       <textarea class="form-control" id="businessNeed" name="business_need" style="height: 100px" placeholder="Business need"><?php echo htmlspecialchars($app['business_need'] ?? ''); ?></textarea>
     </div>
   </form>
+  
+  <?php if ($id > 0): ?>
+    <!-- Work Notes Form - Only show when editing existing applications -->
+    <?php 
+    $user_role = $_SESSION['user_role'] ?? 'viewer';
+    if ($user_role === 'editor' || $user_role === 'admin'): 
+    ?>
+      <div class="work-notes-form">
+        <h5>Add Work Note</h5>
+        <form id="work-notes-form" enctype="multipart/form-data">
+          <div class="form-group-horizontal">
+            <label for="work-note-text" class="form-label">Work Notes</label>
+            <textarea 
+              class="form-control" 
+              id="work-note-text" 
+              name="note" 
+              rows="3" 
+              placeholder="Add a comment, update, or note about this application..."
+              required></textarea>
+          </div>
+          
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-group-horizontal">
+                <label for="work-note-file" class="form-label">Attachment (Optional)</label>
+                <input type="file" class="form-control" id="work-note-file" name="attachment">
+                <div id="file-info" class="file-info"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group-horizontal">
+                <label for="work-note-type" class="form-label">Type of note</label>
+                <select class="form-select" id="work-note-type" name="type">
+                  <option value="comment">Comment</option>
+                  <option value="change">Change</option>
+                  <option value="problem">Problem</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-primary">
+              Post
+            </button>
+          </div>
+        </form>
+      </div>
+    <?php endif; ?>
+    
+    <!-- Activity Tracker Section - Only show when editing existing applications -->
+    <div class="row mt-4">
+      <div class="col-12">
+        <?php 
+        $application_id = $id; 
+        include __DIR__ . '/shared/activity_tracker.php'; 
+        ?>
+      </div>
+    </div>
+  <?php endif; ?>
 </div>
 <script>
 // Set current app ID for JavaScript modules
@@ -424,6 +529,7 @@ window.currentAppId = <?php echo $id; ?>;
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="../assets/js/components/activity-tracker.js"></script>
 <script src="../assets/js/components/form-handlers.js"></script>
 <script src="../assets/js/components/choices-init.js"></script>
 <script src="../assets/js/pages/app-form.js"></script>
