@@ -1,6 +1,9 @@
 <?php
 // src/config/config.php
 
+// Set timezone to match Norwegian time
+date_default_timezone_set('Europe/Oslo');
+
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'cvp60zaqj_apprackdb');
 define('DB_USER', 'cvp60zaqj_apprackdb'); // Sett inn ditt faktiske brukernavn

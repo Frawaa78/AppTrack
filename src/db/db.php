@@ -16,6 +16,9 @@ class Database {
         ];
         try {
             $this->pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            
+            // Set MySQL timezone to match PHP timezone
+            $this->pdo->exec("SET time_zone = '+02:00'");
         } catch (PDOException $e) {
             exit('Database connection failed: ' . $e->getMessage());
         }
