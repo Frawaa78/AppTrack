@@ -224,7 +224,7 @@ class ActivityTracker {
                     ${activity.type || 'comment'}
                 </div>
                 <div class="activity-content mt-2">
-                    ${this.escapeHtml(activity.content)}
+                    ${this.escapeHtmlWithLineBreaks(activity.content)}
                 </div>
                 ${this.renderAttachment(activity)}
                 <div class="activity-footer">
@@ -240,7 +240,7 @@ class ActivityTracker {
                     Field Change
                 </div>
                 <div class="activity-content mt-2">
-                    ${this.escapeHtml(activity.content)}
+                    ${this.escapeHtmlWithLineBreaks(activity.content)}
                 </div>
                 <div class="activity-footer">
                     <span class="activity-time">${this.formatDateTime(activity.created_at)}</span>
@@ -402,6 +402,14 @@ class ActivityTracker {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+    
+    escapeHtmlWithLineBreaks(text) {
+        if (!text) return '';
+        // First escape HTML entities
+        const escaped = this.escapeHtml(text);
+        // Then convert line breaks to <br> tags
+        return escaped.replace(/\n/g, '<br>');
     }
     
     showSuccessMessage(message) {
