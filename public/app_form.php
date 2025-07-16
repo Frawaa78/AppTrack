@@ -145,6 +145,12 @@ $phases = $db->query('SELECT name FROM phases ORDER BY id')->fetchAll(PDO::FETCH
 // Fetch statuses from database
 $statuses = $db->query('SELECT name FROM statuses ORDER BY id')->fetchAll(PDO::FETCH_COLUMN);
 
+// Fetch pre-ops portfolios from database
+$preopsPortfolios = $db->query("SELECT id, name FROM portfolios WHERE type = 'preops' ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch application portfolios from database
+$applicationPortfolios = $db->query("SELECT id, name FROM portfolios WHERE type = 'application' ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+
 // Fallback to hardcoded values if database is empty
 if (empty($phases)) {
     $phases = ['Need', 'Solution', 'Build', 'Implement', 'Operate'];
@@ -328,11 +334,25 @@ if (empty($statuses)) {
         </div>
         <div class="form-group-horizontal">
           <label for="preOpsPortfolio" class="form-label">Pre-ops portfolio</label>
-          <input type="text" class="form-control" id="preOpsPortfolio" name="preops_portfolio" placeholder="Pre-ops portfolio" value="<?php echo htmlspecialchars($app['preops_portfolio'] ?? ''); ?>">
+          <select class="form-select" id="preOpsPortfolio" name="preops_portfolio">
+            <option value="">Select portfolio...</option>
+            <?php foreach ($preopsPortfolios as $portfolio): ?>
+              <option value="<?php echo htmlspecialchars($portfolio['name']); ?>"<?php if(($app['preops_portfolio'] ?? '') === $portfolio['name']) echo ' selected'; ?>>
+                <?php echo htmlspecialchars($portfolio['name']); ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
         </div>
         <div class="form-group-horizontal">
           <label for="applicationPortfolio" class="form-label">Application Portfolio</label>
-          <input type="text" class="form-control" id="applicationPortfolio" name="application_portfolio" placeholder="Application Portfolio" value="<?php echo htmlspecialchars($app['application_portfolio'] ?? ''); ?>">
+          <select class="form-select" id="applicationPortfolio" name="application_portfolio">
+            <option value="">Select portfolio...</option>
+            <?php foreach ($applicationPortfolios as $portfolio): ?>
+              <option value="<?php echo htmlspecialchars($portfolio['name']); ?>"<?php if(($app['application_portfolio'] ?? '') === $portfolio['name']) echo ' selected'; ?>>
+                <?php echo htmlspecialchars($portfolio['name']); ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
         </div>
         <div class="form-group-horizontal">
           <label for="deliveryResponsible" class="form-label">Delivery responsible</label>
