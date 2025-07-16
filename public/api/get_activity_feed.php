@@ -26,15 +26,21 @@ try {
     $offset = $input['offset'] ?? 0; // Default to start from beginning
     
     // Kun admin kan se skjulte aktiviteter
-    if (isset($filters['show_hidden']) && $filters['show_hidden'] && $_SESSION['role'] !== 'admin') {
+    if (isset($filters['show_hidden']) && $filters['show_hidden'] && $_SESSION['user_role'] !== 'admin') {
         $filters['show_hidden'] = false;
     }
     
     $activities = $activityManager->getActivityFeed($input['application_id'], $filters, $limit, $offset);
     
+    // Debug: Log activity count
+    error_log("Activity feed debug - App ID: {$input['application_id']}, Total activities found: " . count($activities));
+    error_log("Activity feed debug - Filters: " . json_encode($filters));
+    
     // Get total count for pagination info
     $totalCount = $activityManager->getActivityCount($input['application_id'], $filters);
     $hasMore = ($offset + $limit) < $totalCount;
+    
+    error_log("Activity feed debug - Total count: $totalCount, Has more: " . ($hasMore ? 'yes' : 'no'));
     
     echo json_encode([
         'success' => true,

@@ -43,7 +43,7 @@ class ActivityTracker {
             this.loadActivityFeed(false); // false = append to existing
         });
         
-        // File upload
+        // File upload info display
         this.setupFileUpload();
         
         // Admin controls
@@ -58,40 +58,17 @@ class ActivityTracker {
     }
     
     setupFileUpload() {
-        const fileUpload = document.getElementById('work-note-file');
-        const uploadArea = document.getElementById('file-upload-area');
+        const fileInput = document.getElementById('work-note-file');
         const fileInfo = document.getElementById('file-info');
         
-        if (!fileUpload || !uploadArea) return;
-        
-        // Click to upload
-        uploadArea.addEventListener('click', () => fileUpload.click());
-        
-        // Drag & Drop
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileUpload.files = files;
-                this.updateFileInfo(files[0]);
-            }
-        });
+        if (!fileInput || !fileInfo) return;
         
         // File selection
-        fileUpload.addEventListener('change', (e) => {
+        fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 this.updateFileInfo(e.target.files[0]);
+            } else {
+                fileInfo.innerHTML = '';
             }
         });
     }
@@ -139,6 +116,8 @@ class ActivityTracker {
             this.resetPagination();
         }
         
+        console.log('Loading activity feed, reset:', reset, 'filters:', this.currentFilters);
+        
         try {
             const response = await fetch('api/get_activity_feed.php', {
                 method: 'POST',
@@ -158,6 +137,7 @@ class ActivityTracker {
             }
             
             const data = await response.json();
+            console.log('Activity feed response:', data);
             
             if (data.success) {
                 // Update pagination info
@@ -167,9 +147,11 @@ class ActivityTracker {
                 if (reset) {
                     // Replace activities
                     this.activities = data.activities;
+                    console.log('Reset activities, new count:', this.activities.length);
                 } else {
                     // Append new activities
                     this.activities = [...this.activities, ...data.activities];
+                    console.log('Appended activities, total count:', this.activities.length);
                 }
                 
                 // Update offset for next load
@@ -315,6 +297,8 @@ class ActivityTracker {
         const formData = new FormData(form);
         formData.append('application_id', this.applicationId);
         
+        console.log('Submitting work note for application:', this.applicationId);
+        
         try {
             const response = await fetch('api/add_work_note.php', {
                 method: 'POST',
@@ -322,15 +306,18 @@ class ActivityTracker {
             });
             
             const data = await response.json();
+            console.log('Work note response:', data);
             
             if (data.success) {
                 form.reset();
                 document.getElementById('file-info').innerHTML = '';
                 // Reset pagination and reload feed after adding work note
+                console.log('Work note added successfully, reloading activity feed...');
                 this.resetPagination();
-                this.loadActivityFeed(true);
+                await this.loadActivityFeed(true);
                 this.showSuccessMessage('Work note added successfully');
             } else {
+                console.error('Work note error:', data.error);
                 this.showErrorMessage(data.error || 'Error adding work note');
             }
         } catch (error) {

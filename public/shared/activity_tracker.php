@@ -24,60 +24,6 @@ $user_role = $_SESSION['role'] ?? 'viewer';
         </div>
     </div>
     
-    <?php if ($user_role === 'editor' || $user_role === 'admin'): ?>
-        <div class="work-notes-form">
-            <form id="work-notes-form" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="work-note-text" class="form-label">Work Notes</label>
-                    <textarea 
-                        class="form-control" 
-                        id="work-note-text" 
-                        name="note" 
-                        rows="3" 
-                        placeholder="Add a comment, update, or note about this application..."
-                        required></textarea>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <label for="work-note-type" class="form-label">Type</label>
-                        <select class="form-select" id="work-note-type" name="type">
-                            <option value="comment">Comment</option>
-                            <option value="change">Change</option>
-                            <option value="problem">Problem</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="work-note-priority" class="form-label">Priority</label>
-                        <select class="form-select" id="work-note-priority" name="priority">
-                            <option value="low">Low</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="high">High</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="mt-3">
-                    <label class="form-label">Attachment (Optional)</label>
-                    <div id="file-upload-area" class="file-upload-area">
-                        <p class="mb-1">Click to upload or drag and drop</p>
-                        <small class="text-muted">
-                            Supported: Images, PDF, Office docs, Text files, Archives (Max 10MB)
-                        </small>
-                    </div>
-                    <input type="file" id="work-note-file" name="attachment" style="display: none;">
-                    <div id="file-info" class="file-info"></div>
-                </div>
-                
-                <div class="mt-3">
-                    <button type="submit" class="btn btn-primary">
-                        Add Work Note
-                    </button>
-                </div>
-            </form>
-        </div>
-    <?php endif; ?>
-    
     <div class="activity-feed" id="activity-feed-container">
         <!-- Activity feed will be loaded here via JavaScript -->
         <div class="text-center text-muted p-4">

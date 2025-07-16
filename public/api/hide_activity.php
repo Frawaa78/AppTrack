@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../src/managers/ActivityManager.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
     echo json_encode(['success' => false, 'error' => 'Admin access required']);
     exit;
 }

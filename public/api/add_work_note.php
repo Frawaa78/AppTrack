@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $application_id = $_POST['application_id'] ?? null;
 $note = trim($_POST['note'] ?? '');
 $type = $_POST['type'] ?? 'comment';
-$priority = $_POST['priority'] ?? 'medium';
+$priority = 'medium'; // Set default priority since we removed the field
 
 if (!$application_id || empty($note)) {
     echo json_encode(['success' => false, 'error' => 'Application ID and note are required']);
@@ -54,6 +54,13 @@ try {
         $priority,
         $attachment
     );
+    
+    // Debug: Log successful insertion
+    if ($success) {
+        error_log("Work note added successfully - App ID: $application_id, User ID: {$_SESSION['user_id']}, Note: " . substr($note, 0, 50));
+    } else {
+        error_log("Work note failed to add - App ID: $application_id, User ID: {$_SESSION['user_id']}");
+    }
     
     if ($success) {
         echo json_encode(['success' => true]);
