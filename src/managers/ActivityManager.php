@@ -11,12 +11,14 @@ class ActivityManager {
     }
     
     /**
-     * Hent kombinert aktivitetsfeed for en applikasjon
+     * Hent kombinert aktivitetsfeed for en applikasjon med pagination
      * @param int $application_id
      * @param array $filters ['show_work_notes_only' => bool, 'show_hidden' => bool, 'user_id' => int, 'from_date' => string]
+     * @param int $limit Number of activities to return
+     * @param int $offset Number of activities to skip
      * @return array
      */
-    public function getActivityFeed($application_id, $filters = []) {
+    public function getActivityFeed($application_id, $filters = [], $limit = null, $offset = 0) {
         $activities = [];
         
         // Standard filter-verdier
@@ -24,6 +26,8 @@ class ActivityManager {
         $show_hidden = $filters['show_hidden'] ?? false;
         $user_filter = $filters['user_id'] ?? null;
         $from_date = $filters['from_date'] ?? null;
+        
+        $params = [':application_id' => $application_id];
         
         // Hent Work Notes
         $work_notes_query = "
@@ -51,18 +55,16 @@ class ActivityManager {
         }
         if ($user_filter) {
             $work_notes_query .= " AND wn.user_id = :user_filter";
+            $params[':user_filter'] = $user_filter;
         }
         if ($from_date) {
             $work_notes_query .= " AND wn.created_at >= :from_date";
+            $params[':from_date'] = $from_date;
         }
         
         $stmt = $this->db->prepare($work_notes_query);
-        $params = [':application_id' => $application_id];
-        if ($user_filter) $params[':user_filter'] = $user_filter;
-        if ($from_date) $params[':from_date'] = $from_date;
-        
         $stmt->execute($params);
-        $work_notes = $stmt->fetchAll();
+        $work_notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         foreach ($work_notes as $note) {
             $activities[] = $note;
@@ -77,11 +79,12 @@ class ActivityManager {
                     al.record_id as application_id,
                     al.changed_by as user_id,
                     u.email as user_email,
-                    al.field_name,
-                    al.old_value,
-                    al.new_value,
                     CONCAT(al.field_name, ' changed from \"', IFNULL(al.old_value, ''), '\" to \"', IFNULL(al.new_value, ''), '\"') as content,
-                    al.action,
+                    'change' as type,
+                    'medium' as priority,
+                    NULL as attachment_filename,
+                    NULL as attachment_size,
+                    NULL as attachment_mime_type,
                     al.changed_at as created_at,
                     1 as is_visible
                 FROM audit_log al
@@ -99,7 +102,7 @@ class ActivityManager {
             
             $stmt = $this->db->prepare($audit_query);
             $stmt->execute($params);
-            $audit_logs = $stmt->fetchAll();
+            $audit_logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             foreach ($audit_logs as $log) {
                 $activities[] = $log;
@@ -111,7 +114,76 @@ class ActivityManager {
             return strtotime($b['created_at']) - strtotime($a['created_at']);
         });
         
+        // Implementer pagination i PHP
+        if ($limit !== null) {
+            $activities = array_slice($activities, $offset, $limit);
+        }
+        
         return $activities;
+    }
+    
+    /**
+     * Hent totalt antall aktiviteter for paginering
+     * @param int $application_id
+     * @param array $filters
+     * @return int
+     */
+    public function getActivityCount($application_id, $filters = []) {
+        $show_work_notes_only = $filters['show_work_notes_only'] ?? false;
+        $show_hidden = $filters['show_hidden'] ?? false;
+        $user_filter = $filters['user_id'] ?? null;
+        $from_date = $filters['from_date'] ?? null;
+        
+        $params = [':application_id' => $application_id];
+        $total_count = 0;
+        
+        // Work Notes count
+        $work_notes_count = "
+            SELECT COUNT(*) as count
+            FROM work_notes wn
+            WHERE wn.application_id = :application_id
+        ";
+        
+        if (!$show_hidden) {
+            $work_notes_count .= " AND wn.is_visible = 1";
+        }
+        if ($user_filter) {
+            $work_notes_count .= " AND wn.user_id = :user_filter";
+            $params[':user_filter'] = $user_filter;
+        }
+        if ($from_date) {
+            $work_notes_count .= " AND wn.created_at >= :from_date";
+            $params[':from_date'] = $from_date;
+        }
+        
+        $stmt = $this->db->prepare($work_notes_count);
+        $stmt->execute($params);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total_count += (int)($result['count'] ?? 0);
+        
+        // Audit Log count (kun hvis ikke "work notes only")
+        if (!$show_work_notes_only) {
+            $audit_count = "
+                SELECT COUNT(*) as count
+                FROM audit_log al
+                WHERE al.table_name = 'applications' 
+                AND al.record_id = :application_id
+            ";
+            
+            if ($user_filter) {
+                $audit_count .= " AND al.changed_by = :user_filter";
+            }
+            if ($from_date) {
+                $audit_count .= " AND al.changed_at >= :from_date";
+            }
+            
+            $stmt = $this->db->prepare($audit_count);
+            $stmt->execute($params);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $total_count += (int)($result['count'] ?? 0);
+        }
+        
+        return $total_count;
     }
     
     /**

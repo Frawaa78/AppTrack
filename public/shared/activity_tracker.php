@@ -87,6 +87,12 @@ $user_role = $_SESSION['role'] ?? 'viewer';
             Loading activities...
         </div>
     </div>
+    
+    <div class="load-more-container" id="load-more-container" style="display: none;">
+        <button class="btn btn-outline-primary load-more-btn" id="load-more-btn">
+            Load More Activities
+        </button>
+    </div>
 </div>
 
 <script>

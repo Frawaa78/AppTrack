@@ -8,12 +8,19 @@ class ActivityTracker {
             show_work_notes_only: false,
             show_hidden: false
         };
+        this.pagination = {
+            offset: 0,
+            limit: 5,
+            hasMore: false,
+            total: 0
+        };
+        this.activities = []; // Store all loaded activities
         this.init();
     }
     
     init() {
         this.bindEvents();
-        this.loadActivityFeed();
+        this.loadActivityFeed(true); // true = reset pagination
     }
     
     bindEvents() {
@@ -29,6 +36,11 @@ class ActivityTracker {
         // Work notes form
         document.getElementById('work-notes-form')?.addEventListener('submit', (e) => {
             this.handleWorkNoteSubmit(e);
+        });
+        
+        // Load more button
+        document.getElementById('load-more-btn')?.addEventListener('click', () => {
+            this.loadActivityFeed(false); // false = append to existing
         });
         
         // File upload
@@ -112,10 +124,21 @@ class ActivityTracker {
             button.classList.toggle('btn-outline-secondary', !this.currentFilters[filterName]);
         }
         
-        this.loadActivityFeed();
+        // Reset pagination when filters change
+        this.resetPagination();
+        this.loadActivityFeed(true);
     }
     
-    async loadActivityFeed() {
+    resetPagination() {
+        this.pagination.offset = 0;
+        this.activities = [];
+    }
+    
+    async loadActivityFeed(reset = false) {
+        if (reset) {
+            this.resetPagination();
+        }
+        
         try {
             const response = await fetch('api/get_activity_feed.php', {
                 method: 'POST',
@@ -124,33 +147,87 @@ class ActivityTracker {
                 },
                 body: JSON.stringify({
                     application_id: this.applicationId,
-                    filters: this.currentFilters
+                    filters: this.currentFilters,
+                    limit: this.pagination.limit,
+                    offset: this.pagination.offset
                 })
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const data = await response.json();
             
             if (data.success) {
-                this.renderActivityFeed(data.activities);
+                // Update pagination info
+                this.pagination.total = data.pagination.total;
+                this.pagination.hasMore = data.pagination.has_more;
+                
+                if (reset) {
+                    // Replace activities
+                    this.activities = data.activities;
+                } else {
+                    // Append new activities
+                    this.activities = [...this.activities, ...data.activities];
+                }
+                
+                // Update offset for next load
+                this.pagination.offset = this.activities.length;
+                
+                this.renderActivityFeed();
+                this.updateLoadMoreButton();
             } else {
-                console.error('Error loading activity feed:', data.error);
+                console.error('API Error:', data.error);
+                this.showErrorInContainer(data.error);
             }
         } catch (error) {
             console.error('Error loading activity feed:', error);
+            this.showErrorInContainer('Failed to load activities: ' + error.message);
         }
     }
     
-    renderActivityFeed(activities) {
+    showErrorInContainer(message) {
+        const container = document.getElementById('activity-feed-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="text-center text-danger p-4">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <p>${message}</p>
+                    <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+                        Retry
+                    </button>
+                </div>
+            `;
+        }
+    }
+    
+    renderActivityFeed() {
         const container = document.getElementById('activity-feed-container');
         if (!container) return;
         
-        if (activities.length === 0) {
+        if (this.activities.length === 0) {
             container.innerHTML = '<div class="text-center text-muted p-4">No activities found</div>';
             return;
         }
         
-        const html = activities.map(activity => this.renderActivityItem(activity)).join('');
+        const html = this.activities.map(activity => this.renderActivityItem(activity)).join('');
         container.innerHTML = html;
+    }
+    
+    updateLoadMoreButton() {
+        const loadMoreContainer = document.getElementById('load-more-container');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        
+        if (loadMoreContainer && loadMoreBtn) {
+            if (this.pagination.hasMore) {
+                loadMoreContainer.style.display = 'block';
+                const remaining = this.pagination.total - this.activities.length;
+                loadMoreBtn.textContent = `Load More Activities (${remaining} remaining)`;
+            } else {
+                loadMoreContainer.style.display = 'none';
+            }
+        }
     }
     
     renderActivityItem(activity) {
@@ -249,7 +326,9 @@ class ActivityTracker {
             if (data.success) {
                 form.reset();
                 document.getElementById('file-info').innerHTML = '';
-                this.loadActivityFeed();
+                // Reset pagination and reload feed after adding work note
+                this.resetPagination();
+                this.loadActivityFeed(true);
                 this.showSuccessMessage('Work note added successfully');
             } else {
                 this.showErrorMessage(data.error || 'Error adding work note');
@@ -280,7 +359,9 @@ class ActivityTracker {
             const data = await response.json();
             
             if (data.success) {
-                this.loadActivityFeed();
+                // Reset pagination and reload feed after hiding activity
+                this.resetPagination();
+                this.loadActivityFeed(true);
             } else {
                 this.showErrorMessage(data.error || 'Error hiding activity');
             }
@@ -305,7 +386,9 @@ class ActivityTracker {
             const data = await response.json();
             
             if (data.success) {
-                this.loadActivityFeed();
+                // Reset pagination and reload feed after showing activity
+                this.resetPagination();
+                this.loadActivityFeed(true);
             } else {
                 this.showErrorMessage(data.error || 'Error showing activity');
             }

@@ -21,16 +21,30 @@ try {
     $activityManager = new ActivityManager();
     $filters = $input['filters'] ?? [];
     
+    // Pagination parameters
+    $limit = $input['limit'] ?? 5;  // Default to 5 activities per page
+    $offset = $input['offset'] ?? 0; // Default to start from beginning
+    
     // Kun admin kan se skjulte aktiviteter
     if (isset($filters['show_hidden']) && $filters['show_hidden'] && $_SESSION['role'] !== 'admin') {
         $filters['show_hidden'] = false;
     }
     
-    $activities = $activityManager->getActivityFeed($input['application_id'], $filters);
+    $activities = $activityManager->getActivityFeed($input['application_id'], $filters, $limit, $offset);
+    
+    // Get total count for pagination info
+    $totalCount = $activityManager->getActivityCount($input['application_id'], $filters);
+    $hasMore = ($offset + $limit) < $totalCount;
     
     echo json_encode([
         'success' => true,
-        'activities' => $activities
+        'activities' => $activities,
+        'pagination' => [
+            'total' => $totalCount,
+            'limit' => $limit,
+            'offset' => $offset,
+            'has_more' => $hasMore
+        ]
     ]);
     
 } catch (Exception $e) {
