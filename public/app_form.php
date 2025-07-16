@@ -151,6 +151,9 @@ $preopsPortfolios = $db->query("SELECT id, name FROM portfolios WHERE type = 'pr
 // Fetch application portfolios from database
 $applicationPortfolios = $db->query("SELECT id, name FROM portfolios WHERE type = 'application' ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch deployment models from database
+$deploymentModels = $db->query("SELECT id, name FROM deployment_models ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+
 // Fallback to hardcoded values if database is empty
 if (empty($phases)) {
     $phases = ['Need', 'Solution', 'Build', 'Implement', 'Operate'];
@@ -382,8 +385,11 @@ if (empty($statuses)) {
         <div class="form-group-horizontal">
           <label for="deploymentModel" class="form-label">Deployment model</label>
           <select class="form-select" id="deploymentModel" name="deployment_model">
-            <?php foreach (["Client Application","On-premise","SaaS","Externally hosted"] as $model): ?>
-              <option<?php if(($app['deployment_model'] ?? '')===$model) echo ' selected'; ?>><?php echo $model; ?></option>
+            <option value="">Select deployment model...</option>
+            <?php foreach ($deploymentModels as $model): ?>
+              <option value="<?php echo htmlspecialchars($model['name']); ?>"<?php if(($app['deployment_model'] ?? '') === $model['name']) echo ' selected'; ?>>
+                <?php echo htmlspecialchars($model['name']); ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
