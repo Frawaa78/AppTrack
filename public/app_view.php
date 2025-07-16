@@ -82,8 +82,8 @@ if (empty($statuses)) {
       padding: 0.375rem 0.75rem !important;
     }
     .choices__list--multiple .choices__item {
-      background-color: #007bff !important;
-      border: 1px solid #007bff !important;
+      background-color: #9DA3A8 !important;
+      border: 1px solid #73787D !important;
       color: white !important;
       border-radius: 0.25rem !important;
       margin: 0.125rem 0.25rem 0.125rem 0 !important;

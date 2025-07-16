@@ -99,8 +99,8 @@ a.form-control[href] i.bi-box-arrow-up-right {
 }
 
 .choices--disabled .choices__list--multiple .choices__item {
-  background-color: #007bff !important;
-  border-color: #007bff !important;
+  background-color: #9DA3A8 !important;
+  border-color: #9DA3A8 !important;
   color: white !important;
   font-weight: 500 !important;
 }
