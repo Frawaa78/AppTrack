@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Activity Tracker - Public Version</title>
+</head>
+<body>
+    <h1>Debug Activity Tracker - From Public Folder</h1>
+    <div id="debug-output"></div>
+    
+    <script src="../assets/js/components/activity-tracker.js"></script>
+    <script>
+        const debugDiv = document.getElementById('debug-output');
+        
+        // Test 1: Check if ActivityTracker class exists
+        if (typeof ActivityTracker !== 'undefined') {
+            debugDiv.innerHTML += '<p>✅ ActivityTracker class loaded</p>';
+            
+            // Test 2: Try to create instance
+            try {
+                const tracker = new ActivityTracker(429, 'viewer');
+                debugDiv.innerHTML += '<p>✅ ActivityTracker instance created</p>';
+            } catch (error) {
+                debugDiv.innerHTML += '<p>❌ Error creating ActivityTracker: ' + error.message + '</p>';
+            }
+        } else {
+            debugDiv.innerHTML += '<p>❌ ActivityTracker class not found</p>';
+        }
+        
+        // Test 3: Check which API URL is being used
+        debugDiv.innerHTML += '<p>Testing API URLs...</p>';
+        
+        // Test the correct URL from public folder
+        fetch('api/get_activity_feed.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                application_id: 429,
+                filters: {}
+            })
+        })
+        .then(response => {
+            debugDiv.innerHTML += `<p>✅ api/get_activity_feed.php - Status: ${response.status}</p>`;
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                debugDiv.innerHTML += '<p>✅ API call successful, got ' + data.activities.length + ' activities</p>';
+            } else {
+                debugDiv.innerHTML += '<p>❌ API error: ' + data.error + '</p>';
+            }
+        })
+        .catch(error => {
+            debugDiv.innerHTML += '<p>❌ API call failed: ' + error.message + '</p>';
+        });
+        
+        // Test the wrong URL (what might be on server)
+        setTimeout(() => {
+            debugDiv.innerHTML += '<p>Testing wrong URL ../api/get_activity_feed.php...</p>';
+            
+            fetch('../api/get_activity_feed.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    application_id: 429,
+                    filters: {}
+                })
+            })
+            .then(response => {
+                debugDiv.innerHTML += `<p>❌ ../api/get_activity_feed.php - Status: ${response.status} (should be 404)</p>`;
+            })
+            .catch(error => {
+                debugDiv.innerHTML += '<p>❌ ../api/get_activity_feed.php failed: ' + error.message + ' (expected)</p>';
+            });
+        }, 1000);
+    </script>
+</body>
+</html>

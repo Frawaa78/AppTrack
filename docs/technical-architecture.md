@@ -1,27 +1,73 @@
-# AppTrack v2.0 - Technical Architecture Documentation
+# AppTrack v3.0 - Technical Architecture Documentation
 
-This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v2.0, focusing on the major changes implemented in July 2025.
+This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.0, focusing on the Activity Tracking System implemented in January 2025.
 
-## Version 2.0 Overview
+## Version 3.0 Overview
 
-AppTrack v2.0 represents a complete architectural overhaul with focus on:
-- **Modern CSS Architecture**: Component-based styling system
-- **Enhanced JavaScript Framework**: Reliable event handling and error management
-- **API Integration**: RESTful endpoints for real-time functionality
-- **Database Optimization**: Complete schema with performance indexes
-- **Cross-Browser Compatibility**: Comprehensive browser support
+AppTrack v3.0 introduces a comprehensive Activity Tracking System with:
+- **Work Notes System**: Manual activity entries with file attachments
+- **Audit Log System**: Automatic field change tracking
+- **Real-time Updates**: Dynamic activity feed with filtering
+- **RESTful API**: Complete API endpoints for activity management
+- **Enhanced Security**: Session validation and admin controls
+
+## Activity Tracking Architecture
+
+### Core Components
+```
+Activity Tracking System/
+├── Backend Services/
+│   ├── ActivityManager.php      # Core service layer
+│   ├── API Endpoints/
+│   │   ├── get_activity_feed.php    # Data retrieval
+│   │   ├── add_work_note.php        # Manual entries
+│   │   ├── hide_activity.php        # Admin controls
+│   │   ├── show_activity.php        # Admin controls
+│   │   └── download_attachment.php  # File handling
+│   └── Database/
+│       ├── work_notes table         # Manual activities
+│       └── audit_log table          # Automatic tracking
+├── Frontend Components/
+│   ├── activity_tracker.php     # UI component
+│   ├── activity-tracker.js      # JavaScript controller
+│   └── activity-tracker.css     # Styling system
+└── Integration/
+    └── app_form.php             # Embedded tracker
+```
+
+### Service Layer Pattern
+The `ActivityManager.php` implements a service layer pattern:
+
+```php
+class ActivityManager {
+    // Core functionality
+    public function getActivityFeed($applicationId, $filters = [])
+    public function addWorkNote($applicationId, $userId, $message, $priority, $isVisible, $attachment)
+    public function logFieldChange($applicationId, $userId, $fieldName, $oldValue, $newValue)
+    
+    // Admin controls
+    public function hideActivity($activityId)
+    public function showActivity($activityId)
+    
+    // File management
+    private function validateAttachment($file)
+    private function saveAttachment($file)
+}
+```
 
 ## CSS Architecture Revolution
 
-### Modular Component System
+### Enhanced Component System
 ```
 assets/css/
 ├── main.css                 # Primary import and global styles
 ├── components/              # Reusable component library
+│   ├── activity-tracker.css # Activity system styling
 │   ├── forms.css           # Horizontal form layout system
 │   ├── buttons.css         # Button states and interactions
 │   ├── choices.css         # Multi-select dropdown styling
-│   └── range-slider.css    # Interactive slider components
+│   ├── range-slider.css    # Interactive slider components
+│   └── user-dropdown.css   # User interface components
 └── pages/                  # Page-specific overrides
     ├── app-form.css        # Form page enhancements
     └── app-view.css        # View page styling
@@ -55,11 +101,47 @@ body { font-size: 0.9rem; }
 assets/js/
 ├── main.js                  # Core initialization and global functions
 ├── components/              # Reusable JavaScript modules
+│   ├── activity-tracker.js # Activity tracking system
 │   ├── form-handlers.js    # Form interaction logic
 │   └── choices-init.js     # Multi-select component initialization
 └── pages/                  # Page-specific JavaScript
     ├── app-form.js         # Form page functionality
     └── app-view.js         # View page enhancements
+```
+
+### Activity Tracker JavaScript Architecture
+The Activity Tracker uses a class-based approach for better organization:
+
+```javascript
+class ActivityTracker {
+    constructor(applicationId) {
+        this.applicationId = applicationId;
+        this.currentFilter = 'all';
+        this.init();
+    }
+    
+    async loadActivityFeed(filter = 'all') {
+        // API call to get_activity_feed.php
+        // Dynamic DOM updates
+        // Error handling
+    }
+    
+    async submitWorkNote() {
+        // Form validation
+        // File upload handling
+        // API call to add_work_note.php
+        // Real-time feed refresh
+    }
+    
+    setupEventListeners() {
+        // Filter button handlers
+        // Form submission
+        // File upload validation
+    }
+}
+
+// Initialize on page load
+window.ActivityTracker = ActivityTracker;
 ```
 
 ### Global Function Strategy
@@ -96,6 +178,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeRelatedApplicationsChoice();
     initializeHandoverSlider();
     initializePopovers();
+    
+    // Initialize Activity Tracker if present
+    const applicationId = document.querySelector('[data-application-id]')?.dataset.applicationId;
+    if (applicationId) {
+      window.activityTracker = new ActivityTracker(applicationId);
+    }
   } catch (error) {
     console.error('Component initialization failed:', error);
     // Graceful degradation to basic functionality

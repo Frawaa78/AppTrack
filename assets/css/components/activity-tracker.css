@@ -1,0 +1,193 @@
+/* assets/css/components/activity-tracker.css */
+
+.activity-tracker {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 15px;
+}
+
+.activity-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    font-size: 0.875rem;
+    padding: 5px 12px;
+}
+
+.work-notes-form {
+    background: white;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.activity-feed {
+    max-height: 500px;
+    overflow-y: auto;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.activity-item {
+    padding: 15px;
+    border-bottom: 1px solid #f1f3f4;
+    position: relative;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item.work-note {
+    border-left: 4px solid #007bff;
+}
+
+.activity-item.audit-log {
+    border-left: 4px solid #6c757d;
+}
+
+.activity-item.hidden {
+    opacity: 0.5;
+    background-color: #f8f9fa;
+}
+
+.activity-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.activity-user {
+    font-weight: 600;
+    color: #495057;
+}
+
+.activity-time {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.activity-content {
+    color: #212529;
+    line-height: 1.5;
+}
+
+.activity-type-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.type-comment {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+.type-change {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.type-problem {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.activity-attachment {
+    margin-top: 8px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.attachment-link {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.attachment-link:hover {
+    text-decoration: underline;
+}
+
+.admin-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.activity-item:hover .admin-controls {
+    opacity: 1;
+}
+
+.admin-controls button {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+
+.admin-controls button:hover {
+    color: #495057;
+}
+
+.priority-high {
+    border-left-color: #dc3545 !important;
+}
+
+.priority-medium {
+    border-left-color: #ffc107 !important;
+}
+
+.priority-low {
+    border-left-color: #28a745 !important;
+}
+
+.file-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.file-upload-area:hover {
+    border-color: #007bff;
+}
+
+.file-upload-area.dragover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.file-info {
+    margin-top: 10px;
+    font-size: 0.875rem;
+    color: #6c757d;
+}

@@ -49,6 +49,19 @@ Complete UI/UX redesign focusing on space efficiency and user experience:
 - **Perfect alignment**: Fixed-width labels with right-alignment for visual consistency
 - **Responsive design**: Adapts seamlessly to different screen sizes
 
+#### **Activity Tracking System** 🆕
+- **Comprehensive Activity Feed**: Combines manual work notes and automatic audit logging
+- **Work Notes**: Manual entries with comments, problems, and changes
+- **Audit Trail**: Automatic logging of all field modifications
+- **File Attachments**: Support for uploading documents, images, and archives (up to 10MB)
+- **Priority System**: Visual indicators for low, medium, and high priority items
+- **Real-time Updates**: Activities appear immediately without page refresh
+- **Filtering Options**: "Work Notes Only" filter for focused view
+- **Admin Controls**: Hide/show functionality for sensitive information
+- **User Attribution**: All activities linked to users with email display
+- **Relative Timestamps**: Human-friendly time formatting
+- **RESTful API**: Complete backend API for activity management
+
 #### **Interactive Enhancements**
 - **Enhanced Handover Slider**: 11 visual markers, dynamic highlighting, centered tooltips
 - **Clear Buttons**: X buttons for quick field clearing on URL inputs
@@ -69,38 +82,59 @@ AppTrack/
 │   ├── login.php              # User authentication
 │   ├── register.php           # User registration
 │   ├── dashboard.php          # Main application overview
-│   ├── app_form.php           # Create/edit application form
+│   ├── app_form.php           # Create/edit application form with activity tracker
 │   ├── app_view.php           # Read-only application details
 │   ├── users_admin.php        # User administration
-│   ├── api/
-│   │   └── search_applications.php  # RESTful search endpoint
+│   ├── api/                   # RESTful API endpoints
+│   │   ├── search_applications.php  # Application search endpoint
+│   │   ├── search_users.php         # User search endpoint  
+│   │   ├── get_activity_feed.php    # Activity tracker data
+│   │   ├── add_work_note.php        # Manual activity creation
+│   │   ├── hide_activity.php        # Admin activity control
+│   │   ├── show_activity.php        # Admin activity control
+│   │   └── download_attachment.php  # File download handler
 │   └── shared/
-│       └── topbar.php         # Consistent navigation component
+│       ├── topbar.php         # Consistent navigation component
+│       └── activity_tracker.php     # Activity tracking widget
 ├── src/                       # Backend logic  
 │   ├── config/
 │   │   └── config.php         # Database configuration
 │   ├── db/
 │   │   └── db.php             # PDO database singleton class
-│   ├── models/                # Data models (future)
-│   └── controllers/           # Business logic (future)
+│   ├── models/                # Data models
+│   │   ├── Application.php    # Application entity
+│   │   └── User.php           # User entity and authentication
+│   ├── controllers/           # Business logic controllers
+│   │   ├── ApplicationController.php  # Application CRUD operations
+│   │   ├── AuthController.php        # Authentication logic
+│   │   └── UserController.php        # User management
+│   └── managers/              # Service layer
+│       └── ActivityManager.php       # Activity tracking system
 ├── assets/                    # Organized static assets
 │   ├── css/
 │   │   ├── main.css          # Primary stylesheet with imports
 │   │   ├── components/       # Component-specific styles
+│   │   │   ├── activity-tracker.css  # Activity feed styling
 │   │   │   ├── forms.css     # Form layout and styling
 │   │   │   ├── buttons.css   # Button components
 │   │   │   ├── choices.css   # Multi-select dropdown styling
-│   │   │   └── range-slider.css # Slider component styling
+│   │   │   ├── range-slider.css # Slider component styling
+│   │   │   └── user-dropdown.css # User interface components
 │   │   └── pages/            # Page-specific styles
+│   │       └── app-view.css  # Application view page
 │   └── js/
 │       ├── main.js           # Core JavaScript functionality
 │       ├── components/       # Reusable JavaScript components
-│       │   ├── form-handlers.js   # Form interaction logic
-│       │   └── choices-init.js    # Multi-select initialization
+│       │   ├── activity-tracker.js   # Activity system frontend
+│       │   ├── form-handlers.js      # Form interaction logic
+│       │   └── choices-init.js       # Multi-select initialization
 │       └── pages/            # Page-specific JavaScript
+│           ├── app-form.js   # Form page enhancements
+│           └── app-view.js   # View page functionality
 ├── docs/                      # Comprehensive documentation
-│   ├── database.md           # Complete database schema
-│   └── ui-implementation.md  # UI/UX technical guide
+│   ├── database.md           # Complete database schema with activity tracking
+│   ├── technical-architecture.md  # System architecture guide
+│   └── ui-implementation.md       # UI/UX technical guide
 └── README.md                 # This file
 ```
 

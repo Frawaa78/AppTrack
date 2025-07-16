@@ -11,6 +11,7 @@ The database follows a normalized design pattern with lookup tables for consiste
 - Role-based user management
 - Flexible portfolio and relationship management
 - **Complete schema implementation** - All application form fields are properly mapped to database columns
+- **Activity Tracking System** - Comprehensive work notes and audit log functionality
 
 ## Schema Status
 ✅ **COMPLETE**: All required columns have been added to the `applications` table
@@ -19,6 +20,7 @@ The database follows a normalized design pattern with lookup tables for consiste
 ✅ **UI ENHANCED**: Modern horizontal form layout with interactive elements implemented
 ✅ **SEARCH READY**: Related applications field supports real-time database search functionality
 ✅ **API INTEGRATED**: RESTful search endpoint for application lookup
+✅ **ACTIVITY TRACKER**: Full work notes and audit logging system implemented and tested
 
 ## Core Tables
 
@@ -134,25 +136,38 @@ Business and technical portfolio classifications for project organization.
 ## Supporting Tables
 
 ### Table: work_notes
-Comments, decisions, and activity log for comprehensive audit trail.
+Manual activity entries and collaboration tracking with file attachment support.
 
-| Field           | Type         | Description                    | Constraints    |
-|-----------------|--------------|--------------------------------|----------------|
-| id              | INT          | Primary key, auto-increment    | NOT NULL, PK   |
-| application_id  | INT          | Related application            | FK to applications.id |
-| user_id         | INT          | Author (nullable for system)   | FK to users.id |
-| note            | TEXT         | Note content                   | NOT NULL       |
-| type            | VARCHAR(50)  | Note classification            | DEFAULT 'comment' |
-| attachment_path | VARCHAR(255) | File attachment location       | NULL           |
-| attachment_type | VARCHAR(50)  | File type/extension            | NULL           |
-| created_at      | DATETIME     | Creation timestamp             | DEFAULT NOW()  |
-| updated_at      | DATETIME     | Modification timestamp         | DEFAULT NOW()  |
+| Field             | Type         | Description                    | Constraints    |
+|-------------------|--------------|--------------------------------|----------------|
+| id                | INT          | Primary key, auto-increment    | NOT NULL, PK   |
+| application_id    | INT          | Reference to application       | FK to applications.id |
+| user_id           | INT          | User who created note          | FK to users.id |
+| note              | TEXT         | Note content                   | NOT NULL       |
+| type              | ENUM         | Note type                      | 'comment', 'problem', 'change' |
+| priority          | ENUM         | Priority level                 | 'low', 'medium', 'high' |
+| attachment_data   | LONGBLOB     | File attachment binary data    | NULL           |
+| attachment_filename| VARCHAR(255) | Original filename             | NULL           |
+| attachment_size   | INT          | File size in bytes             | NULL           |
+| attachment_mime_type| VARCHAR(100)| MIME type of attachment       | NULL           |
+| is_visible        | TINYINT(1)   | Visibility flag for admin      | DEFAULT 1      |
+| created_at        | DATETIME     | Creation timestamp             | DEFAULT NOW()  |
+| updated_at        | DATETIME     | Last update timestamp          | DEFAULT NOW()  |
 
 **Note Types:**
-- `comment`: User-generated comments
-- `system`: Automated system notifications
-- `decision`: Important decisions and approvals
-- `milestone`: Project milestones and achievements
+- `comment`: General observations and updates
+- `problem`: Issues and challenges requiring attention  
+- `change`: Planned or implemented changes
+
+**Priority Levels:**
+- `low`: General information, no urgency
+- `medium`: Important information requiring attention
+- `high`: Critical issues or urgent matters
+
+**File Attachments:**
+- Maximum file size: 10MB
+- Supported formats: Images (JPEG, PNG, GIF, WebP), Documents (PDF, Word, Excel, PowerPoint), Text files, Archives (ZIP, RAR)
+- Files stored as LONGBLOB in database for security and backup consistency
 
 ### Table: application_relations
 Many-to-many relationships between applications with bidirectional support.
@@ -541,11 +556,45 @@ SELECT role FROM users WHERE id = :user_id;
 
 ### Audit Requirements
 The audit_log table captures:
-- All data modifications (INSERT, UPDATE, DELETE)
-- User identification for all changes
-- Timestamp for compliance reporting
-- IP address and browser information for security
-- Old and new values for rollback capability
+- **Automatic field changes**: All application form modifications are logged automatically
+- **User attribution**: Links changes to specific users with email display
+- **Field-level tracking**: Records old and new values for each field
+- **Timestamp precision**: Exact change timestamps for compliance
+- **Change descriptions**: Human-readable descriptions of what changed
+- **IP address and browser information** for security auditing
+- **Rollback capability** with old and new value tracking
+
+## Activity Tracking System
+
+The AppTrack application includes a comprehensive activity tracking system that provides:
+
+### Features
+- **Dual Activity Types**: Work Notes (manual) and Audit Log (automatic)
+- **Real-time Updates**: Activities appear immediately after creation
+- **Filtering Options**: "Work Notes Only" filter to focus on manual entries
+- **File Attachments**: Support for uploading files with work notes (up to 10MB)
+- **Priority Levels**: Visual indicators for low, medium, and high priority items
+- **Admin Controls**: Hide/show functionality for sensitive information
+- **User Attribution**: All activities linked to specific users with email display
+- **Relative Timestamps**: Human-friendly time formatting (e.g., "2 hours ago")
+
+### Implementation
+- **Backend**: ActivityManager.php class handles all activity operations
+- **Frontend**: JavaScript ActivityTracker class provides interactive interface
+- **API Endpoints**: RESTful APIs for CRUD operations (get_activity_feed.php, add_work_note.php, etc.)
+- **Database**: Optimized with proper indexing and foreign key constraints
+
+### Usage
+- **Work Notes**: Users can manually add comments, report problems, or document changes
+- **Audit Trail**: System automatically logs all form field modifications
+- **Collaboration**: Team members can see all activity history for transparency
+- **Compliance**: Complete audit trail for regulatory requirements
+
+### Security
+- **Session Management**: All API calls require valid user sessions
+- **Role-based Access**: Admin-only features for sensitive operations
+- **Input Validation**: All user inputs are sanitized and validated
+- **File Security**: Uploaded files are validated for type and size limits
 
 ---
 
