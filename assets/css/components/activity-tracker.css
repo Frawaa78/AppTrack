@@ -220,6 +220,21 @@
     text-decoration: underline;
 }
 
+.delete-attachment-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.activity-attachment:hover .delete-attachment-btn {
+    opacity: 1;
+}
+
+.delete-attachment-btn:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
 .admin-controls {
     position: absolute;
     top: 10px;

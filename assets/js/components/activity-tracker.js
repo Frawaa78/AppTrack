@@ -84,6 +84,10 @@ class ActivityTracker {
             if (e.target.classList.contains('show-activity-btn')) {
                 this.showActivity(e.target.dataset.type, e.target.dataset.id);
             }
+            if (e.target.classList.contains('delete-attachment-btn') || e.target.closest('.delete-attachment-btn')) {
+                const btn = e.target.classList.contains('delete-attachment-btn') ? e.target : e.target.closest('.delete-attachment-btn');
+                this.deleteAttachment(btn.dataset.workNoteId);
+            }
         });
     }
     
@@ -288,13 +292,24 @@ class ActivityTracker {
         
         const sizeFormatted = this.formatFileSize(activity.attachment_size || 0);
         
+        // Only show delete button for admins and if not in read-only mode
+        const deleteButton = (!this.readOnly && this.userRole === 'admin') ? 
+            `<button class="btn btn-sm btn-outline-danger ms-2 delete-attachment-btn" 
+                     data-work-note-id="${activity.id}" 
+                     title="Delete attachment">
+                <i class="bi bi-trash"></i>
+            </button>` : '';
+        
         return `
             <div class="activity-attachment">
-                <a href="api/download_attachment.php?id=${activity.id}" 
-                   class="attachment-link" 
-                   target="_blank">
-                    📎 ${this.escapeHtml(activity.attachment_filename)} (${sizeFormatted})
-                </a>
+                <div class="d-flex align-items-center">
+                    <a href="api/download_attachment.php?id=${activity.id}" 
+                       class="attachment-link" 
+                       target="_blank">
+                        📎 ${this.escapeHtml(activity.attachment_filename)} (${sizeFormatted})
+                    </a>
+                    ${deleteButton}
+                </div>
             </div>
         `;
     }
@@ -397,6 +412,38 @@ class ActivityTracker {
             }
         } catch (error) {
             console.error('Error showing activity:', error);
+        }
+    }
+    
+    async deleteAttachment(workNoteId) {
+        if (!confirm('Are you sure you want to delete this attachment? This action cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('api/delete_attachment.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    work_note_id: workNoteId
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Reset pagination and reload feed after deleting attachment
+                this.resetPagination();
+                this.loadActivityFeed(true);
+                this.showSuccessMessage('Attachment deleted successfully');
+            } else {
+                this.showErrorMessage(data.error || 'Error deleting attachment');
+            }
+        } catch (error) {
+            console.error('Error deleting attachment:', error);
+            this.showErrorMessage('Error deleting attachment');
         }
     }
     
