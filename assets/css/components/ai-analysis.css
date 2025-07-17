@@ -1,0 +1,224 @@
+/* assets/css/components/ai-analysis.css */
+
+/* AI Analysis Modal Styles */
+.modal-xl .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.analysis-controls {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.analysis-controls .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+/* Analysis Content Styles */
+.analysis-result {
+    background: #ffffff;
+    border: 1px solid #e3f1ff;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.analysis-header {
+    border-bottom: 2px solid #e3f1ff;
+    padding-bottom: 12px;
+}
+
+.analysis-header h6 {
+    color: #1e88e5;
+    font-weight: 600;
+    margin: 0;
+}
+
+.analysis-meta small {
+    font-size: 0.85rem;
+}
+
+/* Analysis Sections */
+.analysis-section {
+    border-left: 4px solid #e3f1ff;
+    padding-left: 16px;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    color: #2c5282;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-transform: capitalize;
+}
+
+.section-content {
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.section-text {
+    margin-bottom: 12px;
+}
+
+/* Data Formatting */
+.data-section {
+    background-color: #f7fafc;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.nested-data {
+    margin-left: 20px;
+    border-left: 2px solid #cbd5e0;
+    padding-left: 15px;
+}
+
+.raw-analysis {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.7;
+}
+
+/* Loading States */
+.spinner-border.text-primary {
+    color: #1e88e5 !important;
+}
+
+/* Action Buttons */
+.analysis-actions {
+    border-top: 1px solid #e9ecef;
+    padding-top: 15px;
+}
+
+.analysis-actions .btn {
+    margin-right: 10px;
+}
+
+/* AI Button in Header */
+.header-buttons .btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}
+
+.header-buttons .btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+/* Analysis Type Icons */
+.analysis-controls option {
+    padding: 8px 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .modal-xl .modal-dialog {
+        max-width: 95%;
+        margin: 10px auto;
+    }
+    
+    .analysis-controls .row .col-md-8,
+    .analysis-controls .row .col-md-4 {
+        margin-bottom: 15px;
+    }
+    
+    .analysis-meta {
+        display: none;
+    }
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status-cached {
+    background-color: #28a745;
+}
+
+.status-fresh {
+    background-color: #007bff;
+}
+
+.status-error {
+    background-color: #dc3545;
+}
+
+/* Analysis Type Badges */
+.analysis-type-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.analysis-type-summary {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.analysis-type-timeline {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.analysis-type-risk_assessment {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.analysis-type-relationship_analysis {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+}
+
+.analysis-type-trend_analysis {
+    background-color: #fff3e0;
+    color: #ef6c00;
+}
+
+/* Loading Animation */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.analysis-loading {
+    animation: pulse 2s infinite;
+}
+
+/* Error States */
+.alert-danger {
+    border-color: #f5c6cb;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-danger h6 {
+    color: #721c24;
+    margin-bottom: 8px;
+}

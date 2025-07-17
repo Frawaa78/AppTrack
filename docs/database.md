@@ -1,103 +1,154 @@
 # AppTrack Database Documentation
 
-This document provides a comprehensive overview of the AppTrack database structure, including all tables, relationships, and constraints.
+This document provides a comprehensive overview of the AppTrack database structure, including all tables, relationships, and AI integration capabilities.
 
 ## Overview
 
-The database follows a normalized design pattern with lookup tables for consistent data management. Key features include:
-- Foreign key relationships for data integrity
-- Audit logging for change tracking
-- Support for file attachments and work notes
-- Role-based user management
-- Flexible portfolio and relationship management
-- **Complete schema implementation** - All application form fields are properly mapped to database columns
-- **Activity Tracking System** - Comprehensive work notes and audit log functionality
+The database follows an enterprise-grade normalized design pattern with comprehensive AI analytics integration. Key architectural features include:
 
-## Schema Status
-✅ **COMPLETE**: All required columns have been added to the `applications` table
-✅ **TESTED**: Form submission and data retrieval working correctly
-✅ **VALIDATED**: No missing column errors in production
-✅ **UI ENHANCED**: Modern horizontal form layout with interactive elements implemented
-✅ **SEARCH READY**: Related applications field supports real-time database search functionality
-✅ **API INTEGRATED**: RESTful search endpoint for application lookup
-✅ **ACTIVITY TRACKER**: Full work notes and audit logging system implemented and tested
+- **Normalized Core Schema** with lookup tables for data consistency
+- **AI Analysis Engine** with intelligent caching and change detection
+- **Comprehensive Audit System** with full change tracking
+- **Rich Work Notes** with attachment support and priority management
+- **Role-Based Access Control** with user relationship mapping
+- **Data Integrity** through foreign key constraints and transactions
 
-## Core Tables
+## Current Schema Status ✅
 
-### Table: users
-Manages user accounts and authentication with role-based access control.
+✅ **PRODUCTION READY**: All application form fields properly mapped and validated  
+✅ **AI INTEGRATED**: Complete OpenAI analysis system with multilingual support  
+✅ **OPTIMIZED PERFORMANCE**: Smart caching with configurable expiration policies  
+✅ **AUDIT COMPLETE**: Full change tracking with user attribution  
+✅ **FILE MANAGEMENT**: Attachment system with BLOB storage and metadata  
+✅ **SEARCH ENABLED**: Real-time application search with relationship mapping
 
-| Field         | Type           | Description                     | Constraints    |
-|---------------|----------------|---------------------------------|----------------|
-| id            | INT            | Primary key, auto-increment     | NOT NULL, PK   |
-| email         | VARCHAR(255)   | User email address              | UNIQUE, NOT NULL |
-| password_hash | VARCHAR(255)   | BCrypt hashed password          | NOT NULL       |
-| role          | VARCHAR(50)    | User role (admin/editor/viewer) | NOT NULL       |
-| created_at    | DATETIME       | Account creation timestamp      | DEFAULT NOW()  |
-
-**Default Roles:**
-- `admin`: Full access (view/edit/delete/user management)
-- `editor`: View and edit applications  
-- `viewer`: Read-only access to all data
+## Core Application Tables
 
 ### Table: applications
-Central table storing all application information with complete field coverage.
+Primary entity storing all application lifecycle information.
 
-| Field                   | Type           | Description                           | Constraints    |
-|-------------------------|----------------|---------------------------------------|----------------|
-| id                      | INT            | Primary key, auto-increment          | NOT NULL, PK   |
-| short_description       | VARCHAR(255)   | Application name/identifier          | NOT NULL       |
-| application_service     | VARCHAR(255)   | ServiceNow CMDB reference            | NULL           |
-| relevant_for            | VARCHAR(255)   | Yggdrasil relevance classification   | NULL           |
-| phase                   | VARCHAR(100)   | Current delivery phase               | NULL           |
-| status                  | VARCHAR(100)   | Current status                       | NULL           |
-| handover_status         | INT            | Progress percentage (0-100)          | DEFAULT 0      |
-| contract_number         | VARCHAR(255)   | Commercial contract reference        | NULL           |
-| contract_responsible    | VARCHAR(255)   | Commercial lead contact              | NULL           |
-| information_space       | TEXT           | Documentation area URL               | NULL           |
-| ba_sharepoint_list      | TEXT           | Business analyst SharePoint list    | NULL           |
-| relationship_yggdrasil  | TEXT           | Connected applications (comma-sep)   | NULL           |
-| assigned_to             | VARCHAR(255)   | Data maintenance responsibility       | NULL           |
-| preops_portfolio        | VARCHAR(255)   | Yggdrasil project portfolio          | NULL           |
-| application_portfolio   | VARCHAR(255)   | Target IT operations portfolio       | NULL           |
-| delivery_responsible    | VARCHAR(255)   | Lead vendor/alliance                 | NULL           |
-| corporator_link         | TEXT           | Project management system URL        | NULL           |
-| project_manager         | VARCHAR(255)   | Project activities lead              | NULL           |
-| product_owner           | VARCHAR(255)   | Business need owner                  | NULL           |
-| due_date                | DATE           | Target go-live date                  | NULL           |
-| deployment_model        | VARCHAR(255)   | Technical deployment approach        | NULL           |
-| integrations            | VARCHAR(255)   | Integration indicator                | NULL           |
-| sa_document             | TEXT           | Solution architecture docs URL       | NULL           |
-| business_need           | TEXT           | Business justification               | NULL           |
-| created_at              | DATETIME       | Record creation timestamp            | DEFAULT NOW()  |
-| updated_at              | DATETIME       | Last modification timestamp          | DEFAULT NOW()  |
+| Field                   | Type           | Description                           | Constraints      |
+|-------------------------|----------------|---------------------------------------|------------------|
+| id                      | int(11)        | Primary key, auto-increment          | NOT NULL, PK     |
+| short_description       | varchar(255)   | Application name/identifier          | NOT NULL         |
+| application_service     | varchar(255)   | ServiceNow CMDB reference            | NULL             |
+| relevant_for            | varchar(255)   | Yggdrasil relevance classification   | NULL             |
+| phase                   | varchar(100)   | Current delivery phase               | NULL             |
+| status                  | varchar(100)   | Current status                       | NULL             |
+| handover_status         | int(11)        | Progress percentage (0-100)          | DEFAULT 0        |
+| contract_number         | varchar(255)   | Commercial contract reference        | NULL             |
+| contract_responsible    | varchar(255)   | Commercial lead contact              | NULL             |
+| information_space       | text           | Documentation area URL               | NULL             |
+| ba_sharepoint_list      | text           | Business analyst SharePoint list    | NULL             |
+| relationship_yggdrasil  | text           | Connected applications (comma-sep)   | NULL             |
+| assigned_to             | varchar(100)   | Data maintenance responsibility       | NULL             |
+| preops_portfolio        | varchar(100)   | Yggdrasil project portfolio          | NULL             |
+| application_portfolio   | varchar(100)   | Target IT operations portfolio       | NULL             |
+| delivery_responsible    | varchar(100)   | Lead vendor/alliance                 | NULL             |
+| corporator_link         | text           | Project management system URL        | NULL             |
+| project_manager         | varchar(100)   | Project activities lead              | NULL             |
+| product_owner           | varchar(100)   | Business need owner                  | NULL             |
+| due_date                | date           | Target go-live date                  | NULL             |
+| deployment_model        | varchar(255)   | Technical deployment approach        | NULL             |
+| integrations            | varchar(255)   | Integration indicator                | NULL             |
+| sa_document             | text           | Solution architecture docs URL       | NULL             |
+| business_need           | varchar(350)   | Business justification               | NULL             |
+| created_at              | timestamp      | Record creation timestamp            | DEFAULT CURRENT  |
+| updated_at              | timestamp      | Last modification timestamp          | ON UPDATE        |
 
-**Note**: All URL fields (information_space, ba_sharepoint_list, corporator_link, sa_document) use TEXT type to support long URLs and are displayed as clickable links in the UI when populated.
+## AI Analysis Tables
 
-## Lookup Tables
+### Table: ai_analysis
+Stores AI-generated analysis results with intelligent caching and change detection.
 
-### Table: phases
-Standardized delivery model phases.
+| Field                | Type                                                                                              | Description                           | Constraints      |
+|----------------------|---------------------------------------------------------------------------------------------------|---------------------------------------|------------------|
+| id                   | int(11)                                                                                          | Primary key, auto-increment          | NOT NULL, PK     |
+| application_id       | int(11)                                                                                          | FK to applications table              | NOT NULL, MUL    |
+| analysis_type        | enum('summary','timeline','risk_assessment','relationship_analysis','trend_analysis')           | Type of analysis performed            | NOT NULL         |
+| ai_model             | varchar(100)                                                                                     | OpenAI model used                     | DEFAULT 'gpt-3.5-turbo' |
+| prompt_version       | varchar(50)                                                                                      | Prompt template version               | DEFAULT 'v1.0'   |
+| input_data_hash      | varchar(64)                                                                                      | SHA-256 hash of input data           | NOT NULL, MUL    |
+| analysis_result      | longtext                                                                                         | JSON-formatted analysis result        | NOT NULL         |
+| confidence_score     | decimal(3,2)                                                                                     | AI confidence in result (0.00-1.00)  | NULL             |
+| processing_time_ms   | int(11)                                                                                          | Analysis processing time              | NULL             |
+| token_count          | int(11)                                                                                          | OpenAI tokens consumed               | NULL             |
+| created_at           | datetime                                                                                         | Analysis creation timestamp           | DEFAULT CURRENT  |
+| expires_at           | datetime                                                                                         | Cache expiration time                 | NULL, MUL        |
+| created_by           | int(11)                                                                                          | FK to users table                     | NULL, MUL        |
 
-| Field | Type         | Description                    | Constraints    |
-|-------|--------------|--------------------------------|----------------|
-| id    | INT          | Primary key, auto-increment    | NOT NULL, PK   |
-| name  | VARCHAR(100) | Phase name                     | UNIQUE, NOT NULL |
+**Features:**
+- **Smart Caching**: Prevents duplicate analysis requests using input data hashing
+- **Configurable Expiration**: Different cache durations per analysis type
+- **Performance Tracking**: Processing time and token usage monitoring
+- **Change Detection**: Automatic cache invalidation when source data changes
 
-**Default Values:**
-- Need
-- Solution  
-- Build
-- Implement
-- Operate
+### Table: ai_configurations
+Manages AI analysis prompts and model parameters for different analysis types.
 
-### Table: statuses  
-Application status classifications.
+| Field            | Type            | Description                           | Constraints           |
+|------------------|-----------------|---------------------------------------|-----------------------|
+| id               | int(11)         | Primary key, auto-increment          | NOT NULL, PK          |
+| analysis_type    | varchar(100)    | Analysis type identifier              | NOT NULL, MUL         |
+| prompt_template  | text            | AI prompt template with placeholders | NOT NULL              |
+| prompt_version   | varchar(50)     | Template version for tracking         | NOT NULL, MUL         |
+| model_name       | varchar(100)    | OpenAI model to use                   | DEFAULT 'gpt-3.5-turbo' |
+| model_parameters | longtext        | JSON model configuration              | NULL                  |
+| max_tokens       | int(11)         | Maximum response tokens               | DEFAULT 2000          |
+| temperature      | decimal(3,2)    | AI creativity setting (0.00-1.00)    | DEFAULT 0.70          |
+| is_active        | tinyint(1)      | Enable/disable this configuration    | DEFAULT 1             |
+| created_at       | datetime        | Configuration creation time           | DEFAULT CURRENT       |
+| updated_at       | datetime        | Last modification time                | ON UPDATE CURRENT     |
+| created_by       | int(11)         | FK to users table                     | NULL, MUL             |
 
-| Field | Type         | Description                    | Constraints    |
-|-------|--------------|--------------------------------|----------------|
-| id    | INT          | Primary key, auto-increment    | NOT NULL, PK   |
-| name  | VARCHAR(100) | Status name                    | UNIQUE, NOT NULL |
+### Table: ai_usage_log
+Comprehensive logging of all AI API interactions for monitoring and cost tracking.
+
+| Field              | Type                              | Description                           | Constraints      |
+|--------------------|-----------------------------------|---------------------------------------|------------------|
+| id                 | int(11)                          | Primary key, auto-increment          | NOT NULL, PK     |
+| user_id            | int(11)                          | FK to users table                     | NULL, MUL        |
+| application_id     | int(11)                          | FK to applications table              | NULL, MUL        |
+| analysis_type      | varchar(100)                     | Type of analysis requested            | NOT NULL         |
+| model_used         | varchar(100)                     | OpenAI model used                     | NOT NULL         |
+| tokens_used        | int(11)                          | Total tokens consumed                 | NOT NULL         |
+| cost_estimate      | decimal(10,6)                    | Estimated cost in USD                 | NULL             |
+| processing_time_ms | int(11)                          | Total processing time                 | NOT NULL         |
+| status             | enum('success','error','timeout') | Request outcome                       | NOT NULL, MUL    |
+| error_message      | text                             | Error details if failed               | NULL             |
+| created_at         | datetime                         | Request timestamp                     | DEFAULT CURRENT  |
+
+## User Management Tables
+
+### Table: users
+Comprehensive user management with role-based access control.
+
+| Field         | Type                              | Description                     | Constraints           |
+|---------------|-----------------------------------|---------------------------------|-----------------------|
+| id            | int(11)                          | Primary key, auto-increment     | NOT NULL, PK          |
+| email         | varchar(100)                     | User email address              | UNIQUE, NOT NULL      |
+| first_name    | varchar(100)                     | User first name                 | DEFAULT ''            |
+| last_name     | varchar(100)                     | User last name                  | DEFAULT ''            |
+| display_name  | varchar(200)                     | Full display name               | DEFAULT ''            |
+| phone         | varchar(20)                      | Contact phone number            | NULL                  |
+| is_active     | tinyint(1)                       | Account status                  | DEFAULT 1             |
+| password_hash | varchar(255)                     | BCrypt hashed password          | NOT NULL              |
+| role          | enum('admin','editor','viewer')  | User access level               | DEFAULT 'viewer'      |
+| created_at    | timestamp                        | Account creation timestamp      | DEFAULT CURRENT       |
+
+**Access Levels:**
+- **admin**: Full system access including user management
+- **editor**: Create, edit, view applications and work notes
+- **viewer**: Read-only access to all application data
+
+### Table: application_user_relations
+Maps users to applications with specific role assignments.
+
+| Field          | Type                                                     | Description                  | Constraints      |
+|----------------|----------------------------------------------------------|------------------------------|------------------|
+| application_id | int(11)                                                 | FK to applications table     | NOT NULL, PK     |
+| user_id        | int(11)                                                 | FK to users table            | NOT NULL, PK     |
+| role           | enum('assigned_to','project_manager','product_owner')  | User role for application    | NOT NULL, PK     |
 
 **Default Values:**
 - Unknown

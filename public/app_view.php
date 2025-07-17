@@ -64,6 +64,7 @@ if (empty($statuses)) {
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/pages/app-view.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="../assets/css/components/activity-tracker.css">
+  <link rel="stylesheet" href="../assets/css/components/ai-analysis.css">
   <style>
     /* Related Applications readonly styling */
     .choices--disabled {
@@ -221,6 +222,9 @@ if (empty($statuses)) {
       <h5 class="mb-0">Status & Details</h5>
     </div>
     <div class="header-buttons">
+      <button type="button" class="btn btn-info me-2" onclick="openAIAnalysis()" title="AI Analysis">
+        <i class="bi bi-robot"></i> AI Insights
+      </button>
       <a href="dashboard.php" class="btn btn-secondary">Back</a>
       <?php if (isset($_SESSION['user_role'])) { $role = $_SESSION['user_role']; } else { $role = null; } ?>
       <?php if ($role === 'admin' || $role === 'editor') : ?>
@@ -579,5 +583,546 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 500);
 });
 </script>
+
+<!-- AI Analysis Modal -->
+<div class="modal fade" id="aiAnalysisModal" tabindex="-1" aria-labelledby="aiAnalysisModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="aiAnalysisModalLabel">
+          <i class="bi bi-robot"></i> AI Analysis & Insights
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Analysis Type Selection -->
+        <div class="analysis-controls mb-4">
+          <div class="row">
+            <div class="col-md-8">
+              <label for="analysisType" class="form-label">Analysis Type</label>
+              <select class="form-select" id="analysisType">
+                <option value="summary">📋 Application Summary</option>
+                <option value="timeline">⏱️ Timeline Analysis</option>
+                <option value="risk_assessment">⚠️ Risk Assessment</option>
+                <option value="relationship_analysis">🔗 Relationship Analysis</option>
+                <option value="trend_analysis">📈 Trend Analysis</option>
+              </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button class="btn btn-primary me-2" onclick="generateAnalysis()">
+                <i class="bi bi-magic"></i> Generate
+              </button>
+              <button class="btn btn-outline-primary me-2" onclick="generateAnalysis(true)" title="Force new analysis even if no changes detected">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+              <button class="btn btn-outline-secondary" onclick="loadRecentAnalyses()" title="Load previous analysis">
+                <i class="bi bi-clock-history"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analysis Content -->
+        <div id="analysisContent">
+          <div class="text-center text-muted p-5">
+            <i class="bi bi-robot" style="font-size: 3rem;"></i>
+            <p class="mt-3">Select an analysis type and click "Generate" to get AI insights about this application.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Set current app ID for AI analysis
+window.currentAppId = <?php echo $id; ?>;
+
+// Open AI Analysis Modal
+function openAIAnalysis() {
+    const modal = new bootstrap.Modal(document.getElementById('aiAnalysisModal'));
+    modal.show();
+    
+    // Load recent analyses when modal opens and check if Generate should be disabled
+    loadRecentAnalyses();
+    checkGenerateButtonState();
+}
+
+// Generate new AI analysis
+async function generateAnalysis(forceRefresh = false) {
+    const analysisType = document.getElementById('analysisType').value;
+    const contentDiv = document.getElementById('analysisContent');
+    const generateBtn = document.querySelector('button[onclick="generateAnalysis()"]');
+    
+    console.log('=== generateAnalysis called ===');
+    console.log('Parameters:', { analysisType, forceRefresh, appId: window.currentAppId });
+    
+    // Check if button is disabled and not forcing refresh
+    if (!forceRefresh && generateBtn && generateBtn.disabled) {
+        console.log('Generate button is disabled, showing tooltip info');
+        // Show a gentle message instead of generating
+        const contentDiv = document.getElementById('analysisContent');
+        contentDiv.innerHTML = `
+            <div class="alert alert-info">
+                <h6><i class="bi bi-info-circle"></i> Analysis Already Available</h6>
+                <p>A recent analysis already exists for this application. The analysis is current and up-to-date.</p>
+                <p><strong>Options:</strong></p>
+                <ul>
+                    <li>View the existing analysis above</li>
+                    <li>Use <strong>"Force Refresh"</strong> button to generate a new analysis anyway</li>
+                    <li>Wait for the analysis to become outdated (10+ minutes old)</li>
+                </ul>
+            </div>
+        `;
+        return;
+    }
+    
+    // Show loading state
+    contentDiv.innerHTML = `
+        <div class="text-center p-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Generating analysis...</span>
+            </div>
+            <p class="mt-3">🤖 AI is analyzing the application data...</p>
+            <small class="text-muted">This may take 10-30 seconds</small>
+        </div>
+    `;
+    
+    try {
+        const requestBody = {
+            application_id: window.currentAppId,
+            analysis_type: analysisType,
+            force_refresh: forceRefresh
+        };
+        
+        console.log('Sending request to API...');
+        
+        const response = await fetch('api/ai_analysis.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('API Response:', data);
+        
+        if (data.success && data.data) {
+            console.log('✅ Analysis successful, displaying result...');
+            displayAnalysisResult(data.data);
+            
+            // Update the latest analysis data and recheck button state
+            window.latestAnalysisData = data.data;
+            checkGenerateButtonState();
+        } else {
+            throw new Error(data.error || 'Analysis failed - no data returned');
+        }
+        
+    } catch (error) {
+        console.error('❌ AI Analysis Error:', error);
+        contentDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ Analysis Failed</h6>
+                <p>Error: ${error.message}</p>
+                <div class="mt-3">
+                    <button class="btn btn-outline-danger btn-sm me-2" onclick="generateAnalysis(true)">
+                        🔄 Try Again (Force Refresh)
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="loadRecentAnalyses()">
+                        📋 Load Previous Analysis
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Display analysis result
+function displayAnalysisResult(analysisData) {
+    const contentDiv = document.getElementById('analysisContent');
+    
+    console.log('=== displayAnalysisResult called ===');
+    console.log('Input analysisData:', analysisData);
+    
+    try {
+        // Determine which data source to use
+        let result = null;
+        let analysisContent = '';
+        
+        // Priority order for finding the actual analysis content
+        if (analysisData.result && analysisData.result.type === 'text' && analysisData.result.data && analysisData.result.data.analysis) {
+            console.log('✅ Using analysisData.result.data.analysis');
+            analysisContent = analysisData.result.data.analysis;
+        } else if (analysisData.analysis_result && analysisData.analysis_result.type === 'text' && analysisData.analysis_result.data && analysisData.analysis_result.data.analysis) {
+            console.log('✅ Using analysisData.analysis_result.data.analysis');
+            analysisContent = analysisData.analysis_result.data.analysis;
+        } else if (analysisData.result && analysisData.result.raw_content) {
+            console.log('✅ Using analysisData.result.raw_content');
+            analysisContent = analysisData.result.raw_content;
+        } else if (analysisData.analysis_result && analysisData.analysis_result.raw_content) {
+            console.log('✅ Using analysisData.analysis_result.raw_content');
+            analysisContent = analysisData.analysis_result.raw_content;
+        } else if (analysisData.analysis_result && typeof analysisData.analysis_result === 'string') {
+            console.log('✅ Using analysisData.analysis_result as string');
+            analysisContent = analysisData.analysis_result;
+        } else if (analysisData.analysis_result && analysisData.analysis_result.data && typeof analysisData.analysis_result.data === 'string') {
+            console.log('✅ Using analysisData.analysis_result.data as string');
+            analysisContent = analysisData.analysis_result.data;
+        } else if (typeof analysisData === 'string') {
+            console.log('✅ Using analysisData as string');
+            analysisContent = analysisData;
+        } else {
+            console.log('❌ No recognized analysis content found');
+            console.log('Available keys in analysisData:', Object.keys(analysisData));
+            if (analysisData.result) console.log('Available keys in result:', Object.keys(analysisData.result));
+            if (analysisData.analysis_result) console.log('Available keys in analysis_result:', Object.keys(analysisData.analysis_result));
+            
+            // Try to parse JSON if analysis_result looks like JSON string
+            if (analysisData.analysis_result && typeof analysisData.analysis_result === 'string' && analysisData.analysis_result.startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(analysisData.analysis_result);
+                    if (parsed.data && parsed.data.analysis) {
+                        console.log('✅ Parsed JSON and found analysis content');
+                        analysisContent = parsed.data.analysis;
+                    } else if (parsed.analysis) {
+                        console.log('✅ Parsed JSON and found direct analysis');
+                        analysisContent = parsed.analysis;
+                    } else if (parsed.raw_content) {
+                        console.log('✅ Parsed JSON and found raw_content');
+                        analysisContent = parsed.raw_content;
+                    } else if (typeof parsed === 'string') {
+                        console.log('✅ Parsed JSON but result is string');
+                        analysisContent = parsed;
+                    }
+                } catch (e) {
+                    console.log('Failed to parse JSON:', e);
+                    // If JSON parsing fails, try using the string directly
+                    analysisContent = analysisData.analysis_result;
+                }
+            }
+            
+            // If still no content, try some more fallback options
+            if (!analysisContent && analysisData.analysis_result && typeof analysisData.analysis_result === 'string') {
+                console.log('✅ Using analysis_result string directly as fallback');
+                analysisContent = analysisData.analysis_result;
+            }
+        }
+        
+        console.log('Final analysisContent:', analysisContent ? 'Found content' : 'No content');
+        
+        let htmlContent = `
+            <div class="analysis-result">
+                <div class="analysis-header mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>📊 ${(analysisData.analysis_type || 'UNKNOWN').replace('_', ' ').toUpperCase()} Analysis</h6>
+                        <div class="analysis-meta">
+                            <small class="text-muted">
+                                ${analysisData.cached ? '💾 Cached' : '✨ Fresh'} • 
+                                ${analysisData.processing_time_ms || 0}ms • 
+                                ${analysisData.created_at ? new Date(analysisData.created_at).toLocaleString() : 'Unknown time'}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analysis-content">
+        `;
+        
+        if (analysisContent) {
+            htmlContent += `<div class="analysis-text">${formatTextContent(analysisContent)}</div>`;
+        } else {
+            // Fallback: show raw data for debugging
+            htmlContent += `
+                <div class="alert alert-warning">
+                    <h6>⚠️ Analysis Content Not Found</h6>
+                    <p>The analysis was generated but the content format is not recognized.</p>
+                    <details>
+                        <summary>Debug Information</summary>
+                        <pre>${JSON.stringify(analysisData, null, 2)}</pre>
+                    </details>
+                </div>
+            `;
+        }
+        
+        htmlContent += `
+                </div>
+                
+                <div class="analysis-actions mt-4">
+                    <button class="btn btn-outline-primary btn-sm" onclick="generateAnalysis(true)">
+                        🔄 Refresh Analysis
+                    </button>
+                    <button class="btn btn-outline-info btn-sm" onclick="exportAnalysis()">
+                        📄 Export
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        contentDiv.innerHTML = htmlContent;
+        console.log('✅ Analysis displayed successfully');
+        
+    } catch (error) {
+        console.error('❌ Error displaying analysis result:', error);
+        contentDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ Display Error</h6>
+                <p>Failed to display analysis result: ${error.message}</p>
+                <details>
+                    <summary>Raw data</summary>
+                    <pre>${JSON.stringify(analysisData, null, 2)}</pre>
+                </details>
+            </div>
+        `;
+    }
+}
+
+// Format structured data for display
+function formatStructuredData(data) {
+    let html = '';
+    
+    // Ensure data is an object
+    if (!data || typeof data !== 'object') {
+        return `<p class="text-muted">No structured data available</p>`;
+    }
+    
+    for (const [key, value] of Object.entries(data)) {
+        html += `<div class="data-section mb-3">`;
+        html += `<h6 class="section-title">${String(key).replace(/_/g, ' ').toUpperCase()}</h6>`;
+        
+        if (Array.isArray(value)) {
+            html += '<ul class="list-unstyled">';
+            value.forEach(item => {
+                if (typeof item === 'object' && item !== null) {
+                    html += `<li class="mb-2"><pre>${JSON.stringify(item, null, 2)}</pre></li>`;
+                } else {
+                    html += `<li class="mb-1">• ${formatTextContent(item)}</li>`;
+                }
+            });
+            html += '</ul>';
+        } else if (typeof value === 'object' && value !== null) {
+            html += `<div class="nested-data">${formatStructuredData(value)}</div>`;
+        } else {
+            html += `<p class="section-text">${formatTextContent(value)}</p>`;
+        }
+        
+        html += '</div>';
+    }
+    
+    return html;
+}
+
+// Format text content with line breaks and markdown
+function formatTextContent(text) {
+    if (!text) return '';
+    
+    // Ensure text is a string
+    if (typeof text !== 'string') {
+        text = String(text);
+    }
+    
+    // Convert markdown-style formatting to HTML
+    return text
+        .replace(/\n\n/g, '<br><br>')                        // Double line breaks become paragraph breaks
+        .replace(/\n/g, '<br>')                              // Single line breaks
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')    // Bold text
+        .replace(/### (.*?)(?=\n|<br>|$)/g, '<h5 class="mt-4 mb-3">$1</h5>')   // H3 headers with spacing
+        .replace(/## (.*?)(?=\n|<br>|$)/g, '<h4 class="mt-4 mb-3">$1</h4>')    // H2 headers with spacing  
+        .replace(/# (.*?)(?=\n|<br>|$)/g, '<h3 class="mt-4 mb-3">$1</h3>')     // H1 headers with spacing
+        .replace(/^\- (.*?)(?=\n|<br>|$)/gm, '<li>$1</li>')  // List items
+        .replace(/(<li>.*?<\/li>)/gs, '<ul class="mb-3">$1</ul>')         // Wrap lists with spacing
+        .replace(/<\/ul><br><ul>/g, '')                       // Merge adjacent lists
+        .replace(/<br><h/g, '<h')                            // Clean up headers
+        .replace(/<\/h([3-5])><br>/g, '</h$1>')              // Clean up after headers
+        .replace(/(<\/p>|<\/ul>|<\/h[3-5]>)(<h[3-5]>|<p>)/g, '$1<div class="my-3"></div>$2'); // Add spacing between sections
+}
+
+// Load recent analyses
+async function loadRecentAnalyses() {
+    console.log('=== loadRecentAnalyses called ===');
+    
+    try {
+        const response = await fetch(`api/get_ai_analysis.php?application_id=${window.currentAppId}&limit=5`);
+        const data = await response.json();
+        
+        console.log('API Response:', data);
+        
+        if (data.success && data.data && data.data.length > 0) {
+            console.log(`Found ${data.data.length} recent analyses`);
+            
+            // Display the most recent analysis automatically
+            const mostRecent = data.data[0];
+            console.log('Most recent analysis:', mostRecent);
+            
+            if (mostRecent) {
+                // Format the data correctly for display
+                const formattedData = {
+                    result: mostRecent.analysis_result,  // This should now be parsed JSON
+                    analysis_type: mostRecent.analysis_type || 'summary',
+                    cached: true,
+                    processing_time_ms: mostRecent.processing_time_ms || 0,
+                    created_at: mostRecent.created_at
+                };
+                
+                console.log('Formatted data for display:', formattedData);
+                displayAnalysisResult(formattedData);
+                
+                // Store the latest analysis data for comparison
+                window.latestAnalysisData = mostRecent;
+            } else {
+                console.log('No mostRecent found');
+                showNoAnalysisMessage();
+                window.latestAnalysisData = null;
+            }
+        } else {
+            console.log('No analyses found or API failed');
+            showNoAnalysisMessage();
+            window.latestAnalysisData = null;
+        }
+    } catch (error) {
+        console.error('Failed to load recent analyses:', error);
+        showNoAnalysisMessage();
+        window.latestAnalysisData = null;
+    }
+}
+
+// Helper function to show "no analysis" message
+function showNoAnalysisMessage() {
+    const contentDiv = document.getElementById('analysisContent');
+    contentDiv.innerHTML = `
+        <div class="text-center text-muted p-5">
+            <i class="bi bi-robot" style="font-size: 3rem;"></i>
+            <p class="mt-3">No previous analyses found. Select an analysis type and click "Generate" to get AI insights.</p>
+            <small class="text-muted">The system will automatically check for changes before generating new analyses to save OpenAI tokens.</small>
+        </div>
+    `;
+}
+
+// Export analysis (placeholder)
+function exportAnalysis() {
+    alert('Export functionality coming soon!');
+}
+
+// Check if Generate button should be enabled/disabled
+async function checkGenerateButtonState() {
+    console.log('=== checkGenerateButtonState called ===');
+    
+    const generateBtn = document.querySelector('button[onclick="generateAnalysis()"]');
+    if (!generateBtn) {
+        console.log('❌ Generate button not found');
+        return;
+    }
+    
+    // If no previous analysis exists, enable the button
+    if (!window.latestAnalysisData) {
+        console.log('✅ No previous analysis found, enabling Generate button');
+        enableGenerateButton(generateBtn, 'No previous analysis available');
+        return;
+    }
+    
+    try {
+        const lastAnalysisDate = new Date(window.latestAnalysisData.created_at);
+        console.log('📅 Last analysis date:', lastAnalysisDate);
+        console.log('📋 Latest analysis data:', window.latestAnalysisData);
+        
+        // Check application update date
+        console.log('🔍 Checking application update date...');
+        const response = await fetch(`api/get_application_info.php?id=${window.currentAppId}`);
+        console.log('📡 Application info response status:', response.status);
+        
+        if (!response.ok) {
+            console.log('❌ Failed to fetch application info, enabling button as fallback');
+            enableGenerateButton(generateBtn, 'Unable to verify application updates');
+            return;
+        }
+        
+        const appData = await response.json();
+        console.log('📦 Application data received:', appData);
+        
+        if (!appData.success) {
+            console.log('❌ Application data request failed:', appData.error);
+            enableGenerateButton(generateBtn, 'Unable to verify application updates');
+            return;
+        }
+        
+        // Check if application was updated after last analysis
+        const appUpdatedAt = new Date(appData.data.updated_at || appData.data.created_at);
+        console.log('📅 Application updated at:', appUpdatedAt);
+        console.log('⏰ Time comparison: App updated', appUpdatedAt, 'vs Analysis', lastAnalysisDate);
+        
+        if (appUpdatedAt > lastAnalysisDate) {
+            console.log('✅ Application updated since last analysis, enabling Generate button');
+            enableGenerateButton(generateBtn, 'Application has been updated');
+            return;
+        }
+        
+        // Check for new work notes
+        console.log('🔍 Checking for new work notes...');
+        const workNotesResponse = await fetch(`api/get_latest_work_note.php?application_id=${window.currentAppId}`);
+        console.log('📡 Work notes response status:', workNotesResponse.status);
+        
+        if (!workNotesResponse.ok) {
+            console.log('❌ Failed to fetch work notes, enabling button as fallback');
+            enableGenerateButton(generateBtn, 'Unable to verify work notes');
+            return;
+        }
+        
+        const workNotesData = await workNotesResponse.json();
+        console.log('📝 Work notes data received:', workNotesData);
+        
+        if (workNotesData.success && workNotesData.data && workNotesData.data.created_at) {
+            const latestWorkNoteDate = new Date(workNotesData.data.created_at);
+            console.log('📅 Latest work note date:', latestWorkNoteDate);
+            console.log('⏰ Time comparison: Work note', latestWorkNoteDate, 'vs Analysis', lastAnalysisDate);
+            
+            if (latestWorkNoteDate > lastAnalysisDate) {
+                console.log('✅ New work notes found since last analysis, enabling Generate button');
+                enableGenerateButton(generateBtn, 'New work notes available');
+                return;
+            }
+        } else {
+            console.log('ℹ️ No work notes found or no date available');
+        }
+        
+        // No changes detected, disable the button
+        console.log('🔒 No changes detected since last analysis, disabling Generate button');
+        disableGenerateButton(generateBtn, 'Analysis is up-to-date');
+        
+    } catch (error) {
+        console.error('❌ Error checking Generate button state:', error);
+        // On error, enable the button as a fallback
+        enableGenerateButton(generateBtn, 'Error checking changes - manual override available');
+    }
+}
+
+// Enable Generate button with reason
+function enableGenerateButton(button, reason) {
+    button.disabled = false;
+    button.classList.remove('btn-secondary');
+    button.classList.add('btn-primary');
+    button.title = `Generate Analysis - ${reason}`;
+    button.style.opacity = '1'; // Reset opacity
+    console.log(`Generate button enabled: ${reason}`);
+}
+
+// Disable Generate button with reason
+function disableGenerateButton(button, reason) {
+    button.disabled = true;
+    button.classList.remove('btn-primary');
+    button.classList.add('btn-secondary');
+    button.title = `Analysis is current - ${reason}. No application or work note changes detected. Use "Force Refresh" to generate anyway.`;
+    
+    // Keep original text but make it visually disabled
+    button.style.opacity = '0.6';
+    console.log(`Generate button disabled: ${reason}`);
+}
+</script>
+
 </body>
 </html>

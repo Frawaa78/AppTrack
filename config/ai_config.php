@@ -1,19 +1,10 @@
 <?php
-// src/config/config.php
+// config/ai_config.php
+// AI Configuration file
 
-// Set timezone to match Norwegian time
-date_default_timezone_set('Europe/Oslo');
-
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'cvp60zaqj_apprackdb');
-define('DB_USER', 'cvp60zaqj_apprackdb'); // Sett inn ditt faktiske brukernavn
-define('DB_PASS', 'Loker1978_');    // Sett inn ditt faktiske passord
-define('DB_CHARSET', 'utf8mb4');
-
-// AI Configuration
-define('AI_CONFIG', [
-    // OpenAI API Configuration - Set your API key as environment variable
-    'openai_api_key' => getenv('OPENAI_API_KEY') ?: '',
+return [
+    // OpenAI API Configuration
+    'openai_api_key' => getenv('OPENAI_API_KEY') ?: 'your-openai-api-key-here',
     
     // Default model settings
     'default_model' => 'gpt-3.5-turbo',
@@ -79,5 +70,5 @@ define('AI_CONFIG', [
     'timeout_seconds' => 60,
     'retry_attempts' => 3,
     'retry_delay_seconds' => 2
-]);
+];
 ?>

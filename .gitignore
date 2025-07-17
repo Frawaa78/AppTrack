@@ -1,0 +1,47 @@
+# Environment files
+.env
+.env.local
+.env.production
+
+# API Keys and secrets
+*.key
+*.pem
+config_local.php
+
+# Database backups
+*.sql
+*.db
+*.sqlite
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Upload directories (you may want to keep structure but ignore contents)
+uploads/*
+!uploads/.gitkeep
+
+# Vendor directories (if using Composer)
+vendor/
+
+# Node modules (if using npm)
+node_modules/
+
+# Cache directories
+cache/
+*.cache
