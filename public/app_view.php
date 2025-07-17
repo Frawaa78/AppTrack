@@ -214,7 +214,7 @@ if (empty($statuses)) {
 </head>
 <body class="bg-light">
 <!-- Topbar -->
-<?php $topbar_search_disabled = true; include __DIR__ . '/shared/topbar.php'; ?>
+<?php include __DIR__ . '/shared/topbar.php'; ?>
 <div class="container">
   <div class="header-with-buttons">
     <div>
@@ -280,7 +280,7 @@ if (empty($statuses)) {
         <div class="form-group-horizontal position-relative">
           <label class="form-label">Handover status</label>
           <div class="range-container" style="flex: 1;">
-            <input type="range" class="form-range" min="0" max="100" step="10" name="handover_status" value="<?php echo htmlspecialchars($app['handover_status']); ?>" disabled>
+            <input type="range" class="form-range" min="0" max="100" step="10" name="handover_status" value="<?php echo htmlspecialchars($app['handover_status'] ?? 0); ?>" disabled>
             <div class="range-markers">
               <div class="range-marker"></div>
               <div class="range-marker"></div>
@@ -464,7 +464,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const container = slider.parentElement;
-    const value = parseInt(slider.value) || 40; // Use same default as initialization
+    const value = parseInt(slider.value) || 0; // Use same default as initialization
     console.log('updateHandoverTooltip called with value:', value);
     
     const tooltipMap = {
@@ -523,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Wait a bit to ensure elements are fully rendered
     setTimeout(function() {
       // Initialize progress CSS property
-      const value = parseInt(slider.value) || 40; // Default to 40 for testing if no value
+      const value = parseInt(slider.value) || 0; // Default to 0 if no value
       console.log('Using value:', value);
       
       const progress = ((value - slider.min) / (slider.max - slider.min)) * 100;

@@ -41,32 +41,40 @@ The system enables users to register, update, and view relevant information abou
 - **Cross-Page Consistency**: Identical styling and behavior between form and view modes
 - **Reliable JavaScript**: Window-scoped functions with proper error handling
 
-### Latest Major Update: Version 2.1 (July 2025)
-Complete Activity Tracking System with Admin Controls:
+### Latest Major Update: Version 2.2 (July 2025)
+Enhanced Dashboard with Time-based Badges and Extended Global Search:
 
-#### **Activity Tracking Revolution** 🆕
-- **Comprehensive Activity Feed**: Real-time tracking of all application changes and user interactions
-- **Work Notes System**: Manual entries with file attachments, categorized by type (Comment, Change, Problem)
-- **Automatic Audit Trail**: System-generated logs for all field modifications with before/after values
-- **File Upload Support**: Attach documents, images, and files (up to 10MB) to work notes
-- **Admin Hide Controls**: Administrators can hide sensitive activities from viewers and editors
-- **Confirmation Dialogs**: English confirmation prompts for hiding activities ("Are you sure you want to hide this activity?")
-- **Visual Activity States**: Hidden activities are visually dimmed with restore capability for admins
-- **Timestamp Repositioning**: Activity timestamps moved to bottom-right corner for better visual flow
-- **Filter Options**: "Work Notes Only" and "Show Hidden" filters for focused activity viewing
-- **User Attribution**: All activities linked to user accounts with email display
-- **Relative Time Display**: Human-friendly timestamps (e.g., "2 hours ago", "Yesterday")
+#### **Dashboard Redesign Revolution** 🆕
+- **Modern Table Interface**: Clean, transparent table design without unnecessary backgrounds and borders
+- **Time-based Badge System**: Color-coded status indicators based on last update time
+  - **Green badges** (#90EFC3): Applications updated within 48 hours
+  - **Blue badges** (#73C9FF): Applications updated 2-7 days ago  
+  - **Gray badges** (#C9C9C9): Applications updated 7-14 days ago
+  - **Orange badges** (#FFD24C): Applications updated more than 14 days ago
+- **Interactive Column Sorting**: Click any column header to sort applications
+- **Uniform Badge Design**: Fixed-width badges (85px) with 4px rounded corners and centered text
+- **Optimized Row Spacing**: 25% reduced vertical padding for denser information display
+- **Light Blue Hover Effects** (#E3F1FF): Smooth row highlighting on mouse over
+- **Right-aligned Time Badges**: Professional layout with consistent badge positioning
+- **Text Overflow Management**: Pre-ops portfolio text automatically truncated with ellipsis
+- **No-wrap Text Formatting**: Phase and Status columns keep text on single lines
 
-#### **Enhanced Admin Capabilities**
-- **Activity Management**: Hide/show functionality for controlling information visibility
-- **Role-Based Controls**: Admin-only features clearly separated from editor/viewer access
-- **Activity Oversight**: "Show Hidden" filter to review and manage hidden activities
-- **User Workflow Control**: Ability to hide irrelevant or sensitive activities from general users
+#### **Global Search Enhancement** 🆕  
+- **Comprehensive Field Search**: Extended search now covers 13+ application fields:
+  - Basic Information: Short description, Application service, Business need
+  - Personnel: Delivery responsible, Project manager, Product owner, Assigned to
+  - Portfolios: Pre-ops portfolio, Application portfolio
+  - Context: Contract responsible, Phase, Relevant for
+  - Activity Tracker: Work notes and comments
+- **Deep Content Discovery**: Find applications by searching any field content
+- **Real-time Results**: Same dropdown interface with enhanced search scope
+- **Maintained Display Format**: Results still show short description, status, and updated time
 
-#### **Form Layout Revolution**
-- **50% space reduction**: Horizontal layout vs. previous vertical design
-- **Perfect alignment**: Fixed-width labels with right-alignment for visual consistency
-- **Responsive design**: Adapts seamlessly to different screen sizes
+#### **Bug Fixes & UI Polish**
+- **Handover Status Fix**: Resolved false 40% display when database value is null/empty
+- **Dashboard Color Scheme**: Removed white backgrounds and gray borders for cleaner appearance
+- **Typography Consistency**: Removed bold formatting from application names in dashboard
+- **Visual Hierarchy**: Added subtle lines under column headers for better separation
 
 #### **Activity Tracking System** ✅ (COMPLETE)
 - **Comprehensive Activity Feed**: Combines manual work notes and automatic audit logging
@@ -81,6 +89,8 @@ Complete Activity Tracking System with Admin Controls:
 - **Responsive Design**: Bottom-right timestamp positioning and optimized mobile layout
 - **Real-time Updates**: Activities appear immediately without page refresh
 - **RESTful API**: Complete backend API for activity management and file operations
+- **Modern Toggle Switches**: Bootstrap switches for filter controls positioned on the right
+- **Line Break Preservation**: Activity content displays properly formatted text with preserved line breaks
 
 #### **Interactive Enhancements**
 - **Enhanced Handover Slider**: 11 visual markers, dynamic highlighting, centered tooltips
