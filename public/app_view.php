@@ -63,7 +63,7 @@ if (empty($statuses)) {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/pages/app-view.css?v=<?php echo time(); ?>">
-  <link rel="stylesheet" href="../assets/css/components/activity-tracker.css">>
+  <link rel="stylesheet" href="../assets/css/components/activity-tracker.css">
   <style>
     /* Related Applications readonly styling */
     .choices--disabled {
@@ -217,7 +217,9 @@ if (empty($statuses)) {
 <?php $topbar_search_disabled = true; include __DIR__ . '/shared/topbar.php'; ?>
 <div class="container">
   <div class="header-with-buttons">
-    <div></div>
+    <div>
+      <h5 class="mb-0">Status & Details</h5>
+    </div>
     <div class="header-buttons">
       <a href="dashboard.php" class="btn btn-secondary">Back</a>
       <?php if (isset($_SESSION['user_role'])) { $role = $_SESSION['user_role']; } else { $role = null; } ?>
@@ -428,29 +430,11 @@ if (empty($statuses)) {
     </div>
   </form>
   
-  <!-- Read-only Activity Tracker -->
-  <div class="activity-tracker mt-4">
-    <div class="activity-header">
-      <h5>Activity History</h5>
-      <div class="activity-content-wrapper">
-        <div class="activity-feed" id="activity-feed-container">
-          <!-- Activity feed will be loaded here via JavaScript -->
-          <div class="text-center text-muted p-4">
-            <div class="spinner-border spinner-border-sm" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            Loading activities...
-          </div>
-        </div>
-        
-        <div class="load-more-container" id="load-more-container" style="display: none;">
-          <button class="btn btn-outline-primary load-more-btn" id="load-more-btn">
-            Load More Activities
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Activity Tracker Section -->
+  <?php 
+  $application_id = $id; 
+  include __DIR__ . '/shared/activity_tracker.php'; 
+  ?>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
@@ -463,8 +447,8 @@ window.currentAppId = <?php echo $id; ?>;
 
 // Initialize read-only Activity Tracker
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize activity tracker in read-only mode
-  const activityTracker = new ActivityTracker(<?php echo $id; ?>, 'viewer', true); // true = read-only mode
+  // Initialize activity tracker in read-only mode with switches
+  const activityTracker = new ActivityTracker(<?php echo $id; ?>, '<?php echo $_SESSION['user_role'] ?? 'viewer'; ?>', true); // true = read-only mode
 });
 
 // Backup inline script for Related applications and Handover slider if external files fail

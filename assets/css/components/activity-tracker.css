@@ -49,9 +49,30 @@
 
 .activity-filters {
     display: flex;
-    gap: 10px;
+    gap: 20px;
     flex-wrap: wrap;
     margin-bottom: 15px;
+    justify-content: flex-end; /* Align switches to the right */
+}
+
+.activity-filters .form-check {
+    margin-bottom: 0;
+}
+
+.activity-filters .form-check-label {
+    font-size: 0.875rem;
+    color: #495057;
+    font-weight: 500;
+    margin-left: 0.5rem;
+}
+
+.activity-filters .form-check-input {
+    margin-left: 0;
+}
+
+.activity-filters .form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
 }
 
 .filter-btn {
@@ -92,11 +113,28 @@
 }
 
 .activity-item.work-note {
-    border-left: 4px solid #007bff;
+    border-left: 4px solid #90EFC3; /* Default grønn for work notes */
 }
 
 .activity-item.audit-log {
-    border-left: 4px solid #6c757d;
+    border-left: 4px solid #9DA3A8; /* Grå for field changes */
+}
+
+/* Spesifikke farger basert på type */
+.activity-item.activity-type-comment {
+    border-left: 4px solid #90EFC3 !important;
+}
+
+.activity-item.activity-type-change {
+    border-left: 4px solid #90EFC3 !important;
+}
+
+.activity-item.activity-type-problem {
+    border-left: 4px solid #FFD24C !important;
+}
+
+.activity-item.activity-type-field-change {
+    border-left: 4px solid #9DA3A8 !important;
 }
 
 .activity-item.hidden {
@@ -145,18 +183,23 @@
 }
 
 .type-comment {
-    background-color: #e3f2fd;
-    color: #1976d2;
+    background-color: #90EFC3;
+    color: #2d5a3d;
 }
 
 .type-change {
-    background-color: #f3e5f5;
-    color: #7b1fa2;
+    background-color: #90EFC3;
+    color: #2d5a3d;
 }
 
 .type-problem {
-    background-color: #ffebee;
-    color: #d32f2f;
+    background-color: #FFD24C;
+    color: #8b6914;
+}
+
+.type-field-change {
+    background-color: #9DA3A8;
+    color: #ffffff;
 }
 
 .activity-attachment {

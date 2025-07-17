@@ -96,14 +96,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Log field changes
             foreach ($fields as $field) {
-                if (isset($oldValues[$field]) && $oldValues[$field] !== $data[$field]) {
-                    $activityManager->logFieldChange(
-                        $currentAppId,
-                        $field,
-                        $oldValues[$field],
-                        $data[$field],
-                        $_SESSION['user_id']
-                    );
+                if (isset($oldValues[$field])) {
+                    $oldVal = $oldValues[$field];
+                    $newVal = $data[$field];
+                    
+                    // Special handling for numeric fields to avoid false positives
+                    $numericFields = ['handover_status'];
+                    if (in_array($field, $numericFields)) {
+                        $oldVal = (string)$oldVal; // Convert to string for comparison
+                        $newVal = (string)$newVal;
+                    }
+                    
+                    if ($oldVal !== $newVal) {
+                        $activityManager->logFieldChange(
+                            $currentAppId,
+                            $field,
+                            $oldValues[$field],
+                            $data[$field],
+                            $_SESSION['user_id']
+                        );
+                    }
                 }
             }
             
@@ -226,12 +238,15 @@ if (empty($statuses)) {
 <div class="container">
   <form method="post" autocomplete="off" id="applicationForm">
     <div class="header-with-buttons">
-      <div></div>
+      <div>
+        <h5 class="mb-0">Status & Details</h5>
+      </div>
       <div class="header-buttons">
         <a href="<?php echo $id > 0 ? 'app_view.php?id=' . $id : 'dashboard.php'; ?>" class="btn btn-secondary">Cancel</a>
         <button type="submit" form="applicationForm" class="btn btn-primary">Save</button>
       </div>
     </div>
+    
     <div class="row g-3">
       <!-- Left column -->
       <div class="col-md-6">

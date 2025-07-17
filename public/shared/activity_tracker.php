@@ -14,13 +14,19 @@ $user_role = $_SESSION['user_role'] ?? 'viewer';
         <h5>Activity Tracker</h5>
         <div class="activity-content-wrapper">
             <div class="activity-filters">
-                <button id="filter-work-notes-only" class="btn btn-outline-secondary filter-btn">
-                    Work Notes Only
-                </button>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="filter-work-notes-only" checked>
+                    <label class="form-check-label" for="filter-work-notes-only">
+                        Show only Work notes
+                    </label>
+                </div>
                 <?php if ($user_role === 'admin'): ?>
-                    <button id="filter-show-hidden" class="btn btn-outline-secondary filter-btn">
-                        Show Hidden
-                    </button>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="filter-show-hidden">
+                        <label class="form-check-label" for="filter-show-hidden">
+                            Show hidden
+                        </label>
+                    </div>
                 <?php endif; ?>
             </div>
             

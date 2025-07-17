@@ -6,7 +6,7 @@ class ActivityTracker {
         this.userRole = userRole;
         this.readOnly = readOnly;
         this.currentFilters = {
-            show_work_notes_only: false,
+            show_work_notes_only: true, // Default til true (switch på)
             show_hidden: false
         };
         this.pagination = {
@@ -21,7 +21,22 @@ class ActivityTracker {
     
     init() {
         this.bindEvents();
+        this.initializeSwitchStates(); // Set initial switch states
         this.loadActivityFeed(true); // true = reset pagination
+    }
+    
+    initializeSwitchStates() {
+        // Set initial state for work notes switch (checked = true)
+        const workNotesSwitch = document.getElementById('filter-work-notes-only');
+        if (workNotesSwitch) {
+            workNotesSwitch.checked = this.currentFilters.show_work_notes_only;
+        }
+        
+        // Set initial state for show hidden switch (checked = false)
+        const showHiddenSwitch = document.getElementById('filter-show-hidden');
+        if (showHiddenSwitch) {
+            showHiddenSwitch.checked = this.currentFilters.show_hidden;
+        }
     }
     
     bindEvents() {
@@ -35,13 +50,17 @@ class ActivityTracker {
         }
         
         // Full event binding for editable mode
-        // Filter-knapper
-        document.getElementById('filter-work-notes-only')?.addEventListener('click', () => {
-            this.toggleFilter('show_work_notes_only');
+        // Filter switches
+        document.getElementById('filter-work-notes-only')?.addEventListener('change', (e) => {
+            this.currentFilters.show_work_notes_only = e.target.checked;
+            this.resetPagination();
+            this.loadActivityFeed(true);
         });
         
-        document.getElementById('filter-show-hidden')?.addEventListener('click', () => {
-            this.toggleFilter('show_hidden');
+        document.getElementById('filter-show-hidden')?.addEventListener('change', (e) => {
+            this.currentFilters.show_hidden = e.target.checked;
+            this.resetPagination();
+            this.loadActivityFeed(true);
         });
         
         // Work notes form
@@ -100,21 +119,6 @@ class ActivityTracker {
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-    
-    toggleFilter(filterName) {
-        this.currentFilters[filterName] = !this.currentFilters[filterName];
-        
-        // Oppdater button state
-        const button = document.getElementById(`filter-${filterName.replace('_', '-')}`);
-        if (button) {
-            button.classList.toggle('btn-primary', this.currentFilters[filterName]);
-            button.classList.toggle('btn-outline-secondary', !this.currentFilters[filterName]);
-        }
-        
-        // Reset pagination when filters change
-        this.resetPagination();
-        this.loadActivityFeed(true);
     }
     
     resetPagination() {
@@ -224,6 +228,14 @@ class ActivityTracker {
         const priorityClass = activity.priority ? `priority-${activity.priority}` : '';
         const hiddenClass = isHidden ? 'hidden' : '';
         
+        // Add specific type class for border color
+        let activityTypeClass = '';
+        if (activity.activity_type === 'work_note') {
+            activityTypeClass = `activity-type-${activity.type || 'comment'}`;
+        } else {
+            activityTypeClass = 'activity-type-field-change';
+        }
+        
         let contentHtml = '';
         
         if (activity.activity_type === 'work_note') {
@@ -247,7 +259,7 @@ class ActivityTracker {
                 <div class="activity-header-row">
                     <span class="activity-user">${this.escapeHtml(activity.user_email || 'System')}</span>
                 </div>
-                <div class="activity-type-badge type-change">
+                <div class="activity-type-badge type-field-change">
                     Field Change
                 </div>
                 <div class="activity-content mt-2">
@@ -262,7 +274,7 @@ class ActivityTracker {
         const adminControls = (!this.readOnly && this.userRole === 'admin') ? this.renderAdminControls(activity) : '';
         
         return `
-            <div class="activity-item ${typeClass} ${priorityClass} ${hiddenClass}" data-id="${activity.id}">
+            <div class="activity-item ${typeClass} ${priorityClass} ${hiddenClass} ${activityTypeClass}" data-id="${activity.id}">
                 ${adminControls}
                 ${contentHtml}
             </div>
