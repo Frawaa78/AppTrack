@@ -79,7 +79,9 @@ class ActivityManager {
                     al.record_id as application_id,
                     al.changed_by as user_id,
                     u.email as user_email,
-                    CONCAT(al.field_name, ' changed from \"', IFNULL(al.old_value, ''), '\" to \"', IFNULL(al.new_value, ''), '\"') as content,
+                    al.field_name,
+                    al.old_value,
+                    al.new_value,
                     'change' as type,
                     'medium' as priority,
                     NULL as attachment_filename,
@@ -105,6 +107,8 @@ class ActivityManager {
             $audit_logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             foreach ($audit_logs as $log) {
+                // Generate human-readable content based on field type
+                $log['content'] = $this->generateAuditLogContent($log['field_name'], $log['old_value'], $log['new_value']);
                 $activities[] = $log;
             }
         }
@@ -274,6 +278,68 @@ class ActivityManager {
             return "$field_label cleared (was: $old_value)";
         } else {
             return "$field_label changed from \"$old_value\" to \"$new_value\"";
+        }
+    }
+    
+    /**
+     * Generate human-readable audit log content
+     */
+    private function generateAuditLogContent($field_name, $old_value, $new_value) {
+        // Handle relationship_yggdrasil field specially - convert IDs to application names
+        if ($field_name === 'relationship_yggdrasil') {
+            $old_names = $this->convertIdsToApplicationNames($old_value);
+            $new_names = $this->convertIdsToApplicationNames($new_value);
+            
+            if (empty($old_value)) {
+                return "relationship_yggdrasil set to: " . $new_names;
+            } elseif (empty($new_value)) {
+                return "relationship_yggdrasil cleared (was: " . $old_names . ")";
+            } else {
+                return "relationship_yggdrasil changed from \"" . $old_names . "\" to \"" . $new_names . "\"";
+            }
+        }
+        
+        // For all other fields, use standard format
+        if (empty($old_value)) {
+            return $field_name . " set to: " . $new_value;
+        } elseif (empty($new_value)) {
+            return $field_name . " cleared (was: " . $old_value . ")";
+        } else {
+            return $field_name . " changed from \"" . $old_value . "\" to \"" . $new_value . "\"";
+        }
+    }
+    
+    /**
+     * Convert comma-separated application IDs to application names
+     */
+    private function convertIdsToApplicationNames($ids_string) {
+        if (empty($ids_string)) {
+            return '';
+        }
+        
+        $ids = array_map('trim', explode(',', $ids_string));
+        $ids = array_filter($ids, 'is_numeric'); // Only keep numeric IDs
+        
+        if (empty($ids)) {
+            return '';
+        }
+        
+        try {
+            $placeholders = implode(',', array_fill(0, count($ids), '?'));
+            $sql = "SELECT id, short_description FROM applications WHERE id IN ($placeholders)";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($ids);
+            $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            $names = [];
+            foreach ($applications as $app) {
+                $names[] = $app['short_description'];
+            }
+            
+            return implode(', ', $names);
+        } catch (Exception $e) {
+            // If something goes wrong, return the original IDs
+            return $ids_string;
         }
     }
     
