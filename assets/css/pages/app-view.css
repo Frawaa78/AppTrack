@@ -104,3 +104,49 @@ a.form-control[href] i.bi-box-arrow-up-right {
   color: white !important;
   font-weight: 500 !important;
 }
+
+/* Integration Diagram Modal Styling */
+#integrationDiagramModal .modal-xl {
+  max-width: 95%;
+}
+
+#mermaid-container {
+  background-color: #ffffff;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#mermaid-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+#diagram-code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.edit-section {
+  border-top: 1px solid #dee2e6;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+.edit-section label {
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Integration Architecture button styling */
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}

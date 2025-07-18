@@ -217,6 +217,15 @@ if (empty($statuses)) {
     .choices[data-type*="select-multiple"] {
       min-height: 38px !important;
     }
+    
+    /* Force text ellipsis on long URLs in form controls */
+    .form-control[href] {
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+      display: block !important;
+      max-width: 100% !important;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -423,14 +432,23 @@ if (empty($statuses)) {
         </div>
         <div class="form-group-horizontal" id="sa_document_group" style="display: <?php echo ($app['integrations']==='Yes') ? 'flex' : 'none'; ?>;">
           <label for="saDocument" class="form-label">S.A. Document</label>
-          <?php if (!empty($app['sa_document'])): ?>
-            <a href="<?php echo htmlspecialchars($app['sa_document']); ?>" target="_blank" rel="noopener noreferrer" class="form-control" style="position: relative; text-decoration: none; color: #0d6efd; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; display: block !important; max-width: 100% !important; padding-right: 2.5rem !important;">
-              <?php echo htmlspecialchars($app['sa_document']); ?>
-              <i class="bi bi-box-arrow-up-right" style="position: absolute !important; right: 0.75rem !important; top: 50% !important; transform: translateY(-50%) !important; pointer-events: none !important;"></i>
-            </a>
-          <?php else: ?>
-            <input type="url" class="form-control" id="saDocument" name="sa_document" placeholder="S.A. Document" value="" readonly>
-          <?php endif; ?>
+          <div style="flex: 1; display: flex; gap: 8px; align-items: center; min-width: 0;">
+            <?php if (!empty($app['sa_document'])): ?>
+              <div style="flex: 1; min-width: 0; overflow: hidden;">
+                <a href="<?php echo htmlspecialchars($app['sa_document']); ?>" target="_blank" rel="noopener noreferrer" class="form-control" style="position: relative; text-decoration: none; color: #0d6efd; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; display: block !important; width: 100% !important; padding-right: 2.5rem !important;">
+                  <?php echo htmlspecialchars($app['sa_document']); ?>
+                  <i class="bi bi-box-arrow-up-right" style="position: absolute !important; right: 0.75rem !important; top: 50% !important; transform: translateY(-50%) !important; pointer-events: none !important;"></i>
+                </a>
+              </div>
+            <?php else: ?>
+              <input type="url" class="form-control" id="saDocument" name="sa_document" placeholder="S.A. Document" value="" readonly style="flex: 1; min-width: 0;">
+            <?php endif; ?>
+            <?php if ($app['integrations'] === 'Yes'): ?>
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="openIntegrationDiagram()" title="Integration Architecture" style="height: 38px; width: 38px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i class="bi bi-diagram-3" style="font-size: 14px;"></i>
+            </button>
+            <?php endif; ?>
+          </div>
         </div>
       </div>
     </div>
@@ -635,6 +653,56 @@ document.addEventListener('DOMContentLoaded', function() {
             <p class="mt-3">Select an analysis type and click "Generate" to get AI insights about this application.</p>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Integration Architecture Modal -->
+<div class="modal fade" id="integrationDiagramModal" tabindex="-1" aria-labelledby="integrationDiagramModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="integrationDiagramModalLabel">
+          <i class="bi bi-diagram-3"></i> Integration Architecture - <?php echo htmlspecialchars($app['short_description']); ?>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Diagram Display -->
+        <div id="mermaid-container" class="mb-4" style="min-height: 300px; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem;">
+          <div class="text-center text-muted p-5">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Loading diagram...</span>
+            </div>
+            <p class="mt-3">Loading integration diagram...</p>
+          </div>
+        </div>
+        
+        <!-- Edit Mode for Admin/Editor -->
+        <?php if (in_array($_SESSION['user_role'] ?? 'viewer', ['admin', 'editor'])): ?>
+        <div class="edit-section">
+          <div class="row">
+            <div class="col-md-6">
+              <label for="diagram-code" class="form-label">Mermaid Diagram Code:</label>
+              <textarea id="diagram-code" rows="8" class="form-control font-monospace" placeholder="Enter Mermaid diagram code here..."></textarea>
+              <button class="btn btn-primary mt-2" onclick="updateDiagram()">
+                <i class="bi bi-arrow-clockwise"></i> Update Diagram
+              </button>
+              <button class="btn btn-outline-secondary mt-2 ms-2" onclick="loadTemplate()">
+                <i class="bi bi-file-earmark-code"></i> Load Template
+              </button>
+            </div>
+            <div class="col-md-6">
+              <label for="integration-notes" class="form-label">Integration Notes:</label>
+              <textarea id="integration-notes" rows="8" class="form-control" placeholder="Add notes about the integration architecture..."></textarea>
+              <button class="btn btn-success mt-2" onclick="saveIntegrationData()">
+                <i class="bi bi-floppy"></i> Save All Changes
+              </button>
+            </div>
+          </div>
+        </div>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -1127,6 +1195,184 @@ function disableGenerateButton(button, reason) {
     // Keep original text but make it visually disabled
     button.style.opacity = '0.6';
     console.log(`Generate button disabled: ${reason}`);
+}
+
+// Integration Diagram functionality
+let mermaidLoaded = false;
+
+// Open Integration Diagram Modal
+function openIntegrationDiagram() {
+    const modal = new bootstrap.Modal(document.getElementById('integrationDiagramModal'));
+    modal.show();
+    
+    // Load Mermaid.js if not already loaded
+    if (!mermaidLoaded) {
+        loadMermaid();
+    } else {
+        initializeIntegrationDiagram();
+    }
+}
+
+// Load Mermaid.js library
+function loadMermaid() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+    script.onload = function() {
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+        mermaidLoaded = true;
+        initializeIntegrationDiagram();
+    };
+    document.head.appendChild(script);
+}
+
+// Initialize the integration diagram
+async function initializeIntegrationDiagram() {
+    try {
+        const response = await fetch(`api/get_integration_diagram.php?id=${window.currentAppId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.diagram_code && data.diagram_code.trim()) {
+                renderDiagram(data.diagram_code);
+                document.getElementById('diagram-code').value = data.diagram_code;
+            } else {
+                renderDefaultDiagram();
+            }
+            
+            if (data.notes) {
+                document.getElementById('integration-notes').value = data.notes;
+            }
+        } else {
+            console.error('Error loading diagram:', data.error);
+            renderDefaultDiagram();
+        }
+    } catch (error) {
+        console.error('Error fetching diagram data:', error);
+        renderDefaultDiagram();
+    }
+}
+
+// Render diagram with Mermaid
+function renderDiagram(code) {
+    const container = document.getElementById('mermaid-container');
+    const diagramId = 'mermaid-diagram-' + Date.now();
+    
+    try {
+        mermaid.render(diagramId, code).then(result => {
+            container.innerHTML = result.svg;
+        }).catch(error => {
+            console.error('Mermaid render error:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <strong>Diagram Error:</strong> ${error.message}
+                    <br><small>Please check your Mermaid syntax.</small>
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error('Mermaid error:', error);
+        container.innerHTML = `
+            <div class="alert alert-danger">
+                <strong>Error:</strong> Unable to render diagram.
+            </div>
+        `;
+    }
+}
+
+// Render default diagram template
+function renderDefaultDiagram() {
+    const appName = '<?php echo addslashes($app['short_description']); ?>';
+    const defaultDiagram = `graph TD
+    A[${appName}] --> B[Database]
+    A --> C[External API]
+    D[Source System] --> A
+    A --> E[Target System]`;
+    
+    renderDiagram(defaultDiagram);
+    document.getElementById('diagram-code').value = defaultDiagram;
+}
+
+// Update diagram from code input
+function updateDiagram() {
+    const code = document.getElementById('diagram-code').value;
+    if (code.trim()) {
+        renderDiagram(code);
+    }
+}
+
+// Load template
+function loadTemplate() {
+    const templates = {
+        'Basic Integration': `graph TD
+    A[${`<?php echo addslashes($app['short_description']); ?>`}] --> B[Database]
+    A --> C[External API]
+    D[Source System] --> A
+    A --> E[Target System]`,
+        
+        'Data Pipeline': `graph LR
+    A[Source Data] --> B[${`<?php echo addslashes($app['short_description']); ?>`}]
+    B --> C[Transform]
+    C --> D[Load]
+    D --> E[Data Warehouse]
+    E --> F[Analytics]`,
+        
+        'API Integration': `graph TD
+    A[Client App] --> B[API Gateway]
+    B --> C[${`<?php echo addslashes($app['short_description']); ?>`}]
+    C --> D[Auth Service]
+    C --> E[Business Logic]
+    E --> F[Database]`,
+        
+        'Microservices': `graph TB
+    A[Load Balancer] --> B[${`<?php echo addslashes($app['short_description']); ?>`}]
+    B --> C[Service A]
+    B --> D[Service B]
+    B --> E[Service C]
+    C --> F[Database A]
+    D --> G[Database B]
+    E --> H[Cache]`
+    };
+    
+    const templateNames = Object.keys(templates);
+    const selected = prompt(`Select a template:\n${templateNames.map((name, i) => `${i+1}. ${name}`).join('\n')}\n\nEnter number (1-${templateNames.length}):`);
+    
+    if (selected && parseInt(selected) >= 1 && parseInt(selected) <= templateNames.length) {
+        const templateName = templateNames[parseInt(selected) - 1];
+        const templateCode = templates[templateName];
+        document.getElementById('diagram-code').value = templateCode;
+        renderDiagram(templateCode);
+    }
+}
+
+// Save integration data
+async function saveIntegrationData() {
+    const diagramCode = document.getElementById('diagram-code').value;
+    const notes = document.getElementById('integration-notes').value;
+    
+    try {
+        const response = await fetch('api/save_integration_diagram.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                application_id: window.currentAppId,
+                diagram_code: diagramCode,
+                notes: notes
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Integration diagram and notes saved successfully!');
+        } else {
+            alert('Error saving data: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error saving integration data:', error);
+        alert('Error saving data. Please try again.');
+    }
 }
 </script>
 
