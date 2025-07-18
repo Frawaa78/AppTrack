@@ -1,17 +1,196 @@
-# UI/UX Implementation Guide
+# UI/UX Implementation Guide v3.1
 
-This document details the technical implementation of the enhanced user interface in AppTrack v2.0, focusing on the complete redesign that prioritizes space efficiency, visual consistency, and superior user experience.
+This document details the technical implementation of the enhanced user interface in AppTrack v3.1, focusing on the Activity Tracker improvements and new Integration Architecture feature implemented in July 2025.
 
 ## Overview
 
-AppTrack v2.0 introduces a revolutionary UI overhaul with:
+AppTrack v3.1 introduces significant UI/UX enhancements:
+- **Enhanced Activity Tracker**: User display names and English date formatting
+- **Integration Architecture System**: Visual diagram creation with Mermaid.js
+- **Improved Text Handling**: Proper ellipsis for long URLs with inline buttons
+- **Professional UI Design**: Icon-only buttons and optimized layouts
+- **Responsive Integration**: Mobile-optimized diagram editing interface
 - **50% space reduction** through intelligent horizontal form layouts
 - **Perfect visual consistency** across form and view modes
 - **Enhanced interactivity** with sophisticated form elements
 - **Modern design principles** with improved accessibility
 - **Component-based architecture** for maintainability
 
-## Architecture Foundation
+## New Features Implementation - v3.1
+
+### Activity Tracker Enhancements
+
+#### User Display Name Implementation
+```javascript
+// Enhanced renderActivityItem function
+function renderActivityItem(activity) {
+    // Prioritize display_name over email
+    const displayName = activity.user_display_name || activity.user_email;
+    
+    return `
+        <div class="activity-item">
+            <div class="activity-meta">
+                <span class="activity-user">${escapeHtml(displayName)}</span>
+                <span class="activity-time">${formatDateTime(activity.created_at)}</span>
+            </div>
+        </div>
+    `;
+}
+```
+
+#### English Date Formatting
+```javascript
+// Updated formatDateTime function
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayName = dayNames[date.getDay()];
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${dayName} - ${day}.${month}.${year} @ ${hours}:${minutes}:${seconds}`;
+}
+```
+
+### Integration Architecture UI
+
+#### Modal Implementation
+```html
+<!-- Integration Architecture Modal -->
+<div class="modal fade" id="integrationDiagramModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-diagram-3"></i> Integration Architecture
+                </h5>
+            </div>
+            <div class="modal-body">
+                <!-- Mermaid Container -->
+                <div id="mermaid-container" class="mb-4"></div>
+                
+                <!-- Edit Section (Admin/Editor only) -->
+                <div class="edit-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="diagram-code">Mermaid Diagram Code:</label>
+                            <textarea id="diagram-code" rows="8" class="form-control font-monospace"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="integration-notes">Integration Notes:</label>
+                            <textarea id="integration-notes" rows="8" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+#### Button Integration with S.A. Document Field
+```html
+<!-- Inline button implementation -->
+<div class="form-group-horizontal" id="sa_document_group">
+    <label for="saDocument" class="form-label">S.A. Document</label>
+    <div style="flex: 1; display: flex; gap: 8px; align-items: center; min-width: 0;">
+        <div style="flex: 1; min-width: 0; overflow: hidden;">
+            <a href="#" class="form-control" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                Very long SharePoint URL that needs to be truncated...
+            </a>
+        </div>
+        <button type="button" class="btn btn-outline-success btn-sm" 
+                onclick="openIntegrationDiagram()" 
+                title="Integration Architecture"
+                style="height: 38px; width: 38px; padding: 0; flex-shrink: 0;">
+            <i class="bi bi-diagram-3" style="font-size: 14px;"></i>
+        </button>
+    </div>
+</div>
+```
+
+#### CSS for Text Overflow Handling
+```css
+/* Ensures proper text truncation in flex containers */
+.form-control[href] {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: block !important;
+    max-width: 100% !important;
+}
+```
+
+### Mermaid.js Integration
+
+#### Dynamic Loading and Initialization
+```javascript
+let mermaidLoaded = false;
+
+function loadMermaid() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+    script.onload = function() {
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+        mermaidLoaded = true;
+        initializeIntegrationDiagram();
+    };
+    document.head.appendChild(script);
+}
+
+function renderDiagram(code) {
+    const container = document.getElementById('mermaid-container');
+    const diagramId = 'mermaid-diagram-' + Date.now();
+    
+    mermaid.render(diagramId, code).then(result => {
+        container.innerHTML = result.svg;
+    }).catch(error => {
+        container.innerHTML = `<div class="alert alert-danger">Diagram Error: ${error.message}</div>`;
+    });
+}
+```
+
+#### Template System
+```javascript
+const templates = {
+    'Basic Integration': `graph TD
+        A[Application] --> B[Database]
+        A --> C[External API]
+        D[Source System] --> A
+        A --> E[Target System]`,
+    
+    'Data Pipeline': `graph LR
+        A[Source Data] --> B[Application]
+        B --> C[Transform]
+        C --> D[Load]
+        D --> E[Data Warehouse]`,
+    
+    'API Integration': `graph TD
+        A[Client App] --> B[API Gateway]
+        B --> C[Application]
+        C --> D[Auth Service]
+        C --> E[Business Logic]`,
+        
+    'Microservices': `graph TB
+        A[Load Balancer] --> B[Application]
+        B --> C[Service A]
+        B --> D[Service B]
+        B --> E[Service C]`
+};
+```
+
+## Architecture Foundation - Updated v3.1
+
+### Recent Enhancements (December 2024)
+- **Activity Tracker UI**: Enhanced user experience with display names and English date formatting
+- **Integration Architecture**: Complete Mermaid.js diagram system with modal interface
+- **Button Integration**: Seamless placement within existing form layout
+- **Text Overflow**: Proper handling in flex containers for long URLs
 
 ### CSS Organization Strategy
 ```

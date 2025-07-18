@@ -1,17 +1,28 @@
-# AppTrack v3.0 - Technical Architecture Documentation
+# AppTrack v3.1 - Technical Architecture Documentation
 
-This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.0, focusing on the Activity Tracking System implemented in January 2025.
+This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.1, focusing on the Activity Tracking System enhancements and new Integration Architecture feature implemented in July 2025.
 
-## Version 3.0 Overview
+## Version 3.1 Overview
 
-AppTrack v3.0 introduces a comprehensive Activity Tracking System with:
+AppTrack v3.1 introduces significant enhancements:
+- **Enhanced Activity Tracking**: User display names and internationalized date formats
+- **Integration Architecture System**: Visual diagram creation and management with Mermaid.js
+- **Database Schema Extensions**: New columns for integration diagrams and notes
+- **Improved User Experience**: Better readability and professional UI design
+- **API Expansion**: New endpoints for integration diagram management
 - **Work Notes System**: Manual activity entries with file attachments
 - **Audit Log System**: Automatic field change tracking
 - **Real-time Updates**: Dynamic activity feed with filtering
 - **RESTful API**: Complete API endpoints for activity management
 - **Enhanced Security**: Session validation and admin controls
 
-## Activity Tracking Architecture
+## Activity Tracking Architecture - Enhanced v3.1
+
+### Recent Enhancements (July 2025)
+- **User Display Names**: Activity feed now shows user display names instead of email addresses
+- **English Date Format**: Standardized date display with English day names (Monday, Tuesday, etc.)
+- **Improved Queries**: ActivityManager optimized to fetch user display_name from database
+- **Fallback Logic**: Graceful degradation to email when display_name unavailable
 
 ### Core Components
 ```
@@ -34,6 +45,93 @@ Activity Tracking System/
 └── Integration/
     └── app_form.php             # Embedded tracker
 ```
+
+## Integration Architecture System - NEW v3.1
+
+### Overview
+The Integration Architecture System provides visual diagram creation and management for applications with integrations, using Mermaid.js for professional diagram rendering.
+
+### Architecture Components
+```
+Integration Architecture/
+├── Frontend/
+│   ├── Integration Modal/
+│   │   ├── Mermaid Container      # Diagram display area
+│   │   ├── Code Editor           # Mermaid syntax input
+│   │   ├── Notes Editor          # Integration documentation
+│   │   └── Template Loader       # Pre-built diagram templates
+│   ├── Trigger Button/
+│   │   └── Inline with S.A. Document field (38x38px icon)
+│   └── JavaScript/
+│       ├── Mermaid.js Library    # Diagram rendering engine
+│       ├── Modal Management      # Show/hide functionality
+│       └── Template System       # Built-in diagram patterns
+├── Backend/
+│   ├── Database Schema/
+│   │   ├── integration_diagram   # TEXT column for Mermaid code
+│   │   └── integration_notes     # TEXT column for documentation
+│   └── API Endpoints/
+│       ├── get_integration_diagram.php  # Retrieve diagram & notes
+│       └── save_integration_diagram.php # Save with role validation
+└── Templates/
+    ├── Basic Integration         # Database + API connections
+    ├── Data Pipeline            # ETL process flow
+    ├── API Integration          # Gateway + Auth + Business Logic
+    └── Microservices           # Load Balancer + Multiple Services
+```
+
+### Database Schema Updates
+```sql
+-- Added to applications table
+ALTER TABLE applications ADD COLUMN integration_diagram TEXT DEFAULT NULL;
+ALTER TABLE applications ADD COLUMN integration_notes TEXT DEFAULT NULL;
+```
+
+### API Endpoints
+
+#### GET /api/get_integration_diagram.php
+```php
+// Retrieves integration diagram and notes
+GET ?id=<application_id>
+Response: {
+    "success": true,
+    "diagram_code": "graph TD\n...",
+    "notes": "Integration documentation..."
+}
+```
+
+#### POST /api/save_integration_diagram.php
+```php
+// Saves diagram code and notes (Admin/Editor only)
+POST {
+    "application_id": 123,
+    "diagram_code": "graph TD\n...",
+    "notes": "Updated documentation"
+}
+Response: {
+    "success": true,
+    "message": "Integration data saved successfully"
+}
+```
+
+### UI/UX Design
+
+#### Button Integration
+- **Placement**: Inline with S.A. Document field for optimal workflow
+- **Design**: 38x38px icon-only button with bi-diagram-3 Bootstrap icon
+- **Visibility**: Only shown when application integrations="Yes"
+- **Styling**: `btn-outline-success` for visual consistency
+
+#### Text Overflow Solution
+- **Problem**: Long S.A. Document URLs overflow when button is present
+- **Solution**: Flex layout with `min-width: 0` and `text-overflow: ellipsis`
+- **Implementation**: Wrapper div with `overflow: hidden` around link element
+
+#### Modal Design
+- **Size**: Bootstrap `modal-xl` for adequate editing space
+- **Layout**: Two-column layout (Code Editor | Notes Editor)
+- **Responsive**: Mobile-optimized with proper scaling
+- **Accessibility**: Proper ARIA labels and keyboard navigation
 
 ### Service Layer Pattern
 The `ActivityManager.php` implements a service layer pattern:

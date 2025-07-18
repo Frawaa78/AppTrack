@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.1.0] - December 2024
+
+### Added
+- **Activity Tracker Enhancements**
+  - User display names in activity tracker instead of email addresses
+  - Fallback logic to email when display name is unavailable
+  - English day names in timestamp format (Day - DD.MM.YYYY @ HH:MM:SS)
+  - Enhanced ActivityManager.php queries for user information
+
+- **Integration Architecture System**
+  - Complete Mermaid.js diagram visualization system
+  - Full-screen modal interface for diagram viewing and editing
+  - Template system with pre-built integration patterns
+  - Database schema extensions (integration_diagram, integration_notes columns)
+  - New API endpoints for diagram persistence and retrieval
+  - Seamless button integration with S.A. Document field
+
+- **UI/UX Improvements**
+  - Optimized Integration Architecture button positioning
+  - Text overflow handling for long URLs in form fields
+  - Responsive design maintenance across screen sizes
+  - Comprehensive error handling for diagram rendering
+
+### Changed
+- **Frontend Components**
+  - Updated activity-tracker.js with enhanced date formatting
+  - Modified app_view.php with complete Integration Architecture modal
+  - Improved CSS flex layouts and text truncation handling
+  - Enhanced JavaScript error handling and user feedback
+
+- **Backend Architecture**
+  - Enhanced ActivityManager.php with display name support
+  - Added get_integration_diagram.php and save_integration_diagram.php APIs
+  - Database schema updates for integration functionality
+  - Improved error handling and validation
+
+- **Documentation**
+  - Updated README.md with new feature descriptions
+  - Enhanced technical-architecture.md with new components
+  - Comprehensive ui-implementation.md updates
+  - Version updates across all documentation files
+
 ## [2.5.0] - 2025-07-18
 
 ### Added

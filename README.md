@@ -33,9 +33,45 @@ Built for enterprise scalability with planned integrations:
 
 ## 🚀 Current Status & Latest Updates
 
-### Version 2.5.0 (July 18, 2025) - Production Optimized ✅
+### Version 2.6.0 (July 18, 2025) - Activity Tracker & Integration Architecture ✅
 
-**Major Achievement**: AppTrack has reached enterprise production maturity with fully optimized AI integration, streamlined codebase, and enhanced security architecture.
+**Major Achievement**: AppTrack has been enhanced with comprehensive Activity Tracker improvements and new Integration Architecture visualization capabilities.
+
+#### 🎯 **Activity Tracker Enhancement** - MAJOR UPDATE
+- **User-Friendly Display**: Activity tracker now displays user display names instead of email addresses for better readability
+- **Fallback Logic**: Graceful degradation to email when display_name is not available, ensuring data integrity
+- **Internationalized Date Format**: Date timestamps now show English day names (Monday, Tuesday, etc.) with format: "Day - DD.MM.YYYY @ HH:MM:SS"
+- **Enhanced User Experience**: Improved activity feed readability with professional name display
+- **Database Optimization**: ActivityManager queries optimized to fetch user display names alongside activity data
+- **Cross-Platform Consistency**: Activity display improvements work in both work notes and audit log entries
+
+#### 🏗️ **Integration Architecture System** - NEW FEATURE
+- **Visual Integration Diagrams**: New Integration Architecture feature for applications with integrations="Yes"
+- **Mermaid.js Integration**: Professional diagram rendering using Mermaid.js library for flowcharts and system diagrams
+- **Interactive Diagram Editor**: Admin/Editor users can create and edit Mermaid diagram code with live preview
+- **Template Library**: Built-in templates for common integration patterns:
+  - Basic Integration (Database + API connections)
+  - Data Pipeline (ETL process flow)
+  - API Integration (Gateway + Auth + Business Logic)
+  - Microservices (Load Balancer + Multiple Services)
+- **Integration Notes**: Text area for documenting integration architecture details alongside diagrams
+- **Persistent Storage**: Database storage for both diagram code and notes with application_id relationships
+- **Role-Based Access**: Only Admin/Editor users can modify diagrams and notes, Viewer users see read-only display
+- **Smart Button Placement**: Integration Architecture button positioned inline with S.A. Document field for optimal UX
+- **Text Overflow Handling**: Long S.A. Document URLs properly truncated with ellipsis (...) when Integration button is present
+- **Professional UI Design**: 38x38px icon-only button with bi-diagram-3 icon for clean interface
+
+#### 🛠️ **Technical Infrastructure Updates**
+- **Database Schema Extension**: New columns added to applications table:
+  - `integration_diagram` (TEXT): Stores Mermaid diagram code
+  - `integration_notes` (TEXT): Stores integration documentation
+- **New API Endpoints**: 
+  - `get_integration_diagram.php`: Retrieves diagram code and notes for specific application
+  - `save_integration_diagram.php`: Saves diagram code and notes with role validation
+- **ActivityManager Enhancement**: Modified SQL queries to include user display_name in both work_notes and audit_log joins
+- **JavaScript Date Formatting**: Enhanced formatDateTime function with English day names and standardized format
+- **CSS Flexbox Optimization**: Improved S.A. Document field layout with proper text truncation in flex containers
+- **Responsive Design**: Integration Architecture modal is fully responsive with proper mobile support
 
 #### 🤖 **AI Analysis Suite** - Production Ready
 - **Intelligent Application Insights**: Complete AI-powered analysis system generating comprehensive business summaries from application data and work notes
