@@ -135,6 +135,9 @@ if (session_status() === PHP_SESSION_NONE) session_start();
           <li><a class="dropdown-item" href="#">Profile</a></li>
           <li><a class="dropdown-item" href="#">Account</a></li>
           <li><a class="dropdown-item" href="#">Settings</a></li>
+          <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+            <li><a class="dropdown-item" href="users_admin.php">Users</a></li>
+          <?php endif; ?>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item" href="logout.php">Log out</a></li>
         </ul>
