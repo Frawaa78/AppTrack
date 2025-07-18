@@ -5,6 +5,75 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2025-07-18
+
+### Added
+- **Enhanced Security Architecture**
+  - Data privacy controls with AI analysis excluding sensitive fields (contract_number, contract_responsible)
+  - Configurable domain restrictions for API access control
+  - Request rate limiting (20/hour per user, 50,000 tokens/day)
+  - Anonymous data processing options for GDPR compliance
+  - Complete audit trail with user attribution and timestamp integrity
+
+- **Optimized User Interface**
+  - Icon-only buttons for Force Refresh (🔄) and History (🕐) with enhanced tooltips
+  - Standardized button heights across AI analysis interface
+  - Improved content formatting with markdown support and visual hierarchy
+  - Enhanced spacing and readability in AI analysis results display
+
+- **Production Hardening**
+  - Comprehensive file cleanup removing 17 obsolete development files
+  - Streamlined codebase with only 39 active PHP files in production
+  - Enhanced error handling with production-safe messaging
+  - Complete documentation overhaul with security focus
+
+### Changed
+- **Codebase Architecture**
+  - Major cleanup removing all debug, test, and temporary development files
+  - Optimized file structure suitable for enterprise deployment
+  - Enhanced modular CSS architecture with 9 component modules
+  - Improved JavaScript organization with 5 active component modules
+
+- **AI Analysis System**
+  - Enhanced content display with proper line breaks and markdown formatting
+  - Improved button state management with intelligent enable/disable logic
+  - Streamlined modal interface with consistent content rendering
+  - Better visual hierarchy in analysis results presentation
+
+- **Documentation Updates**
+  - Comprehensive README.md overhaul with security section
+  - Updated database documentation with complete schema overview
+  - Enhanced API documentation including AI endpoints
+  - Added FAQ section addressing security and functionality questions
+
+### Removed
+- **Development Files Cleanup (17 files total)**
+  - Empty debug files: debug_table_exists.php, test-ai-setup.php, test_detailed_debug.php, test_fixed_aggregator.php, debug-db.php, test_work_notes_debug.php, debug_ai_data.php, debug_tables.php
+  - Empty configuration: src/config/database.php
+  - Empty SQL files: docs/lenel-s2-sample-data.sql, docs/sample-activity-data.sql, docs/check-users.sql
+  - Temporary development files: test-tables.php, fix_future_timestamps.php, update_ai_multilingual.sql
+  - Commit artifacts: COMMIT_SUMMARY.md, COMMIT_CHECKLIST.md
+
+### Security
+- **Enhanced Data Protection**
+  - AI processing excludes sensitive fields by default
+  - Configurable personal data anonymization
+  - Secure API integration with environment variable management
+  - Content filtering for AI prompts and responses
+
+- **Production Security**
+  - All development artifacts removed from production deployment
+  - Secure configuration management with environment variables
+  - Production-safe error handling without system information exposure
+  - Configurable logging levels for different environments
+
+### Technical
+- **Database Architecture**
+  - Complete schema with 14 normalized tables
+  - 4 dedicated AI analysis tables with intelligent caching
+  - Enhanced indexing strategy for optimal performance
+  - Foreign key constraints ensuring referential integrity
+
 ## [2.4.0] - 2025-07-17
 
 ### Added

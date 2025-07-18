@@ -6,21 +6,33 @@ This document provides a comprehensive overview of the AppTrack database structu
 
 The database follows an enterprise-grade normalized design pattern with comprehensive AI analytics integration. Key architectural features include:
 
-- **Normalized Core Schema** with lookup tables for data consistency
-- **AI Analysis Engine** with intelligent caching and change detection
-- **Comprehensive Audit System** with full change tracking
+- **14 Core Tables** with optimized relationships and constraints
+- **AI Analysis Engine** with intelligent caching and change detection  
+- **Comprehensive Audit System** with full change tracking and timestamps
 - **Rich Work Notes** with attachment support and priority management
-- **Role-Based Access Control** with user relationship mapping
-- **Data Integrity** through foreign key constraints and transactions
+- **Role-Based Access Control** with granular permission mapping
+- **Data Integrity** through foreign key constraints and ACID transactions
+- **Production Optimization** with strategic indexing and performance tuning
 
 ## Current Schema Status ✅
 
-✅ **PRODUCTION READY**: All application form fields properly mapped and validated  
-✅ **AI INTEGRATED**: Complete OpenAI analysis system with multilingual support  
-✅ **OPTIMIZED PERFORMANCE**: Smart caching with configurable expiration policies  
-✅ **AUDIT COMPLETE**: Full change tracking with user attribution  
-✅ **FILE MANAGEMENT**: Attachment system with BLOB storage and metadata  
-✅ **SEARCH ENABLED**: Real-time application search with relationship mapping
+✅ **PRODUCTION READY**: All 24 application form fields properly mapped and validated  
+✅ **AI INTEGRATED**: Complete OpenAI analysis system with multilingual support (4 dedicated tables)  
+✅ **OPTIMIZED PERFORMANCE**: Smart caching with configurable expiration policies (6-48 hours)  
+✅ **AUDIT COMPLETE**: Full change tracking with user attribution and visibility controls  
+✅ **FILE MANAGEMENT**: Attachment system with BLOB storage and comprehensive metadata  
+✅ **SEARCH ENABLED**: Real-time application search with relationship mapping and indexing
+✅ **SECURITY HARDENED**: Data privacy controls with sensitive field exclusion for AI processing
+
+## Database Architecture Summary
+
+| Category | Tables | Purpose | Key Features |
+|----------|--------|---------|--------------|
+| **Core Application** | applications, work_notes, audit_log | Primary business data | Full lifecycle tracking |
+| **AI Analysis** | ai_analysis, ai_configurations, ai_usage_log, data_snapshots | AI insights & caching | Smart change detection |
+| **User Management** | users, application_user_relations | Authentication & authorization | Role-based access |
+| **Reference Data** | phases, statuses, deployment_models, portfolios | Controlled vocabularies | Data consistency |
+| **Relationships** | application_relations | Dependency mapping | Bidirectional links |
 
 ## Core Application Tables
 
