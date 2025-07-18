@@ -20,16 +20,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare('SELECT id, email, password_hash, role FROM users WHERE email = :email');
+        $stmt = $db->prepare('SELECT id, email, password_hash, role, is_active FROM users WHERE email = :email');
         $stmt->execute([':email' => $email]);
         $user = $stmt->fetch();
         if ($user && password_verify($password, $user['password_hash'])) {
-            // Login success
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_email'] = $user['email'];
-            $_SESSION['user_role'] = $user['role'];
-            header('Location: dashboard.php');
-            exit;
+            // Check if user account is active
+            if (!$user['is_active']) {
+                $errors[] = 'Your account is not yet activated. Please contact an administrator.';
+            } else {
+                // Login success
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_email'] = $user['email'];
+                $_SESSION['user_role'] = $user['role'];
+                header('Location: dashboard.php');
+                exit;
+            }
         } else {
             $errors[] = 'Incorrect email or password.';
         }

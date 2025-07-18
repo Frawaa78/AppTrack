@@ -40,14 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Register user
     if (empty($errors)) {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $db->prepare('INSERT INTO users (email, password_hash, role) VALUES (:email, :password_hash, :role)');
+        $stmt = $db->prepare('INSERT INTO users (email, password_hash, role, is_active) VALUES (:email, :password_hash, :role, :is_active)');
         $ok = $stmt->execute([
             ':email' => $email,
             ':password_hash' => $password_hash,
-            ':role' => 'viewer'
+            ':role' => 'viewer',
+            ':is_active' => 0
         ]);
         if ($ok) {
-            $success = 'User registered! You can now log in.';
+            $success = 'User registered successfully! Your account needs to be activated by an administrator before you can log in.';
             $email = '';
         } else {
             $errors[] = 'Something went wrong. Please try again.';

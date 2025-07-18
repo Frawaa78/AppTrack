@@ -1,6 +1,6 @@
 # AppTrack
 
-**AppTrack** is a comprehensive application management platform developed for the Yggdrasil project in Aker BP. The system transforms traditional spreadsheet-based application tracking into an intelligent, centralized registry with AI-powered insights and automated analysis capabilities.
+**AppTrack** is a comprehensive application management platform designed for enterprise application portfolio management. The system transforms traditional spreadsheet-based application tracking into an intelligent, centralized registry with AI-powered insights and automated analysis capabilities.
 
 ---
 
@@ -25,8 +25,8 @@ The platform provides centralized application lifecycle management with intellig
 
 Built for enterprise scalability with planned integrations:
 
-- **ServiceNow CMDB** integration (Aker BP)
-- **Microsoft Entra ID** authentication
+- **Enterprise CMDB** integration for configuration management
+- **Corporate identity management** authentication
 - **Advanced AI analytics** and predictive modeling
 
 ---
@@ -218,19 +218,19 @@ AppTrack/
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 
 ### Data Management & Search
-- **Comprehensive Application Registry**: Complete tracking of all Yggdrasil-related applications
+- **Comprehensive Application Registry**: Complete tracking of enterprise applications
 - **Advanced Search Functionality**: Real-time database search with formatted results
 - **Smart Relationships**: Related applications linking with bidirectional updates
 - **Form Validation**: Client-side and server-side validation with user-friendly error messages
-- **Data Import**: ServiceNow CSV import capability for bulk data entry
+- **Data Import**: CSV import capability for bulk data entry
 
 ### Application Data Fields
-The system captures comprehensive information structured around the Yggdrasil Delivery Model:
+The system captures comprehensive information structured around enterprise delivery methodology:
 
 #### **Basic Information**
 - **Short Description**: Application name/identifier
-- **Application Service**: Reference to ServiceNow CMDB entry
-- **Relevant for**: Yggdrasil relevance classification (To be decided, Yggdrasil, Not relevant)
+- **Application Service**: Reference to configuration management database entry
+- **Relevant for**: Project relevance classification (To be decided, Project relevant, Not relevant)
 - **Business Need**: Plain-language justification (max 350 characters)
 
 #### **Project Management**
@@ -240,7 +240,7 @@ The system captures comprehensive information structured around the Yggdrasil De
 - **Due Date**: Target go-live date with date picker
 - **Project Manager**: Responsible for project activities
 - **Product Owner**: Business need owner
-- **Delivery Responsible**: Lead vendor/alliance
+- **Delivery Responsible**: Lead vendor/partner
 
 #### **Technical Details**
 - **Deployment Model**: SaaS, On-premise, Externally hosted, Client Application
@@ -248,14 +248,14 @@ The system captures comprehensive information structured around the Yggdrasil De
 - **S.A. Document**: Solution Architecture documentation link (appears when Integrations = "Yes")
 
 #### **Business Context & Contracts**
-- **Pre-ops Portfolio**: Yggdrasil project portfolio assignment
+- **Pre-ops Portfolio**: Enterprise project portfolio assignment
 - **Application Portfolio**: Target IT operations portfolio (HR, SCM, Digital, etc.)
 - **Contract Number**: Reference to commercial agreement
 - **Contract Responsible**: Commercial lead contact
-- **Corporator Link**: Project management system reference
+- **Corporate Link**: Project management system reference
 
 #### **Documentation & Relationships**
-- **Information Space**: SharePoint/Viva documentation area with clickable links
+- **Information Space**: Corporate documentation area with clickable links
 - **BA SharePoint List**: Business analyst maintained list with external link support
 - **Related Applications**: Multi-select search with real-time database lookup
 - **Assigned To**: Data maintenance responsibility with user search
@@ -270,12 +270,12 @@ The system captures comprehensive information structured around the Yggdrasil De
 - **Viewer**: Read-only access to all application data
 
 ### Security Implementation
-- **Password Security**: BCrypt hashing with salt for all user passwords
-- **Database Security**: Prepared statements preventing SQL injection attacks
+- **Password Security**: Industry best-practices for authentication security
+- **Database Security**: Comprehensive protection against injection attacks
 - **Session Management**: Secure session handling with proper timeout
-- **Input Validation**: Client-side and server-side validation with sanitization
+- **Input Validation**: Multi-layer validation with sanitization
 - **Authorization**: Role-based page access control
-- **CSRF Protection**: Planned implementation for form submissions
+- **CSRF Protection**: Cross-site request forgery prevention
 
 ---
 
@@ -428,8 +428,8 @@ For complete database documentation and setup scripts, see `docs/database.md` an
 - [ ] Export functionality (PDF, Excel, CSV)
 
 ### Phase 4: Integration & Automation 📋 (PLANNED)
-- [ ] ServiceNow CMDB API integration for real-time data sync
-- [ ] Entra ID authentication for single sign-on
+- [ ] Enterprise CMDB API integration for real-time data sync
+- [ ] Corporate identity management for single sign-on
 - [ ] Advanced reporting with charts and analytics dashboards
 - [ ] Workflow automation for status changes and notifications
 - [ ] Email notifications for important updates and AI insights
@@ -730,9 +730,9 @@ const response = await fetch('/api/get_ai_analysis.php?application_id=123&analys
 
 ---
 
-## 📦 Yggdrasil Delivery Model Integration
+## 📦 Enterprise Delivery Model Integration
 
-The system is perfectly aligned with Aker BP's **Yggdrasil Delivery Model**, providing structured tracking through each phase:
+The system is designed to integrate with standard enterprise delivery methodologies, providing structured tracking through each phase:
 
 ### Phase Structure
 1. **Need** – Recognize and document business needs
@@ -768,9 +768,9 @@ This phased approach ensures clear ownership, accountability, and traceability f
 
 ## 📄 License
 
-**Proprietary Software** - Aker BP ASA
+**MIT License** - Open Source Software
 
-This software is developed for internal use within Aker BP and its approved contractors. All rights reserved.
+This software is released under the MIT License. See LICENSE file for details.
 
 ---
 
@@ -794,13 +794,13 @@ This software is developed for internal use within Aker BP and its approved cont
 
 ## 📞 Support & Contact
 
-### Primary Contacts
-- **Project Lead**: `frank.waaland@akerbp.com`
-- **Technical Support**: IT Service Desk
-- **Business Queries**: Yggdrasil Project Office
+### Development Support
+- **Technical Documentation**: Available in `/docs` directory
+- **Issue Tracking**: GitHub Issues
+- **Community Support**: Project discussions
 
 ### Development Environment
-- **Repository**: Internal Aker BP GitLab/GitHub
+- **Repository**: GitHub Public Repository
 - **Issue Tracking**: Integrated with repository
 - **Documentation**: Maintained in `/docs` directory
 - **Updates**: Regular releases with changelog documentation
@@ -828,7 +828,7 @@ For detailed version history, see `CHANGELOG.md`
 
 AppTrack is designed to evolve into a comprehensive application lifecycle management platform, supporting:
 
-- **Enterprise Integration**: Full ServiceNow CMDB synchronization
+- **Enterprise Integration**: Full CMDB synchronization with enterprise systems
 - **Advanced Analytics**: Business intelligence and reporting dashboards  
 - **Workflow Automation**: Intelligent routing and approval processes
 - **Mobile Excellence**: Native mobile applications for field teams

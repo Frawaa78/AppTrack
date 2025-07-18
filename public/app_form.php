@@ -61,7 +61,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
         $data = [];
         foreach ($fields as $f) {
-            $data[$f] = trim($_POST[$f] ?? '');
+            $value = trim($_POST[$f] ?? '');
+            
+            // Handle date fields - convert empty strings to NULL
+            if ($f === 'due_date' && empty($value)) {
+                $data[$f] = null;
+            } else {
+                $data[$f] = $value;
+            }
         }
         // relationship_yggdrasil as comma-separated application IDs
         $relationship_ids = isset($_POST['relationship_yggdrasil']) ? (array)$_POST['relationship_yggdrasil'] : [];
@@ -223,7 +230,7 @@ if (empty($statuses)) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Application Registration</title>
+  <title><?php echo $id > 0 ? 'Edit Application' : 'New Application'; ?> | AppTrack</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -239,11 +246,11 @@ if (empty($statuses)) {
   <form method="post" autocomplete="off" id="applicationForm">
     <div class="header-with-buttons">
       <div>
-        <h5 class="mb-0">Status & Details</h5>
+        <h5 class="mb-0"><?php echo $id > 0 ? 'Edit Application' : 'Create New Application'; ?></h5>
       </div>
       <div class="header-buttons">
         <a href="<?php echo $id > 0 ? 'app_view.php?id=' . $id : 'dashboard.php'; ?>" class="btn btn-secondary">Cancel</a>
-        <button type="submit" form="applicationForm" class="btn btn-primary">Save</button>
+        <button type="submit" form="applicationForm" class="btn btn-primary"><?php echo $id > 0 ? 'Update' : 'Create'; ?></button>
       </div>
     </div>
     
@@ -251,9 +258,9 @@ if (empty($statuses)) {
       <!-- Left column -->
       <div class="col-md-6">
         <div class="form-group-horizontal">
-          <label for="shortDescription" class="form-label">Short description</label>
+          <label for="shortDescription" class="form-label">Short description *</label>
           <div class="input-group">
-            <input type="text" class="form-control" id="shortDescription" name="short_description" placeholder="Short description" value="<?php echo htmlspecialchars($app['short_description'] ?? ''); ?>">
+            <input type="text" class="form-control" id="shortDescription" name="short_description" placeholder="Short description" value="<?php echo htmlspecialchars($app['short_description'] ?? ''); ?>" required>
             <button type="button" class="btn btn-outline-secondary info-btn" tabindex="0"
               data-bs-toggle="popover"
               data-bs-placement="bottom"
@@ -546,6 +553,35 @@ if (empty($statuses)) {
 <script>
 // Set current app ID for JavaScript modules
 window.currentAppId = <?php echo $id; ?>;
+
+// Simple form change detection for new applications
+<?php if ($id === 0): ?>
+let formChanged = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('applicationForm');
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            formChanged = true;
+        });
+    });
+    
+    // Warn before leaving if form has changes
+    window.addEventListener('beforeunload', function(e) {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+    
+    // Don't warn when submitting the form
+    form.addEventListener('submit', function() {
+        formChanged = false;
+    });
+});
+<?php endif; ?>
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>

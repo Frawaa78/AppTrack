@@ -197,7 +197,14 @@ function getTimeBadge($updatedAt) {
 <div class="container-fluid mt-4">
     <div class="table-container">
         <div class="table-header">
-            <h2>Applications</h2>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Applications</h2>
+                <?php if (isset($_SESSION['user_role']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'editor')): ?>
+                    <a href="app_form.php" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> New Application
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
         
         <div class="table-responsive">
