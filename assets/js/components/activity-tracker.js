@@ -245,7 +245,7 @@ class ActivityTracker {
         if (activity.activity_type === 'work_note') {
             contentHtml = `
                 <div class="activity-header-row">
-                    <span class="activity-user">${this.escapeHtml(activity.user_email || 'Unknown')}</span>
+                    <span class="activity-user">${this.escapeHtml(activity.user_display_name || activity.user_email || 'Unknown')}</span>
                 </div>
                 <div class="activity-type-badge type-${activity.type}">
                     ${activity.type || 'comment'}
@@ -261,7 +261,7 @@ class ActivityTracker {
         } else {
             contentHtml = `
                 <div class="activity-header-row">
-                    <span class="activity-user">${this.escapeHtml(activity.user_email || 'System')}</span>
+                    <span class="activity-user">${this.escapeHtml(activity.user_display_name || activity.user_email || 'System')}</span>
                 </div>
                 <div class="activity-type-badge type-field-change">
                     Field Change
@@ -449,23 +449,19 @@ class ActivityTracker {
     
     formatDateTime(dateString) {
         const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
         
-        if (diffMins < 1) {
-            return 'Just now';
-        } else if (diffMins < 60) {
-            return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
-        } else if (diffHours < 24) {
-            return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-        } else if (diffDays < 7) {
-            return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
-        } else {
-            return date.toLocaleDateString();
-        }
+        // Day names in English
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        
+        const dayName = dayNames[date.getDay()];
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        
+        return `${dayName} - ${day}.${month}.${year} @ ${hours}:${minutes}:${seconds}`;
     }
     
     escapeHtml(text) {
