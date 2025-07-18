@@ -48,13 +48,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | AppTrack</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+        .logo {
+            max-width: 200px;
+            margin-bottom: 2rem;
+        }
+    </style>
 </head>
 <body class="bg-light">
 <div class="container mt-5">
     <div class="row justify-content-center">
+    <img src="../assets/logo.png" alt="AppTrack Logo" class="logo mb-4" onerror="this.style.display='none'">
+    </div>
+    <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow">
                 <div class="card-body">
+                    
                     <h2 class="card-title mb-4">Login</h2>
                     <?php if ($errors): ?>
                         <div class="alert alert-danger">
@@ -76,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <a href="register.php">Don't have an account? Register</a>
                     </div>
                 </div>
-            </div>
+            </div><br><center><h6>For more info, contact info@apptrack.no.</h6></center>
         </div>
     </div>
 </div>
