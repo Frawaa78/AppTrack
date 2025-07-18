@@ -498,13 +498,7 @@ For complete database documentation and setup scripts, see `docs/database.md` an
    export OPENAI_API_KEY="your-openai-api-key-here"
    ```
 
-5. **Initialize AI Features** 🆕
-   ```bash
-   # Run AI setup script to create tables and configurations
-   php scripts/setup_ai_features.php
-   ```
-
-6. **Populate Lookup Tables**
+5. **Populate Lookup Tables**
    ```sql
    INSERT INTO phases (name) VALUES 
    ('Need'), ('Solution'), ('Build'), ('Implement'), ('Operate');
@@ -516,7 +510,7 @@ For complete database documentation and setup scripts, see `docs/database.md` an
    ('Client Application'), ('On-premise'), ('SaaS'), ('Externally hosted');
    ```
    ```
-
+   
 5. **Configure Web Server**
    - Point document root to `/public` directory
    - Enable URL rewriting (if using clean URLs)

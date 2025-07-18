@@ -257,7 +257,7 @@ if (empty($statuses)) {
           <label for="relevantFor" class="form-label">Relevant for</label>
           <select class="form-select" id="relevantFor" name="relevant_for" disabled>
             <option<?php if($app['relevant_for']==='To be decided') echo ' selected'; ?>>To be decided</option>
-            <option<?php if($app['relevant_for']==='Project relevant') echo ' selected'; ?>>Project relevant</option>
+            <option<?php if($app['relevant_for']==='Yggdrasil') echo ' selected'; ?>>Yggdrasil</option>
             <option<?php if($app['relevant_for']==='Not relevant') echo ' selected'; ?>>Not relevant</option>
           </select>
         </div>
