@@ -226,6 +226,349 @@ if (empty($statuses)) {
       display: block !important;
       max-width: 100% !important;
     }
+    
+    /* Integration Architecture Button Styling */
+    .integration-arch-btn {
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .integration-arch-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      background-color: #28a745 !important;
+      border-color: #28a745 !important;
+      color: white !important;
+    }
+    
+    .integration-arch-btn:active {
+      transform: translateY(0);
+    }
+    
+    .integration-badge {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    /* Integration Architecture Modal Styles */
+    #integrationDiagramModal .modal-dialog {
+      max-width: 90vw;
+      width: 90vw;
+      height: 85vh;
+      margin: 2.5vh auto;
+    }
+    
+    #integrationDiagramModal .modal-content {
+      height: 100%;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    
+    #integrationDiagramModal .modal-body {
+      height: calc(100% - 60px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 0 !important;
+    }
+    
+    .modal-header-controls {
+      display: flex;
+      align-items: center;
+    }
+    
+    #integrationDiagramModal .modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-bottom: none;
+      border-radius: 12px 12px 0 0;
+    }
+    
+    #integrationDiagramModal .modal-title {
+      color: white;
+      font-weight: 600;
+    }
+    
+    #integrationDiagramModal .btn-close-white {
+      filter: none;
+      background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath d='m.146 14.146-.354-.354a.5.5 0 0 1 .708-.708L8 10.293l6.5-6.5a.5.5 0 0 1 .708.708L8.707 11l6.147 6.146a.5.5 0 0 1-.708.708L8 11.707l-6.146 6.147a.5.5 0 0 1-.708-.708L7.293 11 .146 4.854a.5.5 0 1 1 .708-.708L8 10.293l6.5-6.5z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+    }
+    
+    /* Editor Toolbar */
+    .editor-toolbar {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    
+    .toolbar-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .toolbar-section .btn {
+      padding: 4px 8px;
+      font-size: 0.875rem;
+    }
+    
+    .zoom-level {
+      font-size: 0.875rem;
+      color: #6b7280;
+      min-width: 50px;
+      text-align: center;
+    }
+    
+    /* Editor Container */
+    .editor-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+      min-height: 0; /* Critical for flex child */
+    }
+    
+    #visual-diagram-editor {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background-image: 
+        linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+        linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+      background-size: 20px 20px;
+      cursor: crosshair;
+      overflow: auto; /* Allow scrolling within editor */
+    }
+    
+    /* Property Panel */
+    .property-panel {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      width: 250px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      z-index: 1000;
+    }
+    
+    .property-group {
+      margin-bottom: 12px;
+    }
+    
+    .property-group label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 4px;
+      display: block;
+    }
+    
+    /* Element Types */
+    .diagram-element {
+      position: absolute;
+      cursor: move;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+    
+    .diagram-element.selected {
+      box-shadow: 0 0 0 2px #3b82f6;
+    }
+    
+    .diagram-element.hover {
+      transform: scale(1.05);
+    }
+    
+    .element-process {
+      border: 2px solid #6b7280;
+      border-radius: 4px;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .element-decision {
+      border: 2px solid #dc2626;
+      background: #fecaca;
+      transform: rotate(45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .element-decision .element-text {
+      transform: rotate(-45deg);
+      text-align: center;
+      font-size: 0.75rem;
+    }
+    
+    .element-start {
+      border: 2px solid #059669;
+      border-radius: 50%;
+      background: #dcfce7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .element-database {
+      border: 2px solid #7c3aed;
+      border-radius: 8px 8px 0 0;
+      background: #e9d5ff;
+      position: relative;
+    }
+    
+    .element-database::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: -2px;
+      right: -2px;
+      height: 6px;
+      background: #e9d5ff;
+      border: 2px solid #7c3aed;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+    }
+    
+    .element-api {
+      border: 2px solid #0891b2;
+      border-radius: 20px;
+      background: #cffafe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.875rem;
+    }
+    
+    .element-user {
+      border: 2px solid #ea580c;
+      background: #fed7aa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 0.875rem;
+      position: relative;
+    }
+    
+    .element-user::before {
+      content: '👤';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.2rem;
+    }
+    
+    /* Text Notes */
+    .text-note {
+      position: absolute;
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 4px;
+      padding: 8px;
+      font-size: 0.875rem;
+      max-width: 200px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: move;
+    }
+    
+    .text-note.selected {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Connection Lines */
+    .connection-line {
+      stroke: #6b7280;
+      stroke-width: 2;
+      fill: none;
+      pointer-events: stroke;
+      cursor: pointer;
+    }
+    
+    .connection-line.selected {
+      stroke: #3b82f6;
+      stroke-width: 3;
+    }
+    
+    .connection-line.hover {
+      stroke: #9ca3af;
+      stroke-width: 3;
+    }
+    
+    /* Resize Handles */
+    .resize-handle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #3b82f6;
+      border: 1px solid white;
+      border-radius: 50%;
+      cursor: nw-resize;
+    }
+    
+    .resize-handle.se {
+      bottom: -4px;
+      right: -4px;
+      cursor: se-resize;
+    }
+    
+    .resize-handle.ne {
+      top: -4px;
+      right: -4px;
+      cursor: ne-resize;
+    }
+    
+    .resize-handle.sw {
+      bottom: -4px;
+      left: -4px;
+      cursor: sw-resize;
+    }
+    
+    .resize-handle.nw {
+      top: -4px;
+      left: -4px;
+      cursor: nw-resize;
+    }
+    
+    /* Tool States */
+    .btn.tool-active {
+      background-color: #3b82f6 !important;
+      border-color: #3b82f6 !important;
+      color: white !important;
+    }
+    
+    /* Canvas States */
+    .canvas-connecting {
+      cursor: crosshair !important;
+    }
+    
+    .canvas-text-mode {
+      cursor: text !important;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -444,8 +787,23 @@ if (empty($statuses)) {
               <input type="url" class="form-control" id="saDocument" name="sa_document" placeholder="S.A. Document" value="" readonly style="flex: 1; min-width: 0;">
             <?php endif; ?>
             <?php if ($app['integrations'] === 'Yes'): ?>
-            <button type="button" class="btn btn-outline-success btn-sm" onclick="openIntegrationDiagram()" title="Integration Architecture" style="height: 38px; width: 38px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <button type="button" 
+                    class="btn btn-outline-success btn-sm integration-arch-btn" 
+                    onclick="openIntegrationDiagram()" 
+                    title="Open Integration Architecture Editor - Create visual diagrams"
+                    style="height: 38px; width: 38px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;">
               <i class="bi bi-diagram-3" style="font-size: 14px;"></i>
+              <span class="integration-badge" style="position: absolute; top: -5px; right: -5px; background: #28a745; color: white; border-radius: 50%; width: 12px; height: 12px; font-size: 8px; display: flex; align-items: center; justify-content: center;">•</span>
+            </button>
+            <?php else: ?>
+            <!-- DEBUG: Show integration value and always show button for testing -->
+            <button type="button" 
+                    class="btn btn-outline-warning btn-sm integration-arch-btn" 
+                    onclick="openIntegrationDiagram()" 
+                    title="Debug: Integration Architecture Editor (integrations=<?php echo htmlspecialchars($app['integrations'] ?? 'NULL'); ?>)"
+                    style="height: 38px; width: 38px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;">
+              <i class="bi bi-diagram-3" style="font-size: 14px;"></i>
+              <span style="position: absolute; top: -5px; right: -5px; background: #ffc107; color: black; border-radius: 50%; width: 12px; height: 12px; font-size: 8px; display: flex; align-items: center; justify-content: center;">?</span>
             </button>
             <?php endif; ?>
           </div>
@@ -468,6 +826,7 @@ if (empty($statuses)) {
 <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script src="../assets/js/components/activity-tracker.js"></script>
 <script src="../assets/js/components/form-handlers.js"></script>
+<script src="../assets/js/components/visual-diagram-editor.js?v=<?php echo time(); ?>"></script>
 <script src="../assets/js/pages/app-view.js"></script>
 <script>
 // Set current app ID for JavaScript modules
@@ -660,49 +1019,174 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Integration Architecture Modal -->
 <div class="modal fade" id="integrationDiagramModal" tabindex="-1" aria-labelledby="integrationDiagramModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="integrationDiagramModalLabel">
           <i class="bi bi-diagram-3"></i> Integration Architecture - <?php echo htmlspecialchars($app['short_description']); ?>
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-header-controls">
+          <!-- Template Dropdown -->
+          <?php if (in_array($_SESSION['user_role'] ?? 'viewer', ['admin', 'editor'])): ?>
+          <div class="dropdown me-3">
+            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="templateDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-collection"></i> Templates
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="templateDropdown">
+              <li><a class="dropdown-item" href="#" onclick="loadVisualTemplate('basic')">
+                <i class="bi bi-diagram-2"></i> Basic Integration
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="loadVisualTemplate('pipeline')">
+                <i class="bi bi-arrow-right-circle"></i> Data Pipeline
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="loadVisualTemplate('api')">
+                <i class="bi bi-cloud"></i> API Integration
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="loadVisualTemplate('microservices')">
+                <i class="bi bi-grid-3x3"></i> Microservices
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" onclick="clearCanvas()">
+                <i class="bi bi-trash"></i> Clear Canvas
+              </a></li>
+            </ul>
+          </div>
+          
+          <!-- Tools Dropdown -->
+          <div class="dropdown me-3">
+            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="toolsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-tools"></i> Tools
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="toolsDropdown">
+              <li><a class="dropdown-item" href="#" onclick="setTool('select')">
+                <i class="bi bi-cursor"></i> Select Tool
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="setTool('connect')">
+                <i class="bi bi-arrow-left-right"></i> Connect Tool
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="setTool('text')">
+                <i class="bi bi-textarea-t"></i> Text Note Tool
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" onclick="autoLayout()">
+                <i class="bi bi-distribute-vertical"></i> Auto Layout
+              </a></li>
+            </ul>
+          </div>
+          
+          <!-- Element Types Dropdown -->
+          <div class="dropdown me-3">
+            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="elementsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-shapes"></i> Add Element
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="elementsDropdown">
+              <li><a class="dropdown-item" href="#" onclick="addElement('process')">
+                <i class="bi bi-square"></i> Process Box
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="addElement('decision')">
+                <i class="bi bi-diamond"></i> Decision Diamond
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="addElement('start')">
+                <i class="bi bi-circle"></i> Start/End Circle
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="addElement('database')">
+                <i class="bi bi-server"></i> Database
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="addElement('api')">
+                <i class="bi bi-cloud"></i> API/Service
+              </a></li>
+              <li><a class="dropdown-item" href="#" onclick="addElement('user')">
+                <i class="bi bi-person"></i> User/Actor
+              </a></li>
+            </ul>
+          </div>
+          <?php endif; ?>
+          
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
       </div>
-      <div class="modal-body">
-        <!-- Diagram Display -->
-        <div id="mermaid-container" class="mb-4" style="min-height: 300px; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 1rem;">
-          <div class="text-center text-muted p-5">
-            <div class="spinner-border spinner-border-sm" role="status">
-              <span class="visually-hidden">Loading diagram...</span>
-            </div>
-            <p class="mt-3">Loading integration diagram...</p>
+      <div class="modal-body p-0">
+        <!-- Editor Toolbar -->
+        <div class="editor-toolbar">
+          <div class="toolbar-section">
+            <button class="btn btn-sm btn-outline-secondary" id="selectTool" onclick="setActiveTool('select')" title="Select Tool">
+              <i class="bi bi-cursor"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="connectTool" onclick="setActiveTool('connect')" title="Connect Tool">
+              <i class="bi bi-arrow-left-right"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="textTool" onclick="setActiveTool('text')" title="Add Text Note">
+              <i class="bi bi-textarea-t"></i>
+            </button>
+          </div>
+          
+          <div class="toolbar-section">
+            <button class="btn btn-sm btn-outline-secondary" onclick="zoomIn()" title="Zoom In">
+              <i class="bi bi-zoom-in"></i>
+            </button>
+            <span class="zoom-level" id="zoomLevel">100%</span>
+            <button class="btn btn-sm btn-outline-secondary" onclick="zoomOut()" title="Zoom Out">
+              <i class="bi bi-zoom-out"></i>
+            </button>
+          </div>
+          
+          <div class="toolbar-section">
+            <button class="btn btn-sm btn-success" onclick="saveIntegrationData(event)" title="Save Diagram">
+              <i class="bi bi-floppy"></i> Save
+            </button>
           </div>
         </div>
         
-        <!-- Edit Mode for Admin/Editor -->
-        <?php if (in_array($_SESSION['user_role'] ?? 'viewer', ['admin', 'editor'])): ?>
-        <div class="edit-section">
-          <div class="row">
-            <div class="col-md-6">
-              <label for="diagram-code" class="form-label">Mermaid Diagram Code:</label>
-              <textarea id="diagram-code" rows="8" class="form-control font-monospace" placeholder="Enter Mermaid diagram code here..."></textarea>
-              <button class="btn btn-primary mt-2" onclick="updateDiagram()">
-                <i class="bi bi-arrow-clockwise"></i> Update Diagram
-              </button>
-              <button class="btn btn-outline-secondary mt-2 ms-2" onclick="loadTemplate()">
-                <i class="bi bi-file-earmark-code"></i> Load Template
-              </button>
-            </div>
-            <div class="col-md-6">
-              <label for="integration-notes" class="form-label">Integration Notes:</label>
-              <textarea id="integration-notes" rows="8" class="form-control" placeholder="Add notes about the integration architecture..."></textarea>
-              <button class="btn btn-success mt-2" onclick="saveIntegrationData()">
-                <i class="bi bi-floppy"></i> Save All Changes
-              </button>
-            </div>
+        <!-- Main Editor Canvas -->
+        <div class="editor-container">
+          <div id="visual-diagram-editor" class="visual-editor-canvas"></div>
+        </div>
+        
+        <!-- Property Panel (appears when element is selected) -->
+        <div id="property-panel" class="property-panel" style="display: none;">
+          <h6><i class="bi bi-gear"></i> Properties</h6>
+          <div class="property-group">
+            <label>Text:</label>
+            <input type="text" id="elementText" class="form-control form-control-sm" onchange="updateSelectedElement()">
+          </div>
+          <div class="property-group">
+            <label>Width:</label>
+            <input type="range" id="elementWidth" min="80" max="300" step="10" class="form-range" onchange="updateSelectedElement()">
+          </div>
+          <div class="property-group">
+            <label>Height:</label>
+            <input type="range" id="elementHeight" min="40" max="200" step="10" class="form-range" onchange="updateSelectedElement()">
+          </div>
+          <div class="property-group">
+            <label>Background:</label>
+            <select id="elementColor" class="form-select form-select-sm" onchange="updateSelectedElement()">
+              <option value="#e2e8f0">Light Gray</option>
+              <option value="#dbeafe">Light Blue</option>
+              <option value="#dcfce7">Light Green</option>
+              <option value="#fef3c7">Light Yellow</option>
+              <option value="#fecaca">Light Red</option>
+              <option value="#e9d5ff">Light Purple</option>
+            </select>
+          </div>
+          <div class="property-group" id="connectionDirectionGroup" style="display: none;">
+            <label>Arrow Direction:</label>
+            <select id="connectionDirection" class="form-select form-select-sm" onchange="updateSelectedElement()">
+              <option value="to">➡️ One Way (To)</option>
+              <option value="from">⬅️ One Way (From)</option>
+              <option value="both">↔️ Both Ways</option>
+            </select>
+          </div>
+          <div class="property-group">
+            <button class="btn btn-sm btn-danger w-100" onclick="deleteSelectedElement()">
+              <i class="bi bi-trash"></i> Delete Element
+            </button>
+          </div>
+          <div class="property-group">
+            <button type="button" class="btn btn-sm btn-outline-info w-100" onclick="if(window.visualEditor) { window.visualEditor.debugSVGMarkers(); } else if(window.currentEditor) { window.currentEditor.debugSVGMarkers(); } else { console.log('❌ No visual editor found - checking alternatives...'); console.log('Available objects:', Object.keys(window).filter(k => k.includes('editor') || k.includes('visual'))); }">
+              🔍 Debug SVG Markers
+            </button>
           </div>
         </div>
-        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -711,6 +1195,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 // Set current app ID for AI analysis
 window.currentAppId = <?php echo $id; ?>;
+
+// Test that openIntegrationDiagram function will be available
+console.log('🔍 Script loading - preparing openIntegrationDiagram function...');
 
 // Open AI Analysis Modal
 function openAIAnalysis() {
@@ -1199,157 +1686,586 @@ function disableGenerateButton(button, reason) {
 
 // Integration Diagram functionality
 let mermaidLoaded = false;
+let visualEditor = null;
 
 // Open Integration Diagram Modal
-function openIntegrationDiagram() {
-    const modal = new bootstrap.Modal(document.getElementById('integrationDiagramModal'));
+window.openIntegrationDiagram = function() {
+    console.log('🚀 openIntegrationDiagram called!');
+    console.log('Opening Integration Architecture Modal...');
+    
+    // Create and show the modal
+    const modalElement = document.getElementById('integrationDiagramModal');
+    if (!modalElement) {
+        console.error('Integration modal element not found!');
+        alert('Error: Could not find Integration Architecture modal. Please refresh the page.');
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(modalElement, {
+        backdrop: 'static',
+        keyboard: false,
+        focus: true
+    });
+    
     modal.show();
     
-    // Load Mermaid.js if not already loaded
-    if (!mermaidLoaded) {
-        loadMermaid();
-    } else {
-        initializeIntegrationDiagram();
-    }
-}
-
-// Load Mermaid.js library
-function loadMermaid() {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
-    script.onload = function() {
-        mermaid.initialize({ startOnLoad: false, theme: 'default' });
-        mermaidLoaded = true;
-        initializeIntegrationDiagram();
-    };
-    document.head.appendChild(script);
+    // Prevent modal from closing when clicking inside editor
+    modalElement.addEventListener('click', function(e) {
+        // Only allow closing via the X button
+        if (e.target.matches('.btn-close, .btn-close *')) {
+            return; // Allow closing
+        }
+        e.stopPropagation();
+    });
+    
+    // Setup event listeners for modal events
+    modalElement.addEventListener('shown.bs.modal', function() {
+        console.log('Integration modal fully opened');
+        
+        // Check if VisualDiagramEditor class is available
+        if (typeof VisualDiagramEditor === 'undefined') {
+            console.error('VisualDiagramEditor class not found! Make sure visual-diagram-editor.js is loaded.');
+            alert('Error: Visual editor class not found. Please refresh the page.');
+            return;
+        }
+        
+        // Initialize the visual editor
+        try {
+            if (!visualEditor) {
+                console.log('Initializing VisualDiagramEditor...');
+                visualEditor = new VisualDiagramEditor('visual-diagram-editor');
+                window.visualEditor = visualEditor; // Make it globally accessible
+                window.currentEditor = visualEditor; // Alternative reference
+                console.log('VisualDiagramEditor initialized successfully:', visualEditor);
+            } else {
+                console.log('Visual editor already exists, performing NUCLEAR CLEANUP before reload...');
+                window.visualEditor = visualEditor; // Ensure global reference
+                window.currentEditor = visualEditor; // Ensure alternative reference
+                
+                // CRITICAL: Always clear everything when modal reopens to prevent duplicates
+                console.log('🧹 FORCING COMPLETE CLEANUP to prevent duplicates');
+                if (typeof visualEditor.clearAll === 'function') {
+                    visualEditor.clearAll();
+                }
+                
+                // ULTRA-NUCLEAR: Also clear DOM elements manually to ensure no leftovers
+                let cleanupEditorContainer = document.getElementById('visual-diagram-editor');
+                if (cleanupEditorContainer) {
+                    // Remove all child elements that might be leftover
+                    const existingElements = cleanupEditorContainer.querySelectorAll('.diagram-element, .text-note, .connection-line, path');
+                    console.log(`🧹 MANUAL DOM CLEANUP: Removing ${existingElements.length} leftover DOM elements`);
+                    existingElements.forEach(element => {
+                        console.log('🗑️ Removing leftover DOM element:', element.id || element.className);
+                        element.remove();
+                    });
+                    
+                    // Reset SVG paths completely
+                    const svgElement = cleanupEditorContainer.querySelector('svg');
+                    if (svgElement) {
+                        const paths = svgElement.querySelectorAll('path');
+                        paths.forEach(path => path.remove());
+                        console.log(`🧹 Removed ${paths.length} SVG paths`);
+                    }
+                }
+                
+                // Reset all internal state
+                visualEditor.nextNodeId = 1;
+                visualEditor.nextNoteId = 1;
+                visualEditor.selectedElement = null;
+                
+                // CRITICAL: Ensure canvas dimensions are correct after cleanup
+                // Instead of manually setting styles, recreate canvas like first time
+                if (typeof visualEditor.createCanvas === 'function') {
+                    console.log('🎯 Recreating canvas completely to match first-time behavior...');
+                    visualEditor.createCanvas();
+                } else if (typeof visualEditor.setupCanvas === 'function') {
+                    console.log('🎯 Setting up canvas...');
+                    visualEditor.setupCanvas();
+                }
+                
+                console.log('🔄 Editor state after NUCLEAR cleanup:');
+                console.log('  - Nodes:', visualEditor.nodes.size);
+                console.log('  - Connections:', visualEditor.connections.size);
+                console.log('  - Text Notes:', visualEditor.textNotes.size);
+                console.log('  - Next Node ID:', visualEditor.nextNodeId);
+                console.log('  - Next Note ID:', visualEditor.nextNoteId);
+                
+                // NUCLEAR OPTION: Reset modal container CSS context completely
+                const modalBody = document.querySelector('#integrationDiagramModal .modal-body');
+                if (modalBody) {
+                    console.log('🎯 Resetting modal body styles completely...');
+                    
+                    // Force modal body to maintain correct flex layout
+                    modalBody.style.cssText = `
+                        height: calc(100% - 60px) !important;
+                        overflow: hidden !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        padding: 0 !important;
+                        position: relative !important;
+                        box-sizing: border-box !important;
+                    `;
+                }
+                
+                // Force editor container to fill available space
+                let editorContainerElement = document.querySelector('.editor-container');
+                if (editorContainerElement) {
+                    console.log('🎯 Resetting editor container styles...');
+                    editorContainerElement.style.cssText = `
+                        flex: 1 !important;
+                        position: relative !important;
+                        overflow: hidden !important;
+                        background: #ffffff !important;
+                        min-height: 0 !important;
+                        box-sizing: border-box !important;
+                    `;
+                }
+                
+                console.log('🎯 Modal body reset complete, createCanvas() will handle editor container');
+            }
+            
+            // Load existing diagram data
+            initializeIntegrationDiagram();
+            
+            // CRITICAL: Additional dimension check after modal is fully rendered
+            setTimeout(() => {
+                let finalEditorContainer = document.getElementById('visual-diagram-editor');
+                const modalBody = document.querySelector('#integrationDiagramModal .modal-body');
+                
+                if (finalEditorContainer && modalBody) {
+                    console.log('🔧 Final dimension check and correction...');
+                    
+                    const modalRect = modalBody.getBoundingClientRect();
+                    const editorRect = finalEditorContainer.getBoundingClientRect();
+                    
+                    console.log('📐 Modal body dimensions:', {
+                        width: modalRect.width,
+                        height: modalRect.height
+                    });
+                    
+                    console.log('📐 Editor container dimensions:', {
+                        width: editorRect.width,
+                        height: editorRect.height
+                    });
+                    
+                    // Force editor to match modal body constraints
+                    const toolbar = document.querySelector('.editor-toolbar');
+                    const toolbarHeight = toolbar ? toolbar.getBoundingClientRect().height : 0;
+                    const availableHeight = modalRect.height - toolbarHeight;
+                    
+                    console.log('📐 Available height for editor:', availableHeight);
+                    
+                    // If editor is overstepping or too small, fix it
+                    if (editorRect.height > availableHeight + 20 || editorRect.height < availableHeight - 20) {
+                        console.log('⚠️ Editor height mismatch detected, forcing correction...');
+                        
+                        // Reset editor container parent first
+                        const editorContainerDiv = document.querySelector('.editor-container');
+                        if (editorContainerDiv) {
+                            editorContainerDiv.style.cssText = `
+                                flex: 1 !important;
+                                position: relative !important;
+                                overflow: hidden !important;
+                                background: #ffffff !important;
+                                min-height: 0 !important;
+                                max-height: ${availableHeight}px !important;
+                                box-sizing: border-box !important;
+                            `;
+                        }
+                        
+                        // Then reset the actual editor
+                        finalEditorContainer.style.cssText = `
+                            width: 100% !important;
+                            height: 100% !important;
+                            position: relative !important;
+                            overflow: auto !important;
+                            background-image: linear-gradient(to right, #f1f5f9 1px, transparent 1px), linear-gradient(to bottom, #f1f5f9 1px, transparent 1px) !important;
+                            background-size: 20px 20px !important;
+                            cursor: crosshair !important;
+                            box-sizing: border-box !important;
+                        `;
+                        
+                        console.log('✅ Editor dimensions corrected');
+                    }
+                }
+            }, 250); // Wait for modal animation to complete
+        } catch (error) {
+            console.error('Error initializing visual editor:', error);
+            alert('Error initializing visual editor: ' + error.message);
+        }
+    });
+    
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        console.log('Integration modal closed');
+    });
 }
 
 // Initialize the integration diagram
 async function initializeIntegrationDiagram() {
+    console.log('🚀 INIT DIAGRAM DEBUG: Starting initializeIntegrationDiagram');
+    console.log('🚀 INIT DIAGRAM DEBUG: window.currentAppId =', window.currentAppId);
+    console.log('🚀 INIT DIAGRAM DEBUG: visualEditor exists =', !!visualEditor);
+    
+    if (visualEditor) {
+        console.log('🚀 INIT DIAGRAM DEBUG: Current editor state:');
+        console.log('  - Nodes:', visualEditor.nodes.size);
+        console.log('  - Connections:', visualEditor.connections.size);
+        console.log('  - Text Notes:', visualEditor.textNotes.size);
+        console.log('  - Next Node ID:', visualEditor.nextNodeId);
+        console.log('  - Next Note ID:', visualEditor.nextNoteId);
+    }
+    
     try {
+        // Check if VisualDiagramEditor class exists
+        if (typeof VisualDiagramEditor === 'undefined') {
+            console.error('VisualDiagramEditor class not found! Make sure visual-diagram-editor.js is loaded.');
+            alert('Error: Visual editor not loaded. Please refresh the page.');
+            return;
+        }
+        
+        console.log('🌐 INIT DIAGRAM DEBUG: Fetching diagram data from server...');
         const response = await fetch(`api/get_integration_diagram.php?id=${window.currentAppId}`);
         const data = await response.json();
         
+        console.log('📡 INIT DIAGRAM DEBUG: Server response:', data);
+        
         if (data.success) {
-            if (data.diagram_code && data.diagram_code.trim()) {
-                renderDiagram(data.diagram_code);
-                document.getElementById('diagram-code').value = data.diagram_code;
-            } else {
-                renderDefaultDiagram();
-            }
+            const diagramCode = data.diagram_code && data.diagram_code.trim() ? data.diagram_code : null;
+            console.log('📊 INIT DIAGRAM DEBUG: Diagram code received:', {
+                hasCode: !!diagramCode,
+                codeLength: diagramCode ? diagramCode.length : 0,
+                codePreview: diagramCode ? diagramCode.substring(0, 200) + '...' : 'NULL'
+            });
             
-            if (data.notes) {
-                document.getElementById('integration-notes').value = data.notes;
+            if (diagramCode) {
+                // Try to load existing Mermaid code into visual editor
+                if (visualEditor && typeof visualEditor.loadFromMermaidCode === 'function') {
+                    console.log('📥 INIT DIAGRAM DEBUG: Loading existing diagram into visual editor');
+                    console.log('🔄 INIT DIAGRAM DEBUG: Editor state BEFORE load:');
+                    console.log('  - Nodes:', visualEditor.nodes.size);
+                    console.log('  - Connections:', visualEditor.connections.size);
+                    console.log('  - Text Notes:', visualEditor.textNotes.size);
+                    
+                    // CRITICAL: Force a complete clear before loading to prevent duplicates
+                    console.log('🧹 FORCING ADDITIONAL CLEAR before loading data...');
+                    if (typeof visualEditor.clearAll === 'function') {
+                        visualEditor.clearAll();
+                        console.log('🔄 State after additional clear:');
+                        console.log('  - Nodes:', visualEditor.nodes.size);
+                        console.log('  - Connections:', visualEditor.connections.size);
+                        console.log('  - Text Notes:', visualEditor.textNotes.size);
+                    }
+                    
+                    visualEditor.loadFromMermaidCode(diagramCode);
+                    
+                    console.log('🔄 INIT DIAGRAM DEBUG: Editor state AFTER load:');
+                    console.log('  - Nodes:', visualEditor.nodes.size);
+                    console.log('  - Connections:', visualEditor.connections.size);
+                    console.log('  - Text Notes:', visualEditor.textNotes.size);
+                    
+                    // CRITICAL: Ensure fingerprint is created after loading
+                    setTimeout(() => {
+                        if (typeof visualEditor.createPositionFingerprint === 'function') {
+                            console.log('🔐 Creating position fingerprint after load');
+                            visualEditor.createPositionFingerprint();
+                        }
+                        
+                        // Also verify positions are correct
+                        if (typeof visualEditor.comprehensivePositionAudit === 'function') {
+                            console.log('🔍 Running position audit after load');
+                            visualEditor.comprehensivePositionAudit();
+                        }
+                        
+                        // CRITICAL FIX: Force recreation of arrows after modal reopen and data load
+                        if (typeof visualEditor.forceRecreateArrows === 'function') {
+                            console.log('🔧 MODAL REOPEN FIX: Force recreating arrows after data load');
+                            visualEditor.forceRecreateArrows();
+                        }
+                    }, 1500); // Wait for load to complete
+                } else {
+                    console.warn('Visual editor not ready or loadFromMermaidCode method missing');
+                }
+            } else {
+                // Load a default template
+                console.log('📝 INIT DIAGRAM DEBUG: No existing diagram, loading default template');
+                loadVisualTemplate('basic');
             }
         } else {
-            console.error('Error loading diagram:', data.error);
-            renderDefaultDiagram();
+            console.error('❌ INIT DIAGRAM DEBUG: Error loading diagram:', data.error);
+            loadVisualTemplate('basic');
         }
     } catch (error) {
-        console.error('Error fetching diagram data:', error);
-        renderDefaultDiagram();
+        console.error('❌ INIT DIAGRAM DEBUG: Error fetching diagram data:', error);
+        loadVisualTemplate('basic');
     }
 }
 
-// Render diagram with Mermaid
-function renderDiagram(code) {
-    const container = document.getElementById('mermaid-container');
-    const diagramId = 'mermaid-diagram-' + Date.now();
+// Tool Management Functions
+function setActiveTool(tool) {
+    if (visualEditor) {
+        visualEditor.setActiveTool(tool);
+    }
+}
+
+function setTool(tool) {
+    setActiveTool(tool);
+}
+
+// Element Creation Functions
+function addElement(type) {
+    console.log('addElement called with type:', type);
+    console.log('visualEditor exists:', !!visualEditor);
     
-    try {
-        mermaid.render(diagramId, code).then(result => {
-            container.innerHTML = result.svg;
-        }).catch(error => {
-            console.error('Mermaid render error:', error);
-            container.innerHTML = `
-                <div class="alert alert-danger">
-                    <strong>Diagram Error:</strong> ${error.message}
-                    <br><small>Please check your Mermaid syntax.</small>
-                </div>
-            `;
-        });
-    } catch (error) {
-        console.error('Mermaid error:', error);
-        container.innerHTML = `
-            <div class="alert alert-danger">
-                <strong>Error:</strong> Unable to render diagram.
-            </div>
-        `;
+    if (visualEditor) {
+        try {
+            // Add element at center of visible area
+            const centerX = visualEditor.container.scrollLeft + visualEditor.container.clientWidth / 2;
+            const centerY = visualEditor.container.scrollTop + visualEditor.container.clientHeight / 2;
+            
+            console.log(`Adding ${type} element at position:`, centerX, centerY);
+            
+            const element = visualEditor.addElement(type, centerX, centerY);
+            console.log('Element created:', element);
+            
+            if (!element) {
+                console.error('Failed to create element');
+                alert('Failed to create element. Check console for details.');
+            }
+        } catch (error) {
+            console.error('Error adding element:', error);
+            alert('Error adding element: ' + error.message);
+        }
+    } else {
+        console.error('Visual editor not initialized');
+        alert('Visual editor not ready. Please try again.');
     }
 }
 
-// Render default diagram template
-function renderDefaultDiagram() {
+// Template Functions
+function loadVisualTemplate(templateType) {
+    if (!visualEditor) return;
+    
     const appName = '<?php echo addslashes($app['short_description']); ?>';
-    const defaultDiagram = `graph TD
-    A[${appName}] --> B[Database]
-    A --> C[External API]
-    D[Source System] --> A
-    A --> E[Target System]`;
-    
-    renderDiagram(defaultDiagram);
-    document.getElementById('diagram-code').value = defaultDiagram;
-}
-
-// Update diagram from code input
-function updateDiagram() {
-    const code = document.getElementById('diagram-code').value;
-    if (code.trim()) {
-        renderDiagram(code);
-    }
-}
-
-// Load template
-function loadTemplate() {
     const templates = {
-        'Basic Integration': `graph TD
-    A[${`<?php echo addslashes($app['short_description']); ?>`}] --> B[Database]
-    A --> C[External API]
-    D[Source System] --> A
-    A --> E[Target System]`,
-        
-        'Data Pipeline': `graph LR
-    A[Source Data] --> B[${`<?php echo addslashes($app['short_description']); ?>`}]
-    B --> C[Transform]
-    C --> D[Load]
-    D --> E[Data Warehouse]
-    E --> F[Analytics]`,
-        
-        'API Integration': `graph TD
-    A[Client App] --> B[API Gateway]
-    B --> C[${`<?php echo addslashes($app['short_description']); ?>`}]
-    C --> D[Auth Service]
-    C --> E[Business Logic]
-    E --> F[Database]`,
-        
-        'Microservices': `graph TB
-    A[Load Balancer] --> B[${`<?php echo addslashes($app['short_description']); ?>`}]
-    B --> C[Service A]
-    B --> D[Service B]
-    B --> E[Service C]
-    C --> F[Database A]
-    D --> G[Database B]
-    E --> H[Cache]`
+        'basic': {
+            elements: [
+                { type: 'process', text: appName, x: 300, y: 150 },
+                { type: 'database', text: 'Database', x: 150, y: 300 },
+                { type: 'api', text: 'External API', x: 450, y: 300 },
+                { type: 'user', text: 'Users', x: 300, y: 50 },
+                { type: 'start', text: 'Start', x: 100, y: 150 }
+            ],
+            connections: [
+                { from: 4, to: 0 }, // Start to App
+                { from: 3, to: 0 }, // Users to App
+                { from: 0, to: 1 }, // App to Database
+                { from: 0, to: 2 }  // App to API
+            ],
+            notes: [
+                { text: 'Core Application\nProcesses user requests', x: 350, y: 120 },
+                { text: 'External data source', x: 500, y: 270 }
+            ]
+        },
+        'pipeline': {
+            elements: [
+                { type: 'start', text: 'Data Source', x: 100, y: 200 },
+                { type: 'process', text: 'Extract', x: 250, y: 200 },
+                { type: 'process', text: appName, x: 400, y: 200 },
+                { type: 'process', text: 'Transform', x: 550, y: 200 },
+                { type: 'database', text: 'Data Warehouse', x: 700, y: 200 }
+            ],
+            connections: [
+                { from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 4 }
+            ],
+            notes: [
+                { text: 'ETL Pipeline\nProcesses data in stages', x: 400, y: 120 }
+            ]
+        },
+        'api': {
+            elements: [
+                { type: 'user', text: 'Client Apps', x: 100, y: 100 },
+                { type: 'api', text: 'API Gateway', x: 300, y: 100 },
+                { type: 'process', text: appName, x: 500, y: 100 },
+                { type: 'process', text: 'Auth Service', x: 400, y: 250 },
+                { type: 'process', text: 'Business Logic', x: 600, y: 250 },
+                { type: 'database', text: 'Database', x: 600, y: 400 }
+            ],
+            connections: [
+                { from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 2, to: 4 }, { from: 4, to: 5 }
+            ],
+            notes: [
+                { text: 'API Architecture\nSecure and scalable', x: 300, y: 50 }
+            ]
+        },
+        'microservices': {
+            elements: [
+                { type: 'api', text: 'Load Balancer', x: 350, y: 50 },
+                { type: 'process', text: appName, x: 350, y: 150 },
+                { type: 'process', text: 'Service A', x: 150, y: 250 },
+                { type: 'process', text: 'Service B', x: 350, y: 250 },
+                { type: 'process', text: 'Service C', x: 550, y: 250 },
+                { type: 'database', text: 'DB A', x: 150, y: 350 },
+                { type: 'database', text: 'DB B', x: 350, y: 350 },
+                { type: 'database', text: 'Cache', x: 550, y: 350 }
+            ],
+            connections: [
+                { from: 0, to: 1 }, { from: 1, to: 2 }, { from: 1, to: 3 }, { from: 1, to: 4 },
+                { from: 2, to: 5 }, { from: 3, to: 6 }, { from: 4, to: 7 }
+            ],
+            notes: [
+                { text: 'Microservices\nDecoupled architecture', x: 200, y: 50 }
+            ]
+        }
     };
     
-    const templateNames = Object.keys(templates);
-    const selected = prompt(`Select a template:\n${templateNames.map((name, i) => `${i+1}. ${name}`).join('\n')}\n\nEnter number (1-${templateNames.length}):`);
+    const template = templates[templateType];
+    if (!template) return;
     
-    if (selected && parseInt(selected) >= 1 && parseInt(selected) <= templateNames.length) {
-        const templateName = templateNames[parseInt(selected) - 1];
-        const templateCode = templates[templateName];
-        document.getElementById('diagram-code').value = templateCode;
-        renderDiagram(templateCode);
+    // Clear existing diagram
+    visualEditor.clearAll();
+    
+    // Add elements
+    const nodeMap = {};
+    template.elements.forEach((elementData, index) => {
+        const element = visualEditor.addElement(elementData.type, elementData.x, elementData.y, elementData.text);
+        nodeMap[index] = element;
+    });
+    
+    // Add connections
+    template.connections.forEach(conn => {
+        const fromNode = nodeMap[conn.from];
+        const toNode = nodeMap[conn.to];
+        if (fromNode && toNode) {
+            visualEditor.createConnection(fromNode, toNode);
+        }
+    });
+    
+    // Add text notes
+    if (template.notes) {
+        template.notes.forEach(note => {
+            visualEditor.addTextNote(note.x, note.y, note.text);
+        });
+    }
+}
+
+// Clear canvas
+function clearCanvas() {
+    if (visualEditor && confirm('Are you sure you want to clear the entire diagram?')) {
+        visualEditor.clearAll();
+    }
+}
+
+// Auto layout
+function autoLayout() {
+    if (visualEditor) {
+        visualEditor.autoLayout();
+    }
+}
+
+// Zoom functions
+function zoomIn() {
+    if (visualEditor) {
+        visualEditor.zoomIn();
+    }
+}
+
+function zoomOut() {
+    if (visualEditor) {
+        visualEditor.zoomOut();
+    }
+}
+
+// Property panel functions
+function updateSelectedElement() {
+    if (!visualEditor || !visualEditor.selectedElement) return;
+    
+    const element = visualEditor.selectedElement;
+    const textInput = document.getElementById('elementText');
+    const widthSlider = document.getElementById('elementWidth');
+    const heightSlider = document.getElementById('elementHeight');
+    const colorSelect = document.getElementById('elementColor');
+    const directionSelect = document.getElementById('connectionDirection');
+    
+    // Handle connection direction changes
+    if (element.type === 'connection' && directionSelect && directionSelect.value !== element.direction) {
+        element.direction = directionSelect.value;
+        if (visualEditor.updateConnectionDirection) {
+            visualEditor.updateConnectionDirection(element);
+        }
+        return; // Don't process other properties for connections
+    }
+    
+    if (textInput && textInput.value !== element.text) {
+        element.text = textInput.value;
+        if (element.type === 'text') {
+            element.domElement.textContent = element.text;
+        } else {
+            const textSpan = element.domElement.querySelector('.element-text');
+            if (textSpan) {
+                textSpan.textContent = element.text;
+            }
+        }
+    }
+    
+    if (widthSlider && parseInt(widthSlider.value) !== element.width) {
+        element.width = parseInt(widthSlider.value);
+        element.domElement.style.width = element.width + 'px';
+        visualEditor.redrawConnections();
+    }
+    
+    if (heightSlider && parseInt(heightSlider.value) !== element.height) {
+        element.height = parseInt(heightSlider.value);
+        element.domElement.style.height = element.height + 'px';
+        visualEditor.redrawConnections();
+    }
+    
+    if (colorSelect && colorSelect.value !== element.color) {
+        element.color = colorSelect.value;
+        element.domElement.style.backgroundColor = element.color;
+    }
+}
+
+function deleteSelectedElement() {
+    if (visualEditor && visualEditor.selectedElement) {
+        visualEditor.deleteElement(visualEditor.selectedElement);
     }
 }
 
 // Save integration data
-async function saveIntegrationData() {
-    const diagramCode = document.getElementById('diagram-code').value;
-    const notes = document.getElementById('integration-notes').value;
+async function saveIntegrationData(event) {
+    // Prevent any default behavior that might close the modal
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    if (!visualEditor) {
+        alert('No diagram to save');
+        return;
+    }
+    
+    // CRITICAL: Use the new saveToMermaidCode() method that creates position fingerprint
+    const diagramCode = visualEditor.saveToMermaidCode();
+    console.log('💾 Saving diagram with position fingerprint:', diagramCode);
+    console.log('Number of nodes:', visualEditor.nodes.size);
+    console.log('Number of connections:', visualEditor.connections.size);
+    console.log('Number of text notes:', visualEditor.textNotes.size);
+    
+    // Verify fingerprint was created
+    if (visualEditor.positionFingerprint) {
+        console.log('✅ Position fingerprint created:', visualEditor.positionFingerprint);
+    } else {
+        console.warn('⚠️ No position fingerprint created during save!');
+    }
     
     try {
+        console.log('🌐 Sending save request to server...');
+        console.log('📦 Request payload:', {
+            application_id: window.currentAppId,
+            diagram_code: diagramCode,
+            notes: ''
+        });
+        
         const response = await fetch('api/save_integration_diagram.php', {
             method: 'POST',
             headers: {
@@ -1358,22 +2274,68 @@ async function saveIntegrationData() {
             body: JSON.stringify({
                 application_id: window.currentAppId,
                 diagram_code: diagramCode,
-                notes: notes
+                notes: '' // Notes are now embedded as text elements in the diagram
             })
         });
         
-        const data = await response.json();
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response headers:', response.headers);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const responseText = await response.text();
+        console.log('📡 Raw response text:', responseText);
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ Failed to parse JSON response:', parseError);
+            console.error('📡 Response was:', responseText);
+            throw new Error('Invalid JSON response from server');
+        }
+        
+        console.log('📡 Parsed response data:', data);
         
         if (data.success) {
-            alert('Integration diagram and notes saved successfully!');
+            // Show success feedback
+            const saveBtn = document.querySelector('button[onclick*="saveIntegrationData"]');
+            if (saveBtn) {
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="bi bi-check"></i> Saved!';
+                saveBtn.classList.remove('btn-success');
+                saveBtn.classList.add('btn-outline-success');
+                
+                setTimeout(() => {
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.classList.remove('btn-outline-success');
+                    saveBtn.classList.add('btn-success');
+                }, 2000);
+            }
+            
+            console.log('✅ Integration diagram saved successfully');
         } else {
+            console.error('❌ Server returned error:', data.error);
             alert('Error saving data: ' + (data.error || 'Unknown error'));
         }
     } catch (error) {
-        console.error('Error saving integration data:', error);
-        alert('Error saving data. Please try again.');
+        console.error('❌ Error saving integration data:', error);
+        console.error('📊 Error details:', {
+            message: error.message,
+            stack: error.stack,
+            currentAppId: window.currentAppId,
+            diagramCodeLength: diagramCode ? diagramCode.length : 0
+        });
+        alert('Error saving data. Please check console for details and try again.');
     }
 }
+</script>
+
+<!-- Test script to verify function availability -->
+<script>
+// Test script ready
 </script>
 
 </body>

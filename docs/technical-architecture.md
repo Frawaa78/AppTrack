@@ -1,6 +1,15 @@
-# AppTrack v3.1 - Technical Architecture Documentation
+# AppTrack v3.1.1 - Technical Architecture Documentation
 
-This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.1, focusing on the Activity Tracking System enhancements and new Integration Architecture feature implemented in July 2025.
+This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.1.1, focusing on the Activity Tracking System enhancements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
+
+## Version 3.1.1 Overview - HOTFIX (July 21, 2025)
+
+AppTrack v3.1.1 introduces critical stability fixes:
+- **Visual Diagram Editor Bug Fix**: Resolved modal arrow disappearing issue when reopening
+- **Enhanced SVG Regeneration**: Improved canvas recreation and marker management  
+- **Automatic Arrow Recreation**: Seamless arrow restoration without manual intervention
+- **Modal Event Integration**: Enhanced modal lifecycle handling for visual components
+- **Production Stability**: Eliminated need for manual console commands
 
 ## Version 3.1 Overview
 
@@ -15,6 +24,70 @@ AppTrack v3.1 introduces significant enhancements:
 - **Real-time Updates**: Dynamic activity feed with filtering
 - **RESTful API**: Complete API endpoints for activity management
 - **Enhanced Security**: Session validation and admin controls
+
+## Visual Diagram Editor - Critical Bug Fix v3.1.1
+
+### Issue Resolution
+**Problem**: Visual diagram arrows disappeared when closing and reopening integration modals due to SVG container recreation without proper marker regeneration.
+
+**Solution**: Comprehensive fix with multiple layers of protection:
+
+### Technical Implementation
+
+#### 1. Enhanced loadFromMermaidCode Method
+```javascript
+// Added at end of loadFromMermaidCode()
+if (this.connections.size > 0) {
+    console.log('🔄 Recreating all connections and markers after data load...');
+    this.recreateAllConnectionsAndMarkers();
+}
+```
+
+#### 2. New Public Method for Manual Fix
+```javascript
+// Public method for external arrow recreation
+forceRecreateArrows() {
+    console.log('🔧 FORCE RECREATE: Public method called to recreate all arrows');
+    if (this.connections.size > 0) {
+        console.log(`🔧 FORCE RECREATE: Found ${this.connections.size} connections to recreate`);
+        this.recreateAllConnectionsAndMarkers();
+        console.log('✅ FORCE RECREATE: Complete');
+    } else {
+        console.log('⚠️ FORCE RECREATE: No connections found to recreate');
+    }
+}
+```
+
+#### 3. Modal Event Integration in app_view.php
+```php
+// Added safeguard in initializeIntegrationDiagram()
+setTimeout(() => {
+    // ... existing code ...
+    
+    // CRITICAL FIX: Force recreation of arrows after modal reopen and data load
+    if (typeof visualEditor.forceRecreateArrows === 'function') {
+        console.log('🔧 MODAL REOPEN FIX: Force recreating arrows after data load');
+        visualEditor.forceRecreateArrows();
+    }
+}, 1500);
+```
+
+### Architecture Flow
+```
+Modal Reopen Sequence:
+1. Modal opens → createCanvas() recreates SVG
+2. clearAll() removes existing elements  
+3. loadFromMermaidCode() loads saved data
+4. NEW: recreateAllConnectionsAndMarkers() called automatically
+5. NEW: Additional safeguard call after 1.5s delay
+6. Result: Arrows visible without manual intervention
+```
+
+### Prevention Strategy
+- **Automatic Recreation**: Built into data loading process
+- **Fail-safe Method**: Public method available for edge cases
+- **Event Integration**: Modal lifecycle properly handles visual components
+- **SVG Regeneration**: Improved marker definition recreation
 
 ## Activity Tracking Architecture - Enhanced v3.1
 

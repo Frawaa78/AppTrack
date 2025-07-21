@@ -1,8 +1,14 @@
-# UI/UX Implementation Guide v3.1
+# UI/UX Implementation Guide v3.1.1
 
-This document details the technical implementation of the enhanced user interface in AppTrack v3.1, focusing on the Activity Tracker improvements and new Integration Architecture feature implemented in July 2025.
+This document details the technical implementation of the enhanced user interface in AppTrack v3.1.1, focusing on the Activity Tracker improvements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
 
 ## Overview
+
+AppTrack v3.1.1 introduces critical UI stability fixes:
+- **Visual Diagram Editor Bug Fix**: Resolved modal arrow disappearing issue
+- **Enhanced SVG Management**: Improved canvas recreation and arrow persistence
+- **Seamless Modal Interaction**: Arrows remain visible when reopening integration modals
+- **Automatic Recovery**: No manual console commands needed for arrow restoration
 
 AppTrack v3.1 introduces significant UI/UX enhancements:
 - **Enhanced Activity Tracker**: User display names and English date formatting
@@ -15,6 +21,71 @@ AppTrack v3.1 introduces significant UI/UX enhancements:
 - **Enhanced interactivity** with sophisticated form elements
 - **Modern design principles** with improved accessibility
 - **Component-based architecture** for maintainability
+
+## Critical Bug Fix - v3.1.1 (July 21, 2025)
+
+### Visual Diagram Editor Arrow Persistence
+
+#### Problem Identified
+Modal reopen sequence caused SVG container recreation without proper arrow marker regeneration, resulting in invisible connection arrows despite data preservation.
+
+#### UI/UX Impact
+- **User Experience**: Confusing disappearing arrows requiring manual console commands
+- **Workflow Disruption**: Interrupted diagram editing when switching between modals
+- **Professional Appearance**: Broken visual connections compromised diagram quality
+
+#### Technical Solution Implemented
+
+##### 1. Enhanced Data Loading Process
+```javascript
+// Automatic arrow recreation in loadFromMermaidCode()
+console.log('=== LOADING COMPLETE ===');
+console.log(`Final counts: ${this.nodes.size} nodes, ${this.textNotes.size} notes, ${this.connections.size} connections`);
+
+// CRITICAL: Recreate all connections and markers after loading to ensure arrows appear
+if (this.connections.size > 0) {
+    console.log('🔄 Recreating all connections and markers after data load...');
+    this.recreateAllConnectionsAndMarkers();
+}
+```
+
+##### 2. Public Recovery Method
+```javascript
+// User-accessible method for manual arrow restoration
+forceRecreateArrows() {
+    console.log('🔧 FORCE RECREATE: Public method called to recreate all arrows');
+    if (this.connections.size > 0) {
+        console.log(`🔧 FORCE RECREATE: Found ${this.connections.size} connections to recreate`);
+        this.recreateAllConnectionsAndMarkers();
+        console.log('✅ FORCE RECREATE: Complete');
+    } else {
+        console.log('⚠️ FORCE RECREATE: No connections found to recreate');
+    }
+}
+```
+
+##### 3. Modal Event Integration
+```php
+// Enhanced modal reopen sequence in app_view.php
+setTimeout(() => {
+    if (typeof visualEditor.createPositionFingerprint === 'function') {
+        console.log('🔐 Creating position fingerprint after load');
+        visualEditor.createPositionFingerprint();
+    }
+    
+    // CRITICAL FIX: Force recreation of arrows after modal reopen and data load
+    if (typeof visualEditor.forceRecreateArrows === 'function') {
+        console.log('🔧 MODAL REOPEN FIX: Force recreating arrows after data load');
+        visualEditor.forceRecreateArrows();
+    }
+}, 1500); // Wait for load to complete
+```
+
+#### User Experience Improvements
+- **Seamless Operation**: Arrows remain visible through modal close/reopen cycles
+- **No Manual Intervention**: Eliminates need for console command workarounds
+- **Consistent Visual State**: Diagrams maintain professional appearance
+- **Improved Reliability**: Multiple layers of protection against arrow loss
 
 ## New Features Implementation - v3.1
 
@@ -57,40 +128,87 @@ function formatDateTime(dateString) {
 }
 ```
 
-### Integration Architecture UI
+### Integration Architecture UI - Enhanced v3.2
 
-#### Modal Implementation
+#### Dual-Mode Editor System
 ```html
-<!-- Integration Architecture Modal -->
-<div class="modal fade" id="integrationDiagramModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-diagram-3"></i> Integration Architecture
-                </h5>
-            </div>
-            <div class="modal-body">
-                <!-- Mermaid Container -->
-                <div id="mermaid-container" class="mb-4"></div>
-                
-                <!-- Edit Section (Admin/Editor only) -->
-                <div class="edit-section">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="diagram-code">Mermaid Diagram Code:</label>
-                            <textarea id="diagram-code" rows="8" class="form-control font-monospace"></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="integration-notes">Integration Notes:</label>
-                            <textarea id="integration-notes" rows="8" class="form-control"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Editor Mode Toggle -->
+<div class="btn-group me-3" role="group" aria-label="Editor Mode">
+    <input type="radio" class="btn-check" name="editorMode" id="visualMode" checked>
+    <label class="btn btn-outline-primary btn-sm" for="visualMode">
+        <i class="bi bi-mouse"></i> Visual Editor
+    </label>
+    
+    <input type="radio" class="btn-check" name="editorMode" id="codeMode">
+    <label class="btn btn-outline-primary btn-sm" for="codeMode">
+        <i class="bi bi-code"></i> Code Editor
+    </label>
 </div>
+```
+
+#### Visual Diagram Editor Features
+- **Drag & Drop Interface**: Intuitive box positioning with grid snapping
+- **Double-Click Editing**: Quick text editing directly on diagram elements
+- **Visual Connection Tool**: Click-to-connect workflow for drawing relationships
+- **Template System**: Pre-built integration patterns (Basic, Pipeline, API, Microservices)
+- **Auto-Layout**: Automatic arrangement of diagram elements
+- **Real-time Sync**: Bidirectional synchronization between visual and code editors
+
+#### JavaScript Visual Editor Class
+```javascript
+class VisualDiagramEditor {
+    constructor(containerId, options = {}) {
+        this.container = document.getElementById(containerId);
+        this.nodes = new Map();
+        this.connections = new Map();
+        this.selectedNode = null;
+        this.connectingMode = false;
+        // ... initialization
+    }
+    
+    // Core interaction methods
+    handleMouseDown(e) { /* Drag initiation */ }
+    handleDoubleClick(e) { /* Text editing */ }
+    createConnection(fromNode, toNode) { /* Visual linking */ }
+    generateMermaidCode() { /* Code generation */ }
+    loadFromMermaidCode(code) { /* Code parsing */ }
+}
+```
+
+#### User Experience Flow
+1. **Visual Mode**: Users interact directly with diagram elements
+   - Add boxes via toolbar or double-click empty space
+   - Drag boxes to reposition with grid snapping
+   - Double-click boxes to edit text content
+   - Use "Connect" mode to draw relationships between boxes
+   - Apply templates for common integration patterns
+
+2. **Code Mode**: Advanced users can edit Mermaid syntax directly
+   - Full Mermaid.js syntax support
+   - Real-time preview of diagram changes
+   - Template insertion for complex patterns
+   - Syntax error handling and feedback
+
+3. **Synchronization**: Seamless switching between modes
+   - Visual-to-Code: Automatic Mermaid generation
+   - Code-to-Visual: Intelligent parsing and layout
+   - Preserves all diagram elements and connections
+
+#### Template System
+```javascript
+const templates = {
+    'basic': {
+        nodes: [
+            { text: 'Application', x: 200, y: 100 },
+            { text: 'Database', x: 100, y: 250 },
+            { text: 'External API', x: 300, y: 250 }
+        ],
+        connections: [
+            { from: 0, to: 1 }, { from: 0, to: 2 }
+        ]
+    },
+    // Additional templates...
+};
 ```
 
 #### Button Integration with S.A. Document Field

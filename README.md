@@ -33,6 +33,25 @@ Built for enterprise scalability with planned integrations:
 
 ## 🚀 Current Status & Latest Updates
 
+### Version 2.6.1 (July 21, 2025) - Visual Diagram Editor Bug Fix ✅
+
+**Critical Fix**: Resolved visual diagram editor modal arrow disappearing issue when reopening modals.
+
+#### 🔧 **Visual Diagram Editor - Critical Bug Fix** - HOTFIX UPDATE
+- **Modal Reopen Issue Resolved**: Fixed arrows disappearing when closing and reopening integration diagram modal
+- **Automatic Arrow Recreation**: Enhanced `loadFromMermaidCode()` method to automatically recreate connection arrows after modal reopening
+- **Public Fix Method**: Added `forceRecreateArrows()` method for manual arrow recreation if needed
+- **SVG Regeneration Logic**: Improved canvas recreation to properly handle SVG marker regeneration
+- **Modal Event Integration**: Added safeguard calls in modal reopen sequence to ensure arrow visibility
+- **Production Stability**: Eliminated need for manual console commands to restore arrow visibility
+
+#### 🛠️ **Technical Implementation Details**
+- **Enhanced Recreation Logic**: Modified `recreateAllConnectionsAndMarkers()` to be called automatically after data loading
+- **Modal Integration**: Added calls to arrow recreation methods in `app_view.php` modal event handlers  
+- **Fail-safe Methods**: Public `forceRecreateArrows()` method available for backup arrow restoration
+- **SVG Marker Management**: Improved marker definition recreation when SVG containers are rebuilt
+- **Connection Persistence**: Ensured connection data survives modal close/reopen cycles
+
 ### Version 2.6.0 (July 18, 2025) - Activity Tracker & Integration Architecture ✅
 
 **Major Achievement**: AppTrack has been enhanced with comprehensive Activity Tracker improvements and new Integration Architecture visualization capabilities.
@@ -45,19 +64,21 @@ Built for enterprise scalability with planned integrations:
 - **Database Optimization**: ActivityManager queries optimized to fetch user display names alongside activity data
 - **Cross-Platform Consistency**: Activity display improvements work in both work notes and audit log entries
 
-#### 🏗️ **Integration Architecture System** - NEW FEATURE
-- **Visual Integration Diagrams**: New Integration Architecture feature for applications with integrations="Yes"
-- **Mermaid.js Integration**: Professional diagram rendering using Mermaid.js library for flowcharts and system diagrams
-- **Interactive Diagram Editor**: Admin/Editor users can create and edit Mermaid diagram code with live preview
-- **Template Library**: Built-in templates for common integration patterns:
+#### 🏗️ **Integration Architecture System v3.2** - ENHANCED FEATURE
+- **Dual-Mode Editor**: Choose between Visual Editor (drag & drop) or Code Editor (Mermaid syntax)
+- **Visual Diagram Creation**: Intuitive drag-and-drop interface with double-click text editing
+- **Interactive Canvas**: Grid-snapped positioning, visual connection tools, and auto-layout functionality
+- **Enhanced Templates**: One-click template application with visual positioning:
   - Basic Integration (Database + API connections)
-  - Data Pipeline (ETL process flow)
+  - Data Pipeline (ETL process flow)  
   - API Integration (Gateway + Auth + Business Logic)
   - Microservices (Load Balancer + Multiple Services)
-- **Integration Notes**: Text area for documenting integration architecture details alongside diagrams
+- **Real-time Synchronization**: Seamless switching between visual and code modes with automatic sync
+- **Professional Interface**: Full-screen modal workspace for dedicated diagram creation
+- **User-Friendly Design**: Reduced learning curve with visual tools for non-technical users
+- **Advanced Code Support**: Full Mermaid.js syntax support for power users
 - **Persistent Storage**: Database storage for both diagram code and notes with application_id relationships
 - **Role-Based Access**: Only Admin/Editor users can modify diagrams and notes, Viewer users see read-only display
-- **Smart Button Placement**: Integration Architecture button positioned inline with S.A. Document field for optimal UX
 - **Text Overflow Handling**: Long S.A. Document URLs properly truncated with ellipsis (...) when Integration button is present
 - **Professional UI Design**: 38x38px icon-only button with bi-diagram-3 icon for clean interface
 
@@ -248,10 +269,11 @@ AppTrack/
 │   │       └── app-view.css  # Application view page
 │   ├── js/
 │   │   ├── main.js           # Core JavaScript functionality
-│   │   ├── components/       # Reusable JavaScript components (5 modules)
+│   │   ├── components/       # Reusable JavaScript components (6 modules)
 │   │   │   ├── activity-tracker.js   # Activity system frontend
 │   │   │   ├── form-handlers.js      # Form interaction logic
-│   │   │   └── choices-init.js       # Multi-select initialization
+│   │   │   ├── choices-init.js       # Multi-select initialization
+│   │   │   └── visual-diagram-editor.js # **ENHANCED**: Modal arrow persistence fix
 │   │   └── pages/            # Page-specific JavaScript
 │   │       ├── app-form.js   # Form page enhancements
 │   │       └── app-view.js   # View page functionality
@@ -1090,13 +1112,15 @@ AppTrack utilizes a normalized MySQL 8.0 database with 14 core tables supporting
 
 ## 🔄 Version History
 
-**Current Version**: 2.5.0 (July 18, 2025) ✅
-- Major codebase optimization with 17 obsolete files removed
-- Enhanced AI interface with icon-only buttons and improved formatting
-- Production-ready security hardening and data privacy controls
-- Comprehensive database schema with full AI integration
+**Current Version**: 2.6.1 (July 21, 2025) ✅
+- Critical visual diagram editor bug fix resolving modal arrow disappearing issue
+- Enhanced SVG regeneration and automatic arrow recreation
+- Improved modal lifecycle handling for visual components
+- Production stability improvements eliminating manual workarounds
 
 **Previous Versions**:
+- 2.6.0: Activity tracker enhancements and integration architecture improvements
+- 2.5.0: Major codebase optimization with AI interface enhancements
 - 2.4.0: Complete AI analysis system with multilingual support
 - 2.1.0: Activity tracking system with admin controls and file management
 - 2.0.0: Complete UI/UX redesign with horizontal layout and enhanced interactive elements

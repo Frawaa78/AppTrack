@@ -5,12 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Changelog
+## [3.1.1] - 2025-07-21 - HOTFIX
 
-All notable changes to this project will be documented in this file.
+### Fixed
+- **Visual Diagram Editor - Critical Bug Fix**
+  - Resolved arrow disappearing issue when closing and reopening integration diagram modal
+  - Enhanced `loadFromMermaidCode()` method to automatically recreate connection arrows after modal reopening
+  - Added `forceRecreateArrows()` public method for manual arrow recreation if needed
+  - Improved SVG regeneration logic to properly handle marker recreation when canvas is rebuilt
+  - Integrated safeguard calls in modal reopen sequence (`app_view.php`) to ensure arrow visibility
+  - Eliminated need for manual console commands (`visualEditor.recreateAllConnectionsAndMarkers()`) to restore arrows
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### Technical Details
+- **Enhanced Recreation Logic**: Modified connection recreation to be called automatically after data loading
+- **Modal Event Integration**: Added calls to arrow recreation methods in modal event handlers
+- **Fail-safe Methods**: Public method available for backup arrow restoration
+- **SVG Marker Management**: Improved marker definition recreation when SVG containers are rebuilt
+- **Connection Persistence**: Ensured connection data survives modal close/reopen cycles
+
+### User Experience
+- **Seamless Operation**: Arrows remain visible through modal close/reopen cycles without user intervention
+- **Improved Reliability**: Multiple layers of protection against visual connection loss
+- **Professional Appearance**: Diagrams maintain consistent visual quality
+- **Eliminated Workarounds**: No more manual console commands needed
+
+## [3.2.0] - December 2024
+
+### Added
+- **Enhanced Visual Integration Architecture Editor**
+  - Drag-and-drop interface for intuitive diagram creation
+  - Double-click text editing directly on diagram elements
+  - Visual connection tool for drawing relationships between boxes
+  - Grid snapping for precise element positioning
+  - Auto-layout functionality for automatic diagram arrangement
+  - Real-time bidirectional synchronization between visual and code editors
+
+- **Dual-Mode Editor System**
+  - Visual Editor mode for non-technical users
+  - Code Editor mode for advanced Mermaid.js editing
+  - Seamless mode switching with data preservation
+  - Full-screen modal interface for better workspace
+
+- **Enhanced Template System**
+  - Visual template loading with pre-positioned elements
+  - Quick-start templates for common integration patterns
+  - Template categories: Basic Integration, Data Pipeline, API Integration, Microservices
+  - One-click template application in visual mode
+
+### Changed
+- **Integration Architecture Modal**
+  - Upgraded to full-screen modal for better workspace
+  - Split-pane interface with visual editor and settings panel
+  - Improved toolbar with intuitive controls
+  - Enhanced mobile responsiveness
+
+- **User Experience Improvements**
+  - Simplified diagram creation workflow
+  - Reduced learning curve for integration diagrams
+  - Enhanced accessibility for non-technical users
+  - Improved error handling and user feedback
+
+### Technical
+- **New Visual Editor Class**
+  - Canvas-based diagram rendering
+  - Event-driven interaction system
+  - Mermaid.js code generation and parsing
+  - Comprehensive DOM manipulation APIs
 
 ## [3.1.0] - December 2024
 
