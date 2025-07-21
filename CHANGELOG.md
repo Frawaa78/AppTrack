@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2025-07-21 - User Profile Management System
+
+### Added
+- **User Profile Management**
+  - Complete self-service profile editing system accessible through topbar dropdown
+  - Personal information management (first name, last name, display name)
+  - Contact information editing (email, phone number)
+  - Secure password change functionality with current password verification
+  - Automatic display name generation from first and last names with manual override
+  - Real-time field updates with toast notifications for user feedback
+  - Professional profile interface with auto-generated avatars and role badges
+
+### Enhanced
+- **Navigation System**
+  - Added profile.php link to topbar dropdown menu with person icon
+  - Integrated back button functionality for improved navigation flow
+  - Reorganized dropdown menu structure with consistent iconography
+
+### Technical Implementation
+- **Security Features**
+  - Session-based authentication with automatic redirect for unauthorized access
+  - Server-side validation and sanitization for all profile updates
+  - Password strength requirements (minimum 6 characters) with real-time validation
+  - Prepared statements and proper error handling for database operations
+- **User Experience**
+  - Mobile-responsive design with Bootstrap 5 styling
+  - Instant field saving when users click out of form fields
+  - Visual feedback through loading states and success/error toast messages
+  - Auto-generated profile avatars based on display name
+  - Role badges displaying user permissions (admin/editor/viewer)
+  - Member since date display for account history
+
+### Fixed
+- **Header Consistency**
+  - Resolved profile page header height mismatch by including main.css
+  - Ensured consistent styling across all application pages
+
 ## [3.1.1] - 2025-07-21 - HOTFIX
 
 ### Fixed

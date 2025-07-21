@@ -33,6 +33,32 @@ Built for enterprise scalability with planned integrations:
 
 ## 🚀 Current Status & Latest Updates
 
+### Version 3.2.0 (July 21, 2025) - User Profile Management System ✅
+
+**New Feature**: Complete user profile management system with self-service editing capabilities.
+
+#### 🔧 **User Profile Management - New Feature**
+- **Self-Service Profile Editing**: Users can now edit their own personal information through a dedicated profile page
+- **Automatic Display Name Generation**: Smart display name creation from first and last names with manual override capability
+- **Secure Password Management**: In-place password change functionality with current password verification
+- **Real-time Field Updates**: Instant saving when users click out of fields with toast notifications
+- **Professional Profile Interface**: Modern card-based design with avatar generation and role badges
+- **Responsive Design**: Mobile-optimized interface with Bootstrap 5 styling and consistent theming
+
+#### 🎯 **Profile Page Features**
+- **Personal Information Management**: First name, last name, display name editing with auto-generation logic
+- **Contact Information**: Email and phone number management with validation
+- **Password Security**: Secure password change requiring current password verification
+- **Visual Profile Elements**: Auto-generated avatars based on display name, role badges, membership date display
+- **Navigation Integration**: Seamlessly integrated with topbar dropdown menu with intuitive back button
+
+#### 🔒 **Security & Validation**
+- **Session-based Authentication**: Automatic redirect for non-logged-in users
+- **Server-side Validation**: Field validation and sanitization on all profile updates
+- **Password Strength Requirements**: Minimum 6-character password requirement with mismatch detection
+- **Database Security**: Prepared statements and proper error handling for all profile operations
+- **Real-time Feedback**: Immediate validation feedback and error messaging
+
 ### Version 2.6.1 (July 21, 2025) - Visual Diagram Editor Bug Fix ✅
 
 **Critical Fix**: Resolved visual diagram editor modal arrow disappearing issue when reopening modals.
@@ -219,7 +245,8 @@ AppTrack/
 │   ├── dashboard.php          # Main application overview
 │   ├── app_form.php           # Create/edit application form with activity tracker
 │   ├── app_view.php           # Read-only application details with AI insights
-│   ├── users_admin.php        # User administration
+│   ├── profile.php            # User profile management with self-service editing
+│   ├── users_admin.php        # User administration (admin only)
 │   ├── api/                   # RESTful API endpoints (12 active endpoints)
 │   │   ├── ai_analysis.php          # AI analysis generation
 │   │   ├── get_ai_analysis.php      # AI analysis retrieval  

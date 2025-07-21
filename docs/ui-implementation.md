@@ -1,26 +1,241 @@
-# UI/UX Implementation Guide v3.1.1
+# UI/UX Implementation Guide v3.2.0
 
-This document details the technical implementation of the enhanced user interface in AppTrack v3.1.1, focusing on the Activity Tracker improvements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
+This document details the technical implementation of the enhanced user interface in AppTrack v3.2.0, focusing on the User Profile Management System, Activity Tracker improvements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
 
 ## Overview
 
-AppTrack v3.1.1 introduces critical UI stability fixes:
-- **Visual Diagram Editor Bug Fix**: Resolved modal arrow disappearing issue
-- **Enhanced SVG Management**: Improved canvas recreation and arrow persistence
-- **Seamless Modal Interaction**: Arrows remain visible when reopening integration modals
-- **Automatic Recovery**: No manual console commands needed for arrow restoration
+AppTrack v3.2.0 introduces comprehensive user profile management UI:
+- **User Profile Management Interface**: Complete self-service profile editing system
+- **Professional Profile Card Design**: Modern card-based layout with gradient headers
+- **Real-time Field Updates**: Instant saving with visual feedback through toast notifications
+- **Auto-generated Profile Elements**: Dynamic avatars and role badges
+- **Responsive Profile Design**: Mobile-optimized interface with Bootstrap 5 styling
+- **Navigation Integration**: Seamless topbar integration with intuitive back button
 
-AppTrack v3.1 introduces significant UI/UX enhancements:
-- **Enhanced Activity Tracker**: User display names and English date formatting
-- **Integration Architecture System**: Visual diagram creation with Mermaid.js
-- **Improved Text Handling**: Proper ellipsis for long URLs with inline buttons
-- **Professional UI Design**: Icon-only buttons and optimized layouts
-- **Responsive Integration**: Mobile-optimized diagram editing interface
-- **50% space reduction** through intelligent horizontal form layouts
-- **Perfect visual consistency** across form and view modes
-- **Enhanced interactivity** with sophisticated form elements
-- **Modern design principles** with improved accessibility
-- **Component-based architecture** for maintainability
+## User Profile Management System - UI Implementation v3.2.0
+
+### Profile Page Design Architecture
+
+#### 1. Professional Profile Card Interface
+```css
+.profile-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #0d6efd, #0056b3);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+```
+
+#### 2. Form Section Organization
+```html
+<!-- Personal Information Section -->
+<div class="form-section">
+    <h5><i class="bi bi-person me-2"></i>Personal Information</h5>
+    <!-- Form fields with floating labels -->
+</div>
+
+<!-- Contact Information Section -->
+<div class="form-section">
+    <h5><i class="bi bi-envelope me-2"></i>Contact Information</h5>
+    <!-- Contact fields -->
+</div>
+
+<!-- Password Section -->
+<div class="password-section">
+    <h5><i class="bi bi-key me-2"></i>Change Password</h5>
+    <!-- Password change form -->
+</div>
+```
+
+#### 3. Real-time Visual Feedback
+```css
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.auto-generated-note {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+```
+
+### Interactive Elements Implementation
+
+#### 1. Auto-generated Profile Avatar
+```html
+<img src="https://ui-avatars.com/api/?name=<?php echo urlencode($user['display_name'] ?: $user['email']); ?>&background=ffffff&color=0d6efd&size=80" 
+     alt="Profile Avatar" 
+     class="profile-avatar mb-3">
+```
+
+#### 2. Role Badge System
+```php
+<span class="role-badge <?= $user['role'] === 'admin' ? 'bg-danger' : ($user['role'] === 'editor' ? 'bg-warning text-dark' : 'bg-info') ?>">
+    <?= ucfirst($user['role']) ?>
+</span>
+```
+
+#### 3. Real-time Field Updates
+```javascript
+// Automatic saving on field blur
+document.addEventListener('blur', function(e) {
+    if (e.target.classList.contains('profile-input')) {
+        const field = e.target.dataset.field;
+        const value = e.target.value;
+        updateProfile(field, value);
+    }
+}, true);
+```
+
+### User Experience Enhancements
+
+#### 1. Toast Notification System
+```javascript
+function showToast(message, isSuccess = true) {
+    const toastEl = document.getElementById('toastMessage');
+    const toastBody = toastEl.querySelector('.toast-body');
+    const toastHeader = toastEl.querySelector('.toast-header');
+    
+    toastBody.textContent = message;
+    toastHeader.className = `toast-header ${isSuccess ? 'bg-success text-white' : 'bg-danger text-white'}`;
+    toast.show();
+}
+```
+
+#### 2. Loading States During Updates
+```javascript
+function updateProfile(field, value) {
+    const body = document.body;
+    body.classList.add('loading'); // Visual feedback
+    
+    fetch('profile.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=update_profile&field=${field}&value=${encodeURIComponent(value)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        body.classList.remove('loading');
+        // Show success/error feedback
+    });
+}
+```
+
+#### 3. Smart Display Name Generation
+```javascript
+// Auto-generate display name with user override capability
+document.addEventListener('input', function(e) {
+    if (e.target.dataset.field === 'first_name' || e.target.dataset.field === 'last_name') {
+        const expectedDisplayName = `${firstNameField.value.trim()} ${lastNameField.value.trim()}`.trim();
+        
+        // Only auto-generate if field is empty or matches expected pattern
+        if (!currentDisplayName || currentDisplayName === expectedDisplayName.replace(/\s+/g, ' ')) {
+            displayNameField.value = expectedDisplayName;
+        }
+    }
+});
+```
+
+### Navigation Integration
+
+#### 1. Topbar Dropdown Enhancement
+```html
+<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+    <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+    <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+        <li><a class="dropdown-item" href="users_admin.php"><i class="bi bi-people me-2"></i>Users</a></li>
+    <?php endif; ?>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Log out</a></li>
+</ul>
+```
+
+#### 2. Smart Back Button
+```javascript
+function goBack() {
+    // Try to go back in history, fallback to dashboard
+    if (document.referrer && document.referrer !== window.location.href) {
+        window.history.back();
+    } else {
+        window.location.href = 'dashboard.php';
+    }
+}
+```
+
+### Security & Validation UI
+
+#### 1. Password Change Interface
+```html
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="form-floating">
+            <input type="password" 
+                   class="form-control" 
+                   id="newPassword"
+                   name="new_password"
+                   minlength="6"
+                   placeholder="New Password">
+            <label for="newPassword">New Password</label>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="form-floating">
+            <input type="password" 
+                   class="form-control" 
+                   id="confirmPassword"
+                   name="confirm_password"
+                   minlength="6"
+                   placeholder="Confirm Password">
+            <label for="confirmPassword">Confirm Password</label>
+        </div>
+    </div>
+</div>
+```
+
+#### 2. Real-time Password Validation
+```javascript
+// Real-time password validation
+document.addEventListener('input', function(e) {
+    if (e.target.id === 'newPassword' || e.target.id === 'confirmPassword') {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        
+        if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+            passwordError.textContent = 'New passwords do not match';
+            passwordError.classList.remove('d-none');
+        } else {
+            passwordError.classList.add('d-none');
+        }
+    }
+});
+```
+
+### Responsive Design Implementation
+
+#### 1. Mobile-Optimized Layout
+- Bootstrap 5 responsive grid system
+- Collapsible form sections for mobile
+- Touch-friendly form controls
+- Optimized typography for small screens
+
+#### 2. Consistent Styling Integration
+```html
+<link rel="stylesheet" href="../assets/css/main.css">
+```
+- Ensures consistent header height across all pages
+- Integrates with global design system
+- Maintains professional appearance
 
 ## Critical Bug Fix - v3.1.1 (July 21, 2025)
 

@@ -1,6 +1,145 @@
-# AppTrack v3.1.1 - Technical Architecture Documentation
+# AppTrack v3.2.0 - Technical Architecture Documentation
 
-This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.1.1, focusing on the Activity Tracking System enhancements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
+This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.2.0, focusing on the User Profile Management System, Activity Tracking System enhancements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
+
+## Version 3.2.0 Overview (July 21, 2025)
+
+AppTrack v3.2.0 introduces comprehensive user profile management:
+- **User Profile Management System**: Complete self-service profile editing functionality
+- **Automatic Display Name Generation**: Smart name generation from first/last names with manual override
+- **Secure Password Management**: In-place password change with current password verification
+- **Real-time Field Updates**: Instant saving with toast notifications and loading states
+- **Navigation Integration**: Seamless topbar integration with professional profile interface
+- **Security Enhancements**: Session-based authentication with server-side validation
+
+## User Profile Management System - New Feature v3.2.0
+
+### System Architecture
+
+#### Profile Page Structure
+```php
+// public/profile.php - Main profile management interface
+├── Session Authentication (redirect if not logged in)
+├── Database Connection (PDO singleton pattern)
+├── AJAX Request Handling
+│   ├── update_profile action (personal & contact information)
+│   └── change_password action (secure password updates)
+├── Current User Data Fetching
+└── HTML Interface with JavaScript enhancement
+```
+
+#### Security Implementation
+```php
+// Field validation and sanitization
+$allowed_fields = ['first_name', 'last_name', 'display_name', 'email', 'phone'];
+if (!in_array($field, $allowed_fields)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid field']);
+    exit;
+}
+
+// Password security requirements
+if (strlen($new_password) < 6) {
+    echo json_encode(['success' => false, 'message' => 'New password must be at least 6 characters long']);
+    exit;
+}
+
+// Current password verification before change
+if (!password_verify($current_password, $user['password_hash'])) {
+    echo json_encode(['success' => false, 'message' => 'Current password is incorrect']);
+    exit;
+}
+```
+
+#### Automatic Display Name Generation
+```javascript
+// Auto-generate display name when first_name or last_name changes
+document.addEventListener('input', function(e) {
+    if (e.target.dataset.field === 'first_name' || e.target.dataset.field === 'last_name') {
+        const expectedDisplayName = `${firstNameField.value.trim()} ${lastNameField.value.trim()}`.trim();
+        if (!currentDisplayName || currentDisplayName === expectedDisplayName.replace(/\s+/g, ' ')) {
+            displayNameField.value = expectedDisplayName;
+        }
+    }
+});
+```
+
+#### Real-time Field Updates
+```javascript
+// Handle profile input changes with automatic saving
+document.addEventListener('blur', function(e) {
+    if (e.target.classList.contains('profile-input')) {
+        const field = e.target.dataset.field;
+        const value = e.target.value;
+        updateProfile(field, value); // AJAX call to save immediately
+    }
+}, true);
+```
+
+### Database Integration
+
+#### User Profile Data Fetching
+```php
+$stmt = $db->prepare("SELECT id, email, first_name, last_name, display_name, phone, role, created_at FROM users WHERE id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$user = $stmt->fetch();
+```
+
+#### Profile Updates with Auto-generation Logic
+```php
+// Auto-generate display_name if first_name or last_name is updated
+if ($field === 'first_name' || $field === 'last_name') {
+    $stmt = $db->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
+    $user = $stmt->fetch();
+    
+    if ($field === 'first_name') {
+        $auto_display_name = trim($value . ' ' . $user['last_name']);
+    } else {
+        $auto_display_name = trim($user['first_name'] . ' ' . $value);
+    }
+    
+    // Update display_name automatically
+    $stmt = $db->prepare("UPDATE users SET display_name = ? WHERE id = ?");
+    $stmt->execute([$auto_display_name, $user_id]);
+}
+```
+
+### User Interface Design
+
+#### Professional Profile Card Interface
+- **Profile Header**: Gradient background with auto-generated avatar
+- **Role Badge System**: Color-coded badges (admin: red, editor: yellow, viewer: blue)
+- **Form Sections**: Organized personal information and contact information sections
+- **Floating Labels**: Bootstrap 5 form-floating design for modern UX
+- **Loading States**: Visual feedback during AJAX operations
+- **Toast Notifications**: Success/error feedback for all operations
+
+#### Navigation Integration
+```php
+// topbar.php dropdown integration
+<li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+```
+
+### Security Features
+
+#### Session-based Authentication
+```php
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+```
+
+#### Password Security
+- **Current Password Verification**: Required before any password change
+- **Password Strength Requirements**: Minimum 6 characters
+- **Real-time Validation**: Client-side password mismatch detection
+- **Secure Hashing**: PHP password_hash() with PASSWORD_DEFAULT
+
+#### Database Security
+- **Prepared Statements**: All database queries use prepared statements
+- **Input Sanitization**: Server-side validation for all fields
+- **Error Handling**: Proper PDO exception handling with user-friendly messages
 
 ## Version 3.1.1 Overview - HOTFIX (July 21, 2025)
 

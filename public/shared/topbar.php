@@ -132,14 +132,12 @@ if (session_status() === PHP_SESSION_NONE) session_start();
           <span><?php echo htmlspecialchars($_SESSION['user_email'] ?? ''); ?></span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-          <li><a class="dropdown-item" href="#">Profile</a></li>
-          <li><a class="dropdown-item" href="#">Account</a></li>
-          <li><a class="dropdown-item" href="#">Settings</a></li>
+          <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
           <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-            <li><a class="dropdown-item" href="users_admin.php">Users</a></li>
+            <li><a class="dropdown-item" href="users_admin.php"><i class="bi bi-people me-2"></i>Users</a></li>
           <?php endif; ?>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="logout.php">Log out</a></li>
+          <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Log out</a></li>
         </ul>
       </li>
     </ul>

@@ -64,6 +64,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
         exit;
     }
+    
+    if ($_POST['action'] === 'reset_password') {
+        $user_id = (int)$_POST['user_id'];
+        $new_password = $_POST['new_password'];
+        $confirm_password = $_POST['confirm_password'];
+        
+        // Validate passwords
+        if (empty($new_password) || empty($confirm_password)) {
+            echo json_encode(['success' => false, 'message' => 'Both password fields are required']);
+            exit;
+        }
+        
+        if ($new_password !== $confirm_password) {
+            echo json_encode(['success' => false, 'message' => 'Passwords do not match']);
+            exit;
+        }
+        
+        if (strlen($new_password) < 6) {
+            echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters long']);
+            exit;
+        }
+        
+        try {
+            // Hash the new password
+            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+            
+            // Update the password
+            $stmt = $db->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
+            $stmt->execute([$hashed_password, $user_id]);
+            
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Password reset successfully'
+            ]);
+        } catch (PDOException $e) {
+            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
 }
 
 // Fetch all users
@@ -213,13 +252,13 @@ try {
             width: 10%;
         }
         .table th:nth-child(4), .table td:nth-child(4) { /* Display Name */
-            width: 15%;
+            width: 12%;
         }
         .table th:nth-child(5), .table td:nth-child(5) { /* Email */
-            width: 25%;
+            width: 20%;
         }
         .table th:nth-child(6), .table td:nth-child(6) { /* Phone */
-            width: 12%;
+            width: 10%;
         }
         .table th:nth-child(7), .table td:nth-child(7) { /* Status */
             width: 12%;
@@ -228,7 +267,11 @@ try {
             width: 8%;
         }
         .table th:nth-child(9), .table td:nth-child(9) { /* Created */
-            width: 10%;
+            width: 8%;
+        }
+        .table th:nth-child(10), .table td:nth-child(10) { /* Actions */
+            width: 5%;
+            text-align: center;
         }
         
         /* Card styling to match dashboard */
@@ -326,6 +369,7 @@ try {
                                         <th>Status</th>
                                         <th>Role</th>
                                         <th>Created</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -395,6 +439,15 @@ try {
                                                     <?= date('M j, Y', strtotime($user['created_at'])) ?>
                                                 </span>
                                             </td>
+                                            <td class="text-center">
+                                                <button type="button" 
+                                                        class="btn btn-outline-warning btn-sm reset-password-btn" 
+                                                        data-user-id="<?= $user['id'] ?>"
+                                                        data-user-name="<?= htmlspecialchars($user['display_name'] ?: $user['email']) ?>"
+                                                        title="Reset Password">
+                                                    <i class="bi bi-key"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -414,6 +467,49 @@ try {
                 <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
             </div>
             <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div class="modal fade" id="passwordResetModal" tabindex="-1" aria-labelledby="passwordResetModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="passwordResetModalLabel">
+                        <i class="bi bi-key me-2"></i>Reset Password
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <p class="text-muted mb-0">Changing password for</p>
+                        <h6 class="mb-0" id="resetUserDisplayText"></h6>
+                    </div>
+                    
+                    <form id="passwordResetForm">
+                        <input type="hidden" id="resetUserId" name="user_id">
+                        
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" name="new_password" required minlength="6">
+                            <div class="form-text">Password must be at least 6 characters long.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required minlength="6">
+                        </div>
+                        
+                        <div id="passwordError" class="alert alert-danger d-none"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="confirmResetPassword">
+                        <i class="bi bi-key me-1"></i>Reset Password
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -534,6 +630,109 @@ try {
                 
                 if (!currentDisplayName || currentDisplayName === expectedDisplayName.replace(/\s+/g, ' ')) {
                     displayNameField.value = expectedDisplayName;
+                }
+            }
+        });
+        
+        // Password Reset Modal functionality
+        const passwordResetModal = new bootstrap.Modal(document.getElementById('passwordResetModal'));
+        const passwordResetForm = document.getElementById('passwordResetForm');
+        const passwordError = document.getElementById('passwordError');
+        
+        // Handle password reset button clicks
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.reset-password-btn')) {
+                const button = e.target.closest('.reset-password-btn');
+                const userId = button.dataset.userId;
+                const userName = button.dataset.userName;
+                
+                // Set modal fields
+                document.getElementById('resetUserId').value = userId;
+                document.getElementById('resetUserDisplayText').textContent = userName;
+                
+                // Clear form
+                passwordResetForm.reset();
+                passwordError.classList.add('d-none');
+                
+                // Show modal
+                passwordResetModal.show();
+            }
+        });
+        
+        // Handle password confirmation
+        document.getElementById('confirmResetPassword').addEventListener('click', function() {
+            const formData = new FormData(passwordResetForm);
+            const newPassword = formData.get('new_password');
+            const confirmPassword = formData.get('confirm_password');
+            
+            // Clear previous errors
+            passwordError.classList.add('d-none');
+            
+            // Validate passwords
+            if (!newPassword || !confirmPassword) {
+                passwordError.textContent = 'Both password fields are required';
+                passwordError.classList.remove('d-none');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                passwordError.textContent = 'Passwords do not match';
+                passwordError.classList.remove('d-none');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                passwordError.textContent = 'Password must be at least 6 characters long';
+                passwordError.classList.remove('d-none');
+                return;
+            }
+            
+            // Disable button during request
+            const button = this;
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Resetting...';
+            
+            // Send reset request
+            fetch('users_admin.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=reset_password&user_id=${formData.get('user_id')}&new_password=${encodeURIComponent(newPassword)}&confirm_password=${encodeURIComponent(confirmPassword)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-key me-1"></i>Reset Password';
+                
+                if (data.success) {
+                    passwordResetModal.hide();
+                    showToast(data.message, true);
+                } else {
+                    passwordError.textContent = data.message;
+                    passwordError.classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                button.disabled = false;
+                button.innerHTML = '<i class="bi bi-key me-1"></i>Reset Password';
+                passwordError.textContent = 'Network error occurred';
+                passwordError.classList.remove('d-none');
+                console.error('Error:', error);
+            });
+        });
+        
+        // Real-time password validation
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'newPassword' || e.target.id === 'confirmPassword') {
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+                    passwordError.textContent = 'Passwords do not match';
+                    passwordError.classList.remove('d-none');
+                } else {
+                    passwordError.classList.add('d-none');
                 }
             }
         });
