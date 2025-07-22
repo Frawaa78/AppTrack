@@ -240,34 +240,131 @@ if (empty($statuses)) {
   <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <!-- FontAwesome Pro -->
+  <script src="https://kit.fontawesome.com/d67c79608d.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components/user-dropdown.css">
   <link rel="stylesheet" href="../assets/css/components/activity-tracker.css">
   <style>
     /* Integration Architecture Button Styling */
     .integration-architecture-btn {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        color: white;
+        background-color: #FCFCFC;
+        border: 1px solid #F0F1F2;
+        color: #212529;
         padding: 8px 16px;
         border-radius: 6px;
         font-size: 14px;
         font-weight: 500;
         transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.25);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
+        text-decoration: none;
     }
     
     .integration-architecture-btn:hover {
+        background-color: #F8F9FA;
+        border-color: #DEE2E6;
+        color: #212529;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .integration-architecture-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+        background-color: #F8F9FA;
+        border-color: #86B7FE;
+        color: #212529;
     }
     
     .integration-architecture-btn i {
         font-size: 16px;
+        min-width: 16px;
+        text-align: center;
+    }
+    
+    /* Shared styling for header action buttons */
+    .header-action-btn {
+        background-color: #FCFCFC;
+        border: 1px solid #F0F1F2;
+        color: #212529;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    .header-action-btn:hover {
+        background-color: #F8F9FA;
+        border-color: #DEE2E6;
+        color: #212529;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-action-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+        background-color: #F8F9FA;
+        border-color: #86B7FE;
+        color: #212529;
+    }
+    
+    .header-action-btn i {
+        font-size: 16px;
+        min-width: 16px;
+        text-align: center;
+    }
+    
+    /* Fallback for when FontAwesome Pro is not loaded */
+    .integration-architecture-btn i:before {
+        content: "🗂️" !important;
+        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+        font-size: 14px;
+    }
+    
+    /* Override fallback when FontAwesome Pro is loaded */
+    .fa-light.fa-sitemap:before,
+    .fa-solid.fa-sitemap:before,
+    .fas.fa-sitemap:before,
+    .fa-sitemap:before {
+        content: "\f0e8" !important;
+        font-family: "Font Awesome 6 Pro", "Font Awesome 5 Pro", "Font Awesome 6 Free", "Font Awesome 5 Free" !important;
+    }
+    
+    .fa-light.fa-sitemap:before {
+        font-weight: 300;
+    }
+    
+    .fa-solid.fa-sitemap:before,
+    .fas.fa-sitemap:before {
+        font-weight: 900;
+    }
+    
+    /* FontAwesome Pro icons for new header buttons */
+    .fa-light.fa-lightbulb:before {
+        content: "\f0eb" !important;
+        font-family: "Font Awesome 6 Pro" !important;
+        font-weight: 300;
+    }
+    
+    .fa-light.fa-microchip:before {
+        content: "\f2db" !important;
+        font-family: "Font Awesome 6 Pro" !important;
+        font-weight: 300;
+    }
+    
+    .fa-light.fa-list-check:before {
+        content: "\f0ae" !important;
+        font-family: "Font Awesome 6 Pro" !important;
+        font-weight: 300;
     }
 
     /* Integration Architecture Modal Styles */
@@ -767,10 +864,31 @@ if (empty($statuses)) {
       <div class="header-buttons">
         <?php if ($id > 0): ?>
         <button type="button" 
+                class="header-action-btn" 
+                onclick="openUserStories()" 
+                title="View and manage user stories">
+          <i class="fa-light fa-lightbulb" data-fallback="fa-solid fa-lightbulb,fas fa-lightbulb,bi bi-lightbulb"></i>
+          User Stories
+        </button>
+        <button type="button" 
+                class="header-action-btn" 
+                onclick="openAIInsight()" 
+                title="Get AI-powered insights and analysis">
+          <i class="fa-light fa-microchip" data-fallback="fa-solid fa-microchip,fas fa-microchip,bi bi-cpu"></i>
+          AI Insight
+        </button>
+        <button type="button" 
+                class="header-action-btn" 
+                onclick="openTasks()" 
+                title="View and manage tasks">
+          <i class="fa-light fa-list-check" data-fallback="fa-solid fa-list-check,fas fa-tasks,bi bi-check2-square"></i>
+          Tasks
+        </button>
+        <button type="button" 
                 class="integration-architecture-btn" 
                 onclick="openIntegrationDiagram()" 
                 title="Open Integration Architecture Editor - Create visual diagrams">
-          <i class="bi bi-diagram-3" style="font-size: 14px;"></i>
+          <i class="fa-light fa-sitemap" data-fallback="fa-solid fa-sitemap,fas fa-project-diagram,fas fa-network-wired,bi bi-diagram-3"></i>
           Integration Architecture
         </button>
         <?php endif; ?>
@@ -1082,7 +1200,7 @@ if (empty($statuses)) {
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="integrationDiagramModalLabel">
-          <i class="bi bi-diagram-3"></i> Integration Architecture Editor - <?php echo htmlspecialchars($app['short_description']); ?>
+          <i class="fa-light fa-sitemap"></i> Integration Architecture Editor - <?php echo htmlspecialchars($app['short_description']); ?>
         </h5>
         <div class="modal-header-controls">
           <!-- Template Dropdown -->
@@ -1888,6 +2006,67 @@ async function saveIntegrationData(event) {
 <script src="../assets/js/components/visual-diagram-editor.js?v=<?php echo time() + 5; ?>"></script>
 <script>
     console.log('🔍 After loading visual-diagram-editor.js, VisualDiagramEditor available:', typeof VisualDiagramEditor);
+    
+    // FontAwesome icon fallback system
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to test and apply fallback icons
+        function setupIconFallback(iconElement) {
+            if (!iconElement) return;
+            
+            const fallbackIcons = iconElement.dataset.fallback ? iconElement.dataset.fallback.split(',') : [];
+            
+            // Test if current icon is working
+            setTimeout(() => {
+                const styles = window.getComputedStyle(iconElement, ':before');
+                const content = styles.content;
+                
+                // If no content is generated, try fallback icons
+                if (!content || content === 'none' || content === '""') {
+                    console.log('FontAwesome icon not loading, trying fallbacks for:', iconElement.className);
+                    
+                    // Try each fallback icon
+                    for (let i = 0; i < fallbackIcons.length; i++) {
+                        const iconClass = fallbackIcons[i].trim();
+                        iconElement.className = iconClass;
+                        
+                        // Give a moment for the icon to load and check again
+                        setTimeout(() => {
+                            const newStyles = window.getComputedStyle(iconElement, ':before');
+                            const newContent = newStyles.content;
+                            
+                            if (newContent && newContent !== 'none' && newContent !== '""') {
+                                console.log('Working icon found:', iconClass);
+                                return;
+                            }
+                        }, 50);
+                    }
+                }
+            }, 200);
+        }
+        
+        // Apply fallback to all header action button icons
+        document.querySelectorAll('.header-action-btn i, .integration-architecture-btn i').forEach(setupIconFallback);
+    });
+</script>
+<script>
+// Header action button functions
+function openUserStories() {
+    console.log('User Stories button clicked');
+    // TODO: Implement User Stories functionality
+    alert('User Stories functionality will be implemented soon.');
+}
+
+function openAIInsight() {
+    console.log('AI Insight button clicked');
+    // TODO: Implement AI Insight functionality
+    alert('AI Insight functionality will be implemented soon.');
+}
+
+function openTasks() {
+    console.log('Tasks button clicked');
+    // TODO: Implement Tasks functionality
+    alert('Tasks functionality will be implemented soon.');
+}
 </script>
 <script src="../assets/js/components/activity-tracker.js"></script>
 <script src="../assets/js/components/form-handlers.js"></script>

@@ -80,4 +80,9 @@ define('AI_CONFIG', [
     'retry_attempts' => 3,
     'retry_delay_seconds' => 2
 ]);
+
+// FontAwesome Pro Configuration
+define('FONTAWESOME_PRO_LICENSE', 'FAPS-KWQH-GHQP-BBAG-4960');
+define('FONTAWESOME_PRO_KIT_ID', 'your-kit-id'); // Replace with your actual Kit ID from FontAwesome
+
 ?>
