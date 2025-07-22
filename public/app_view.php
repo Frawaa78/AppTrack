@@ -583,6 +583,9 @@ if (empty($statuses)) {
       <button type="button" class="btn btn-info me-2" onclick="openAIAnalysis()" title="AI Analysis">
         <i class="bi bi-robot"></i> AI Insights
       </button>
+      <a href="handover/index.php?app_id=<?php echo $app['id']; ?>" class="btn btn-warning me-2">
+        <i class="fas fa-clipboard-list"></i> Handover Wizard
+      </a>
       <a href="dashboard.php" class="btn btn-secondary">Back</a>
       <?php if (isset($_SESSION['user_role'])) { $role = $_SESSION['user_role']; } else { $role = null; } ?>
       <?php if ($role === 'admin' || $role === 'editor') : ?>

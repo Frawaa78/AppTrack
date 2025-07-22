@@ -1,6 +1,23 @@
 <?php
 // shared/topbar.php
 if (session_status() === PHP_SESSION_NONE) session_start();
+
+// Calculate the correct path based on where this file is included from
+$current_dir = dirname($_SERVER['SCRIPT_NAME']);
+$public_dir = '/public';
+
+// Determine how many levels up we need to go to reach the public root
+$path_parts = explode('/', trim($current_dir, '/'));
+$public_index = array_search('public', $path_parts);
+if ($public_index !== false) {
+    $levels_deep = count($path_parts) - $public_index - 1;
+} else {
+    $levels_deep = 0; // Default to 0 if we can't determine
+}
+
+// Build the relative path to assets
+$assets_path = str_repeat('../', $levels_deep + 1) . 'assets';
+$dashboard_path = str_repeat('../', $levels_deep) . 'dashboard.php';
 ?>
 
 <style>
@@ -108,12 +125,12 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 sticky-top" style="z-index: 1030; margin-bottom:0; padding-top:0; padding-bottom:0;">
   <div class="container-fluid px-0">
-    <a class="navbar-brand" href="dashboard.php">
-      <img src="../assets/logo.png" alt="AppTrack" style="height: 40px;">
+    <a class="navbar-brand" href="<?php echo $dashboard_path; ?>">
+      <img src="<?php echo $assets_path; ?>/logo.png" alt="AppTrack" style="height: 40px;">
     </a>
     <div class="flex-grow-1 d-flex justify-content-center">
       <div class="position-relative w-100" style="max-width:600px;">
-        <form class="d-flex w-100" method="get" action="search.php" id="search-form">
+        <form class="d-flex w-100" method="get" action="<?php echo str_repeat('../', $levels_deep); ?>search.php" id="search-form">
           <input class="form-control search-bar" type="search" name="q" id="global-search" placeholder="Start typing to search..." aria-label="Search" autocomplete="off" <?php if(isset($topbar_search_disabled) && $topbar_search_disabled) echo 'readonly'; ?>>
         </form>
         
@@ -132,12 +149,12 @@ if (session_status() === PHP_SESSION_NONE) session_start();
           <span><?php echo htmlspecialchars($_SESSION['user_email'] ?? ''); ?></span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-          <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="<?php echo str_repeat('../', $levels_deep); ?>profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
           <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
-            <li><a class="dropdown-item" href="users_admin.php"><i class="bi bi-people me-2"></i>Users</a></li>
+            <li><a class="dropdown-item" href="<?php echo str_repeat('../', $levels_deep); ?>users_admin.php"><i class="bi bi-people me-2"></i>Users</a></li>
           <?php endif; ?>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Log out</a></li>
+          <li><a class="dropdown-item" href="<?php echo str_repeat('../', $levels_deep); ?>logout.php"><i class="bi bi-box-arrow-right me-2"></i>Log out</a></li>
         </ul>
       </li>
     </ul>
@@ -150,6 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('global-search');
     const searchResults = document.getElementById('search-results');
     const searchForm = document.getElementById('search-form');
+    const apiPath = '<?php echo str_repeat('../', $levels_deep); ?>api/'; // Dynamic API path
     let searchTimeout;
     let currentFocusIndex = -1;
     let searchItems = [];
@@ -236,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function performSearch(query) {
-        fetch(`api/global_search.php?q=${encodeURIComponent(query)}`)
+        fetch(`${apiPath}global_search.php?q=${encodeURIComponent(query)}`)
             .then(response => response.json())
             .then(data => {
                 displayResults(data);

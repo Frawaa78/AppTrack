@@ -201,6 +201,33 @@ function getTimeBadge($updatedAt) {
 <?php include __DIR__ . '/shared/topbar.php'; ?>
 
 <div class="container-fluid mt-4">
+    <?php 
+    // Display error messages
+    if (isset($_GET['error'])) {
+        $error_message = '';
+        switch ($_GET['error']) {
+            case 'handover_not_linked':
+                $error_message = 'The handover document you tried to access is not properly linked to an application. Please start handover from an application page.';
+                break;
+            case 'missing_app_id':
+                $error_message = 'Handover module requires an application ID. Please select an application first and then click "Handover Wizard".';
+                break;
+            case 'app_not_found':
+                $error_message = 'The application you tried to access was not found. It may have been deleted.';
+                break;
+            default:
+                $error_message = 'An error occurred.';
+        }
+        
+        if ($error_message) {
+            echo '<div class="alert alert-warning alert-dismissible fade show" role="alert">';
+            echo '<i class="bi bi-exclamation-triangle"></i> ' . htmlspecialchars($error_message);
+            echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            echo '</div>';
+        }
+    }
+    ?>
+    
     <div class="table-container">
         <div class="table-header">
             <div class="d-flex justify-content-between align-items-center">
