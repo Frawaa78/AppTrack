@@ -18,7 +18,12 @@ if (!$document_id) {
 // Get document data
 $db = Database::getInstance()->getConnection();
 
-$stmt = $db->prepare("SELECT * FROM handover_documents WHERE id = ? AND created_by = ?");
+$stmt = $db->prepare("
+    SELECT hd.*, a.short_description as application_name 
+    FROM handover_documents hd 
+    LEFT JOIN applications a ON hd.application_id = a.id 
+    WHERE hd.id = ? AND hd.created_by = ?
+");
 $stmt->execute([$document_id, $_SESSION['user_id']]);
 $document = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -58,9 +63,8 @@ foreach ($data_rows as $row) {
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .section-header { background-color: #f8f9fa; padding: 1rem; margin: 2rem 0 1rem 0; border-left: 4px solid #007bff; }
         .data-table { margin-bottom: 2rem; }
-        .print-button { position: fixed; top: 20px; right: 20px; z-index: 1000; }
         @media print {
-            .print-button, .no-print { display: none !important; }
+            .no-print { display: none !important; }
             .section-header { break-after: avoid; }
         }
     </style>
@@ -68,10 +72,6 @@ foreach ($data_rows as $row) {
 <body class="bg-light">
     <?php include __DIR__ . '/../shared/topbar.php'; ?>
     
-    <button class="btn btn-primary print-button no-print" onclick="window.print()">
-        <i class="fas fa-print"></i> Print
-    </button>
-
     <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-12">
@@ -97,8 +97,8 @@ foreach ($data_rows as $row) {
                                 </small>
                             </div>
                             <div>
-                                <button class="btn btn-secondary me-2" onclick="window.close()">
-                                    <i class="fas fa-times"></i> Close
+                                <button class="btn btn-secondary me-2" onclick="window.history.back()">
+                                    <i class="fas fa-arrow-left"></i> Back
                                 </button>
                                 <button class="btn btn-primary" onclick="window.print()">
                                     <i class="fas fa-print"></i> Print

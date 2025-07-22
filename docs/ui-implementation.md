@@ -1,18 +1,133 @@
-# UI/UX Implementation Guide v3.2.0
+# UI/UX Implementation Guide v3.4.0
 
-This document details the technical implementation of the enhanced user interface in AppTrack v3.2.0, focusing on the User Profile Management System, Activity Tracker improvements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
+This document details the technical implementation of the enhanced user interface in AppTrack v3.4.0, focusing on the Advanced Dashboard Management & Kanban System, User Profile Management System, Activity Tracker improvements, Integration Architecture feature, and Visual Diagram Editor enhancements implemented in July 2025.
 
 ## Overview
 
-AppTrack v3.2.0 introduces comprehensive user profile management UI:
-- **User Profile Management Interface**: Complete self-service profile editing system
-- **Professional Profile Card Design**: Modern card-based layout with gradient headers
-- **Real-time Field Updates**: Instant saving with visual feedback through toast notifications
-- **Auto-generated Profile Elements**: Dynamic avatars and role badges
-- **Responsive Profile Design**: Mobile-optimized interface with Bootstrap 5 styling
-- **Navigation Integration**: Seamless topbar integration with intuitive back button
+AppTrack v3.4.0 introduces comprehensive dual-view dashboard management UI:
+- **Dual-View Dashboard System**: Seamless switching between table and kanban views
+- **Interactive Kanban Board**: Drag-and-drop kanban with 5-phase workflow
+- **Advanced Filtering Interface**: "Show mine only" toggle with cross-view consistency
+- **Clean Visual Design**: Professional #F6F7FB styling with consistent 1px borders
+- **Responsive State Management**: URL parameter-based filter persistence
+- **Enhanced User Experience**: Simplified navigation with single chevron arrows
 
-## User Profile Management System - UI Implementation v3.2.0
+## Dual-View Dashboard System - UI Implementation v3.4.0
+
+### Dashboard Interface Architecture
+
+#### 1. View Toggle Interface
+```html
+<!-- View switching controls with filter integration -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Show Mine Only Toggle (Admin/Editor only) -->
+    <div class="form-check form-switch" style="<?= !in_array($role, ['admin', 'editor']) ? 'display: none;' : '' ?>">
+        <input class="form-check-input" type="checkbox" id="showMineOnlyToggle" 
+               <?= $showMineOnly ? 'checked' : '' ?>>
+        <label class="form-check-label" for="showMineOnlyToggle">Show mine only</label>
+    </div>
+    
+    <!-- Table/Kanban Toggle -->
+    <div class="btn-group" role="group">
+        <input type="radio" class="btn-check" name="viewToggle" id="tableView" value="table" 
+               <?= $currentView === 'table' ? 'checked' : '' ?>>
+        <label class="btn btn-outline-primary" for="tableView">
+            <i class="bi bi-table me-1"></i> Table
+        </label>
+        <input type="radio" class="btn-check" name="viewToggle" id="kanbanView" value="kanban" 
+               <?= $currentView === 'kanban' ? 'checked' : '' ?>>
+        <label class="btn btn-outline-primary" for="kanbanView">
+            <i class="bi bi-kanban me-1"></i> Kanban
+        </label>
+    </div>
+</div>
+```
+
+#### 2. Kanban Board Design
+```css
+/* Professional kanban styling with clean aesthetics */
+.kanban-board {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    overflow-x: auto;
+    min-height: 500px;
+}
+
+.kanban-column {
+    background-color: #F6F7FB;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    min-width: 280px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.kanban-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.kanban-header h5 {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Clean count badges without colored backgrounds */
+.count-badge {
+    background-color: transparent !important;
+    color: #666;
+    font-weight: 500;
+    border: 1px solid #ddd;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+```
+
+#### 3. Application Card Design
+```css
+/* Kanban application cards with drag-and-drop support */
+.kanban-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    cursor: move;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.kanban-card:hover {
+    border-color: #0d6efd;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+.kanban-card.dragging {
+    opacity: 0.7;
+    transform: rotate(5deg);
+    z-index: 1000;
+}
+
+.kanban-card h6 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.kanban-card .text-muted {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+```
 
 ### Profile Page Design Architecture
 

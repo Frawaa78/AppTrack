@@ -33,6 +33,45 @@ Built for enterprise scalability with planned integrations:
 
 ## 🚀 Current Status & Latest Updates
 
+### Version 3.4.0 (July 22, 2025) - Advanced Dashboard Management & Kanban System ✅
+
+**Major Feature**: Complete dual-view dashboard system with advanced kanban board, comprehensive filtering, and consistent user experience.
+
+#### 🎯 **Dual-View Dashboard System - NEW MAJOR FEATURE** 🆕
+- **Seamless View Switching**: Toggle between table and kanban views with preserved filter state and URL persistence
+- **Advanced Kanban Board**: Interactive drag-and-drop kanban with 5-phase workflow (Need → Solution → Build → Implement → Operate)
+- **Comprehensive Filtering**: "Show mine only" toggle working consistently across both table and kanban views
+- **Smart User Detection**: Intelligent filtering based on project_manager, product_owner, and assigned_to fields
+- **Cross-View State Persistence**: Filter preferences maintained when switching between views using URL parameters
+
+#### 🔧 **Kanban Board Features**
+- **Phase-Based Workflow**: Applications organized in 5 standardized delivery phases with visual progress tracking
+- **Drag-and-Drop Functionality**: Intuitive application movement between phases with automatic status updates
+- **Real-Time Statistics**: Dynamic phase counters with visual indicators and total application counts
+- **Background Styling**: Clean #F6F7FB background colors with 1px borders for professional appearance
+- **Comprehensive Audit Logging**: All kanban changes automatically logged in audit_log table with full change tracking
+- **Progressive Enhancement**: Graceful degradation when JavaScript is disabled, falling back to table view
+
+#### 🎨 **Visual Interface Improvements**
+- **Consistent Color Scheme**: Removed colored backgrounds from kanban header numbers for clean, neutral design
+- **Simplified Navigation**: Single chevron arrows in load more buttons (previously duplicated)
+- **Professional Aesthetics**: Standardized #F6F7FB column backgrounds with consistent 1px border styling
+- **Responsive Design**: Mobile-optimized kanban board with proper touch interactions and responsive layouts
+- **Visual Hierarchy**: Clear separation between phases with proper spacing and typography
+
+#### 🛠️ **Technical Infrastructure Enhancements**
+- **Database Consistency**: Fixed session variable inconsistencies between $_SESSION['email'] and $_SESSION['user_email']
+- **Advanced SQL Filtering**: Harmonized filtering logic between table and kanban using comprehensive JOIN operations
+- **API Integration**: Enhanced kanban_data.php with consistent filtering parameters and user matching
+- **JavaScript Architecture**: Modular dashboard.js with clean separation of table and kanban logic
+- **State Management**: URL parameter-based filter persistence with automatic toggle synchronization
+
+#### 🔒 **Enhanced Security & Performance**
+- **Role-Based Access**: "Show mine only" toggle only visible to admin and editor users
+- **Optimized Queries**: Efficient SQL queries with proper indexing for user matching across multiple name formats
+- **Session Security**: Consistent session variable usage across all dashboard components
+- **Error Handling**: Comprehensive error handling for kanban operations with graceful fallbacks
+
 ### Version 3.3.0 (July 22, 2025) - Application Handover Management System ✅
 
 **Major Feature**: Complete application handover documentation system with 15-step wizard and comprehensive tracking.
@@ -295,53 +334,48 @@ AppTrack/
 ├── public/                     # Web-accessible files (Production Ready)
 │   ├── index.php              # Welcome/landing page  
 │   ├── login.php              # User authentication
+│   ├── logout.php             # User logout functionality
 │   ├── register.php           # User registration
-│   ├── dashboard.php          # Main application overview
+│   ├── dashboard.php          # Main application overview with dual-view (table/kanban)
 │   ├── app_form.php           # Create/edit application form with activity tracker
 │   ├── app_view.php           # Read-only application details with AI insights
 │   ├── profile.php            # User profile management with self-service editing
 │   ├── users_admin.php        # User administration (admin only)
 │   ├── handover/              # **NEW**: Application Handover Management Module 🆕
 │   │   ├── index.php          # Handover overview and status dashboard
-│   │   ├── wizard.php         # 15-step handover wizard with progress tracking
-│   │   ├── preview.php        # Comprehensive document preview and print functionality
-│   │   ├── save_data.php      # Data persistence and validation handler
-│   │   ├── steps/             # Individual wizard step implementations (15 files)
-│   │   │   ├── step_1.php     # Definitions and Terminology (informational)
-│   │   │   ├── step_2.php     # Participants and Roles (dynamic table management)
-│   │   │   ├── step_3.php     # Contact Points and Information
-│   │   │   ├── step_4.php     # Support Models and SLAs
-│   │   │   ├── step_5.php     # Deliverables and Documentation
-│   │   │   ├── step_6.php     # Testing Procedures and Results
-│   │   │   ├── step_7.php     # Release Management
-│   │   │   ├── step_8.php     # Technical Architecture
-│   │   │   ├── step_9.php     # Risk Assessment and Mitigation
-│   │   │   ├── step_10.php    # Security Requirements
-│   │   │   ├── step_11.php    # Economics and Cost Management
-│   │   │   ├── step_12.php    # Data Storage and Management
-│   │   │   ├── step_13.php    # Digital Signatures and Approvals
-│   │   │   ├── step_14.php    # Meeting Minutes and Decisions
-│   │   │   └── step_15.php    # Final Review and Export
-│   ├── api/                   # RESTful API endpoints (12 active endpoints)
+│   │   ├── wizard.php         # Comprehensive handover wizard with progress tracking
+│   │   ├── preview.php        # Document preview and print functionality
+│   │   ├── export.php         # Document export functionality
+│   │   └── sections/          # Modular handover sections for reusability
+│   ├── api/                   # RESTful API endpoints (21 active endpoints)
 │   │   ├── ai_analysis.php          # AI analysis generation
 │   │   ├── get_ai_analysis.php      # AI analysis retrieval  
 │   │   ├── get_application_info.php # Application metadata
+│   │   ├── get_application_data.php # Application data for kanban
 │   │   ├── get_latest_work_note.php # Change detection for AI
+│   │   ├── get_work_notes.php       # Work notes retrieval
 │   │   ├── search_applications.php  # Application search endpoint
-│   │   ├── search_users.php         # User search endpoint  
+│   │   ├── search_users.php         # User search endpoint
+│   │   ├── global_search.php        # Global search functionality
 │   │   ├── get_activity_feed.php    # Activity tracker data
 │   │   ├── add_work_note.php        # Manual activity creation
 │   │   ├── hide_activity.php        # Admin activity control
 │   │   ├── show_activity.php        # Admin activity control
 │   │   ├── download_attachment.php  # File download handler
-│   │   └── delete_attachment.php    # File management
+│   │   ├── delete_attachment.php    # File management
+│   │   ├── get_integration_diagram.php # Integration diagram retrieval
+│   │   ├── save_integration_diagram.php # Integration diagram saving
+│   │   ├── kanban_data.php          # Kanban board data endpoint
+│   │   ├── update_phase.php         # Kanban phase updates with audit logging
+│   │   ├── update_status.php        # Application status updates
+│   │   └── handover/                # Handover-specific API endpoints
 │   └── shared/
 │       ├── topbar.php         # Consistent navigation component
 │       └── activity_tracker.php     # Activity tracking widget
 ├── src/                       # Backend logic (MVC Architecture)
 │   ├── config/
 │   │   ├── config.php         # Database & AI configuration
-│   │   └── ai_config.php      # AI-specific settings
+│   │   └── database.php       # Database-specific configuration
 │   ├── db/
 │   │   └── db.php             # PDO database singleton class
 │   ├── models/                # Data models
@@ -362,36 +396,40 @@ AppTrack/
 │   │   ├── components/       # Component-specific styles (9 modules)
 │   │   │   ├── activity-tracker.css  # Activity feed styling
 │   │   │   ├── ai-analysis.css       # AI modal interface
-│   │   │   ├── forms.css     # Form layout and styling
-│   │   │   ├── buttons.css   # Button components
-│   │   │   ├── choices.css   # Multi-select dropdown styling
-│   │   │   ├── range-slider.css # Slider component styling
-│   │   │   └── user-dropdown.css # User interface components
+│   │   │   ├── buttons.css           # Button components
+│   │   │   ├── choices.css           # Multi-select dropdown styling
+│   │   │   ├── forms.css             # Form layout and styling
+│   │   │   ├── kanban-board.css      # Kanban board styling
+│   │   │   ├── range-slider.css      # Slider component styling
+│   │   │   ├── user-dropdown.css     # User interface components
+│   │   │   └── visual-diagram-editor.css # Visual diagram editor styling
 │   │   └── pages/            # Page-specific styles
-│   │       └── app-view.css  # Application view page
+│   │       ├── app-view.css  # Application view page
+│   │       └── dashboard.css # Dashboard-specific styling
 │   ├── js/
 │   │   ├── main.js           # Core JavaScript functionality
-│   │   ├── components/       # Reusable JavaScript components (6 modules)
+│   │   ├── components/       # Reusable JavaScript components (5 modules)
 │   │   │   ├── activity-tracker.js   # Activity system frontend
-│   │   │   ├── form-handlers.js      # Form interaction logic
 │   │   │   ├── choices-init.js       # Multi-select initialization
-│   │   │   └── visual-diagram-editor.js # **ENHANCED**: Modal arrow persistence fix
+│   │   │   ├── form-handlers.js      # Form interaction logic
+│   │   │   ├── kanban-board.js       # Kanban board functionality
+│   │   │   └── visual-diagram-editor.js # Visual diagram editor with modal persistence
 │   │   └── pages/            # Page-specific JavaScript
 │   │       ├── app-form.js   # Form page enhancements
-│   │       └── app-view.js   # View page functionality
+│   │       ├── app-view.js   # View page functionality
+│   │       └── dashboard.js  # Dashboard dual-view management
+│   ├── favicon/              # Favicon files
 │   └── logo.png              # Application branding
 ├── docs/                      # Comprehensive documentation
-│   ├── database.md           # Complete database schema with AI tables
+│   ├── database.md           # Complete database schema (25 tables)
 │   ├── technical-architecture.md  # System architecture guide
 │   ├── ui-implementation.md       # UI/UX technical guide
 │   ├── AI_FEATURES_README.md      # AI system documentation
-│   ├── ai-database-setup.sql      # AI table creation scripts
-│   ├── database-updates.sql       # Schema evolution scripts
-│   └── handover-database-setup.sql # **NEW**: Handover module database schema 🆕
-├── scripts/                   # Deployment & maintenance
-│   └── setup_ai_features.php      # AI system initialization
-├── config/                    # External configuration
-│   └── ai_config.php         # AI service configuration
+│   ├── architecture.md            # System architecture overview
+│   ├── SECURITY.md               # Security guidelines and measures
+│   ├── RELEASE_NOTES_2.6.1.md   # Version 2.6.1 release notes
+│   ├── RELEASE_NOTES_3.2.0.md   # Version 3.2.0 release notes
+│   └── run-database-updates.php  # Database maintenance utilities
 ├── CHANGELOG.md              # Version history and feature tracking
 └── README.md                 # This comprehensive guide
 ```
@@ -429,24 +467,6 @@ AppTrack/
 │   │   │   ├── forms.css     # Form layout and styling
 │   │   │   ├── buttons.css   # Button components
 │   │   │   ├── choices.css   # Multi-select dropdown styling
-│   │   │   ├── range-slider.css # Slider component styling
-│   │   │   └── user-dropdown.css # User interface components
-│   │   └── pages/            # Page-specific styles
-│   │       └── app-view.css  # Application view page
-│   └── js/
-│       ├── main.js           # Core JavaScript functionality
-│       ├── components/       # Reusable JavaScript components
-│       │   ├── activity-tracker.js   # Activity system frontend
-│       │   ├── form-handlers.js      # Form interaction logic
-│       │   └── choices-init.js       # Multi-select initialization
-│       └── pages/            # Page-specific JavaScript
-│           ├── app-form.js   # Form page enhancements
-│           └── app-view.js   # View page functionality
-├── docs/                      # Comprehensive documentation
-│   ├── database.md           # Complete database schema with activity tracking
-│   ├── technical-architecture.md  # System architecture guide
-│   └── ui-implementation.md       # UI/UX technical guide
-└── README.md                 # This file
 ```
 
 ---

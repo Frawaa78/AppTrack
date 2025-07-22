@@ -1,18 +1,79 @@
-# AppTrack v3.2.0 - Technical Architecture Documentation
+# AppTrack v3.4.0 - Technical Architecture Documentation
 
-This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.2.0, focusing on the User Profile Management System, Activity Tracking System enhancements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
+This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.4.0, focusing on the Advanced Dashboard Management & Kanban System, User Profile Management System, Activity Tracking System enhancements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
 
-## Version 3.2.0 Overview (July 21, 2025)
+## Version 3.4.0 Overview (July 22, 2025)
 
-AppTrack v3.2.0 introduces comprehensive user profile management:
-- **User Profile Management System**: Complete self-service profile editing functionality
-- **Automatic Display Name Generation**: Smart name generation from first/last names with manual override
-- **Secure Password Management**: In-place password change with current password verification
-- **Real-time Field Updates**: Instant saving with toast notifications and loading states
-- **Navigation Integration**: Seamless topbar integration with professional profile interface
-- **Security Enhancements**: Session-based authentication with server-side validation
+AppTrack v3.4.0 introduces comprehensive dual-view dashboard management:
+- **Advanced Dashboard Management**: Complete dual-view system with kanban board and table views
+- **Kanban Board System**: Interactive drag-and-drop kanban with 5-phase workflow
+- **Cross-View Filtering**: "Show mine only" toggle working consistently across both views
+- **Comprehensive Audit Logging**: All kanban changes automatically tracked in audit_log table
+- **Visual Interface Improvements**: Clean design with consistent #F6F7FB styling
+- **Session Management**: Fixed inconsistencies between $_SESSION variables for reliable filtering
 
-## User Profile Management System - New Feature v3.2.0
+## Dual-View Dashboard Management System - New Feature v3.4.0
+
+### System Architecture
+
+#### Dashboard Structure
+```php
+// public/dashboard.php - Main dashboard with dual-view support
+├── Session Authentication & Role Validation
+├── URL Parameter Handling (show_mine_only, view)
+├── Database Connection (PDO singleton pattern)
+├── Conditional SQL Filtering
+│   ├── User role-based filtering (admin/editor only)
+│   ├── Three-tier user matching (assigned_to, project_manager, product_owner)
+│   └── Cross-view consistency between table and kanban
+├── View State Management
+│   ├── Table view with sorting and pagination
+│   └── Kanban view with drag-and-drop functionality
+└── JavaScript Integration for view switching and state persistence
+```
+
+#### Kanban Board Implementation
+```javascript
+// assets/js/components/kanban-board.js - Interactive kanban functionality
+class KanbanBoard {
+    constructor(containerId, apiEndpoint) {
+        this.container = containerId;
+        this.apiEndpoint = apiEndpoint;
+        this.draggedElement = null;
+    }
+    
+    // Phase-based data organization
+    async loadData(showMineOnly = false) {
+        const response = await fetch(`${this.apiEndpoint}?show_mine_only=${showMineOnly}`);
+        // Organize applications by phase
+    }
+    
+    // Drag-and-drop functionality with audit logging
+    async handleDrop(applicationId, newPhase) {
+        await fetch('api/update_phase.php', {
+            method: 'POST',
+            body: JSON.stringify({ id: applicationId, phase: newPhase })
+        });
+        // Automatic audit logging on server side
+    }
+}
+```
+
+#### Cross-View Filtering Logic
+```php
+// Harmonized SQL filtering for consistent results
+$whereConditions = [];
+$params = [];
+
+if ($showMineOnly && in_array($role, ['admin', 'editor'])) {
+    $whereConditions[] = "(a.assigned_to = :user_email 
+                          OR a.project_manager = :user_email2 
+                          OR a.product_owner = :user_email3)";
+    $params['user_email'] = $_SESSION['user_email'];
+    $params['user_email2'] = $_SESSION['user_email'];
+    $params['user_email3'] = $_SESSION['user_email'];
+}
+```
 
 ### System Architecture
 

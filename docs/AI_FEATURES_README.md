@@ -1,8 +1,8 @@
-# AppTrack AI Features Documentation
+# AppTrack AI Features Documentation v3.4.0
 
 ## Overview
 
-AppTrack integrates advanced AI capabilities powered by OpenAI's GPT-3.5-turbo model to provide intelligent analysis and insights for application lifecycle management. The AI system transforms raw application data, work notes, and activity history into comprehensive business intelligence.
+AppTrack integrates advanced AI capabilities powered by OpenAI's GPT-3.5-turbo model to provide intelligent analysis and insights for application lifecycle management. The AI system transforms raw application data, work notes, and activity history into comprehensive business intelligence. Version 3.4.0 enhances AI integration with improved kanban workflow analysis and comprehensive audit logging.
 
 ## Core AI Features
 
@@ -12,31 +12,50 @@ AppTrack integrates advanced AI capabilities powered by OpenAI's GPT-3.5-turbo m
 - **Purpose**: Comprehensive business overview of application status and context
 - **Cache Duration**: 24 hours
 - **Token Limit**: 2000 tokens
+- **Enhanced Features**: Now includes kanban phase progression analysis
 - **Use Case**: General purpose analysis for project reviews and status updates
 
 #### 2. Timeline Analysis  
 - **Purpose**: Chronological progression analysis of application development
 - **Cache Duration**: 12 hours
 - **Token Limit**: 2500 tokens
+- **Enhanced Features**: Incorporates kanban phase change audit logs
 - **Use Case**: Project milestone tracking and delivery timeline assessment
 
 #### 3. Risk Assessment
 - **Purpose**: Identification of potential risks, blockers, and mitigation strategies
 - **Cache Duration**: 6 hours (frequent updates for critical insights)
 - **Token Limit**: 2500 tokens
+- **Enhanced Features**: Analyzes kanban board stagnation patterns
 - **Use Case**: Project governance and risk management
 
 #### 4. Relationship Analysis
 - **Purpose**: Application dependencies and integration impact analysis
 - **Cache Duration**: 24 hours
 - **Token Limit**: 2000 tokens
+- **Enhanced Features**: Cross-references kanban phase positions with dependency mapping
 - **Use Case**: System architecture planning and change impact assessment
 
 #### 5. Trend Analysis
 - **Purpose**: Long-term pattern recognition and predictive insights
 - **Cache Duration**: 48 hours (stable over longer periods)
 - **Token Limit**: 3000 tokens
+- **Enhanced Features**: Predictive modeling based on kanban progression patterns
 - **Use Case**: Strategic planning and resource allocation
+
+### 🎯 Kanban Integration AI Features (v3.4.0 NEW)
+
+#### Phase Progression Analysis
+- **Data Source**: Kanban audit logs from drag-and-drop operations
+- **Intelligence**: Pattern recognition for applications stuck in specific phases
+- **Insights**: Identifies bottlenecks and suggests process improvements
+- **Automation**: Automatic analysis when applications remain in same phase >30 days
+
+#### Workflow Optimization
+- **Analysis Type**: Kanban board efficiency assessment
+- **Metrics**: Average time per phase, completion rates, common phase transitions
+- **Recommendations**: Data-driven suggestions for workflow improvements
+- **Integration**: Combines kanban data with work notes for comprehensive insights
 
 ### 🌐 Multilingual Intelligence
 

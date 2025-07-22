@@ -1,6 +1,6 @@
-# AppTrack Security Documentation
+# AppTrack Security Documentation v3.4.0
 
-This document outlines the comprehensive security measures implemented in AppTrack v2.5.0 to protect enterprise application portfolio data.
+This document outlines the comprehensive security measures implemented in AppTrack v3.4.0 to protect enterprise application portfolio data, including enhanced security for the new kanban system and dual-view dashboard functionality.
 
 ## 🔒 Security Overview
 
@@ -14,15 +14,18 @@ AppTrack implements enterprise-grade security across multiple layers:
 - **Secure API Integration**: OpenAI API calls use encrypted connections
 - **Environment Variables**: API keys stored securely outside codebase
 - **Content Filtering**: AI prompts filtered to prevent information leakage
+- **Kanban Data Protection**: Phase change audit logs exclude sensitive business information
 
 ### 2. Access Control & Authentication
 - **Role-Based Access Control (RBAC)**:
-  - **Admin**: Full system access including user management
-  - **Editor**: View and edit applications (no user management)
-  - **Viewer**: Read-only access to application data
+  - **Admin**: Full system access including user management and all filtering options
+  - **Editor**: View and edit applications, access to "Show mine only" filtering
+  - **Viewer**: Read-only access to application data, no filtering capabilities
 - **Session Security**: Secure session management with automatic timeout
+- **Session Consistency**: Fixed $_SESSION variable inconsistencies for reliable filtering
 - **Domain Restrictions**: Configurable allowed domains list
 - **Request Rate Limiting**: 20 requests per user per hour
+- **Kanban Access Control**: Phase updates restricted by user role and ownership
 
 ### 3. API Security Measures
 - **Input Validation**: Multi-layer validation and sanitization
@@ -30,13 +33,23 @@ AppTrack implements enterprise-grade security across multiple layers:
 - **CSRF Protection**: Cross-site request forgery prevention
 - **Token Usage Limits**: Daily AI token limits (50,000 per user)
 - **Error Handling**: Production-safe error messages
+- **Kanban API Security**: Drag-and-drop operations validated against user permissions
+- **Audit Trail Integrity**: All kanban changes logged with user attribution and timestamps
 
-### 4. Audit & Compliance
+### 4. Enhanced Kanban Security (v3.4.0 NEW)
+- **Phase Change Authorization**: Only authorized users can move applications between phases
+- **Ownership Validation**: "Show mine only" filtering based on three-tier user matching
+- **Audit Logging**: All kanban operations automatically logged in audit_log table
+- **Cross-View Consistency**: Security model maintained across table and kanban views
+- **Session Variable Security**: Harmonized session management prevents privilege escalation
+
+### 5. Audit & Compliance
 - **Complete Audit Trail**: All changes logged with user attribution
 - **Timestamp Integrity**: Immutable timestamps for compliance
 - **AI Usage Logging**: Full tracking of AI requests and costs
 - **Data Snapshots**: Automatic preservation before critical operations
 - **Change Monitoring**: Real-time tracking of modifications
+- **Kanban Audit Trail**: Comprehensive logging of all drag-and-drop operations and phase changes
 
 ### 5. Production Security
 - **Clean Codebase**: All debug files removed (17 files cleaned)

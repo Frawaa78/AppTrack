@@ -6,13 +6,15 @@ This document provides a comprehensive overview of the AppTrack database structu
 
 The database follows an enterprise-grade normalized design pattern with comprehensive AI analytics integration. Key architectural features include:
 
-- **14 Core Tables** with optimized relationships and constraints
+- **25 Core Tables** with optimized relationships and constraints
 - **AI Analysis Engine** with intelligent caching and change detection  
 - **Comprehensive Audit System** with full change tracking and timestamps
 - **Rich Work Notes** with attachment support and priority management
 - **Role-Based Access Control** with granular permission mapping
 - **Data Integrity** through foreign key constraints and ACID transactions
 - **Production Optimization** with strategic indexing and performance tuning
+- **Advanced Handover Management** with 15-step wizard and document tracking
+- **Kanban Integration** with phase-based workflow and audit logging
 
 ## Current Schema Status ✅
 
@@ -23,6 +25,8 @@ The database follows an enterprise-grade normalized design pattern with comprehe
 ✅ **FILE MANAGEMENT**: Attachment system with BLOB storage and comprehensive metadata  
 ✅ **SEARCH ENABLED**: Real-time application search with relationship mapping and indexing
 ✅ **SECURITY HARDENED**: Data privacy controls with sensitive field exclusion for AI processing
+✅ **HANDOVER SYSTEM**: Complete 15-step handover management with participant tracking
+✅ **KANBAN WORKFLOW**: Phase-based kanban system with drag-and-drop functionality
 
 ## Database Architecture Summary
 
@@ -31,13 +35,14 @@ The database follows an enterprise-grade normalized design pattern with comprehe
 | **Core Application** | applications, work_notes, audit_log | Primary business data | Full lifecycle tracking |
 | **AI Analysis** | ai_analysis, ai_configurations, ai_usage_log, data_snapshots | AI insights & caching | Smart change detection |
 | **User Management** | users, application_user_relations | Authentication & authorization | Role-based access |
-| **Reference Data** | phases, statuses, deployment_models, portfolios | Controlled vocabularies | Data consistency |
+| **Reference Data** | phases, statuses, deployment_models, portfolios, project_managers, product_owners | Controlled vocabularies | Data consistency |
 | **Relationships** | application_relations | Dependency mapping | Bidirectional links |
+| **Handover Management** | handover_documents, handover_data, handover_participants, handover_signatures | Document workflow | 15-step process |
 
 ## Core Application Tables
 
 ### Table: applications
-Primary entity storing all application lifecycle information.
+Primary entity storing all application lifecycle information with complete handover integration.
 
 | Field                   | Type           | Description                           | Constraints      |
 |-------------------------|----------------|---------------------------------------|------------------|
@@ -47,7 +52,7 @@ Primary entity storing all application lifecycle information.
 | relevant_for            | varchar(255)   | Yggdrasil relevance classification   | NULL             |
 | phase                   | varchar(100)   | Current delivery phase               | NULL             |
 | status                  | varchar(100)   | Current status                       | NULL             |
-| handover_status         | int(11)        | Progress percentage (0-100)          | DEFAULT 0        |
+| handover_status         | int(11)        | Handover progress percentage (0-100) | DEFAULT 0        |
 | contract_number         | varchar(255)   | Commercial contract reference        | NULL             |
 | contract_responsible    | varchar(255)   | Commercial lead contact              | NULL             |
 | information_space       | text           | Documentation area URL               | NULL             |
@@ -58,6 +63,7 @@ Primary entity storing all application lifecycle information.
 | application_portfolio   | varchar(100)   | Target IT operations portfolio       | NULL             |
 | delivery_responsible    | varchar(100)   | Lead vendor/alliance                 | NULL             |
 | corporator_link         | text           | Project management system URL        | NULL             |
+| corporater_link         | varchar(255)   | Alternative project management URL   | NULL             |
 | project_manager         | varchar(100)   | Project activities lead              | NULL             |
 | product_owner           | varchar(100)   | Business need owner                  | NULL             |
 | due_date                | date           | Target go-live date                  | NULL             |
@@ -67,6 +73,15 @@ Primary entity storing all application lifecycle information.
 | business_need           | varchar(350)   | Business justification               | NULL             |
 | created_at              | timestamp      | Record creation timestamp            | DEFAULT CURRENT  |
 | updated_at              | timestamp      | Last modification timestamp          | ON UPDATE        |
+| integration_diagram     | text           | Mermaid diagram code for integration | NULL, COMMENT    |
+| integration_notes       | text           | Notes about integration architecture | NULL, COMMENT    |
+| handover_document_id    | int(11)        | FK to handover_documents table       | NULL, MUL        |
+
+**Key Features:**
+- **Kanban Integration**: `phase` field drives kanban board organization (Need, Solution, Build, Implement, Operate)
+- **User Assignment**: Three-tier assignment system (`assigned_to`, `project_manager`, `product_owner`) for "Show mine only" filtering
+- **Handover Integration**: Direct relationship to handover management system via `handover_document_id`
+- **Integration Architecture**: Built-in support for visual integration diagrams and technical notes
 
 ## AI Analysis Tables
 
@@ -132,7 +147,129 @@ Comprehensive logging of all AI API interactions for monitoring and cost trackin
 
 ## User Management Tables
 
+### Table: deployment_models
+Reference table defining standardized deployment models for application architecture tracking.
+
+| Field            | Type         | Description                    | Constraints    |
+|------------------|--------------|--------------------------------|----------------|
+| id               | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| deployment_model | varchar(100) | Deployment model name (unique) | UNIQUE, NOT NULL |
+
+**Default Values:**
+- Monolithic
+- Microservices
+- Serverless
+- Container-based
+- Hybrid
+- Other
+
+### Table: programming_languages
+Reference table defining standardized programming languages for technology tracking.
+
+| Field              | Type         | Description                    | Constraints    |
+|--------------------|--------------|--------------------------------|----------------|
+| id                 | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| programming_language | varchar(100) | Programming language name (unique) | UNIQUE, NOT NULL |
+
+**Default Values:**
+- PHP
+- JavaScript
+- Python
+- Java
+- C#
+- Go
+- Ruby
+- Other
+
+### Table: frameworks
+Reference table defining standardized frameworks for technology stack tracking.
+
+| Field     | Type         | Description                    | Constraints    |
+|-----------|--------------|--------------------------------|----------------|
+| id        | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| framework | varchar(100) | Framework name (unique)        | UNIQUE, NOT NULL |
+
+**Default Values:**
+- Laravel
+- React
+- Vue.js
+- Angular
+- Express.js
+- Django
+- Spring Boot
+- Other
+
 ### Table: users
+System users with role-based access control for the AppTrack application.
+
+| Field               | Type         | Description                    | Constraints    |
+|---------------------|--------------|--------------------------------|----------------|
+| id                  | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| email               | varchar(255) | User email (unique)            | UNIQUE, NOT NULL |
+| password            | varchar(255) | Hashed password                | NOT NULL       |
+| full_name           | varchar(255) | User's full name               |                |
+| role                | enum         | User role (viewer/editor/admin)| NOT NULL       |
+| created_at          | timestamp    | Account creation timestamp     | DEFAULT CURRENT_TIMESTAMP |
+| updated_at          | timestamp    | Last update timestamp          | DEFAULT CURRENT_TIMESTAMP ON UPDATE |
+
+**User Roles:**
+- **viewer**: Read-only access to applications
+- **editor**: Can create and edit applications
+- **admin**: Full access including user management
+
+### Table: activity_log
+Comprehensive audit trail for all system activities and changes.
+
+| Field        | Type         | Description                    | Constraints    |
+|--------------|--------------|--------------------------------|----------------|
+| id           | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| user_id      | int(11)      | User who performed the action  | FK to users.id |
+| action       | varchar(255) | Action performed               | NOT NULL       |
+| target_type  | varchar(100) | Type of target (application, user, etc.) | NOT NULL |
+| target_id    | int(11)      | ID of the target entity        |                |
+| details      | text         | JSON formatted change details  |                |
+| timestamp    | timestamp    | When the action occurred       | DEFAULT CURRENT_TIMESTAMP |
+
+**Common Actions:**
+- create_application, update_application, delete_application
+- kanban_move, phase_change, status_change
+- create_user, update_user, delete_user
+- login, logout
+
+## Database Relationships
+
+### Foreign Key Constraints
+The applications table maintains foreign key relationships with reference tables:
+- `phase_id` → `application_phases.id`
+- `status_id` → `application_statuses.id`
+- `application_type_id` → `application_types.id`
+- `environment_id` → `environments.id`
+- `database_type_id` → `database_types.id`
+- `hosting_model_id` → `hosting_models.id`
+- `deployment_model_id` → `deployment_models.id`
+- `programming_language_id` → `programming_languages.id`
+- `framework_id` → `frameworks.id`
+- `handover_document_id` → `handover_documents.id`
+
+### Data Integrity
+- All reference tables use auto-incrementing IDs as primary keys
+- Unique constraints on name/type fields prevent duplicates
+- NULL values allowed in applications table for optional relationships
+- Cascade options preserve data integrity during deletions
+
+## Indexes and Performance
+
+### Optimized Queries
+- Primary keys provide clustered index performance
+- Unique constraints create automatic indexes for reference lookups
+- Foreign key relationships optimized for JOIN operations
+- Activity log indexed by timestamp and user_id for audit queries
+
+### Query Patterns
+- Dashboard filtering uses JOINs across user-related fields
+- Kanban board groups by phase with status counts
+- Search functionality leverages indexed text fields
+- Audit trails query by timestamp ranges and target types
 Comprehensive user management with role-based access control.
 
 | Field         | Type                              | Description                     | Constraints           |
@@ -162,6 +299,58 @@ Maps users to applications with specific role assignments.
 | user_id        | int(11)                                                 | FK to users table            | NOT NULL, PK     |
 | role           | enum('assigned_to','project_manager','product_owner')  | User role for application    | NOT NULL, PK     |
 
+### Table: project_managers
+Standardized project manager names for consistent data entry.
+
+| Field | Type         | Description                    | Constraints    |
+|-------|--------------|--------------------------------|----------------|
+| id    | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| name  | varchar(100) | Project manager name           | UNIQUE, NOT NULL |
+
+### Table: product_owners
+Standardized product owner names for consistent data entry.
+
+| Field | Type         | Description                    | Constraints    |
+|-------|--------------|--------------------------------|----------------|
+| id    | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| name  | varchar(100) | Product owner name             | UNIQUE, NOT NULL |
+
+### Table: application_phases
+Reference table defining standardized application phases for consistent categorization.
+
+| Field | Type         | Description                    | Constraints    |
+|-------|--------------|--------------------------------|----------------|
+| id    | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| phase | varchar(50)  | Phase name (unique)            | UNIQUE, NOT NULL |
+
+**Default Values:**
+- Portfolio
+- Project
+- System
+- Retirement
+
+### Table: environments
+Reference table defining standardized environments for deployment tracking.
+
+| Field       | Type        | Description                    | Constraints    |
+|-------------|-------------|--------------------------------|----------------|
+| id          | int(11)     | Primary key, auto-increment    | NOT NULL, PK   |
+| environment | varchar(50) | Environment name (unique)      | UNIQUE, NOT NULL |
+
+**Default Values:**
+- Production
+- Staging
+- Development
+- Test
+
+### Table: application_statuses
+Reference table defining standardized application statuses for consistent categorization.
+
+| Field  | Type         | Description                    | Constraints    |
+|--------|--------------|--------------------------------|----------------|
+| id     | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| status | varchar(100) | Status name (unique)           | UNIQUE, NOT NULL |
+
 **Default Values:**
 - Unknown
 - Not started
@@ -169,7 +358,55 @@ Maps users to applications with specific role assignments.
 - On Hold
 - Completed
 
-### Table: deployment_models
+### Table: application_types
+Reference table defining standardized application types for categorization.
+
+| Field | Type         | Description                    | Constraints    |
+|-------|--------------|--------------------------------|----------------|
+| id    | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| type  | varchar(100) | Application type name (unique) | UNIQUE, NOT NULL |
+
+**Default Values:**
+- Web Application
+- Mobile Application
+- Desktop Application
+- API/Service
+- Database
+- Infrastructure
+- Other
+
+### Table: database_types
+Reference table defining standardized database types for infrastructure tracking.
+
+| Field         | Type         | Description                    | Constraints    |
+|---------------|--------------|--------------------------------|----------------|
+| id            | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| database_type | varchar(100) | Database type name (unique)    | UNIQUE, NOT NULL |
+
+**Default Values:**
+- MySQL
+- PostgreSQL
+- Oracle
+- SQL Server
+- MongoDB
+- Redis
+- Other
+
+### Table: hosting_models
+Reference table defining standardized hosting models for infrastructure categorization.
+
+| Field         | Type         | Description                    | Constraints    |
+|---------------|--------------|--------------------------------|----------------|
+| id            | int(11)      | Primary key, auto-increment    | NOT NULL, PK   |
+| hosting_model | varchar(100) | Hosting model name (unique)    | UNIQUE, NOT NULL |
+
+**Default Values:**
+- On-Premise
+- Cloud (AWS)
+- Cloud (Azure)
+- Cloud (Google)
+- Hybrid
+- Other
 Technical deployment approaches for standardized classification.
 
 | Field | Type         | Description                    | Constraints    |
@@ -286,6 +523,74 @@ When fully normalized, these fields will become foreign keys:
 - `applications.phase` → `phases.name`
 - `applications.status` → `statuses.name`
 - `applications.deployment_model` → `deployment_models.name`
+
+## Handover Management Tables
+
+### Table: handover_documents
+Central registry for application handover documents with progress tracking.
+
+| Field                   | Type           | Description                           | Constraints      |
+|-------------------------|----------------|---------------------------------------|------------------|
+| id                      | int(11)        | Primary key, auto-increment          | NOT NULL, PK     |
+| application_id          | int(11)        | FK to applications table              | NOT NULL, MUL    |
+| created_by              | int(11)        | FK to users table (document creator) | NOT NULL, MUL    |
+| created_at              | timestamp      | Document creation timestamp           | DEFAULT CURRENT  |
+| updated_at              | timestamp      | Last modification timestamp           | ON UPDATE        |
+| status                  | enum           | Document status                       | DEFAULT 'draft'  |
+| current_step            | int(11)        | Current wizard step (1-15)           | DEFAULT 1        |
+| completion_percentage   | decimal(5,2)   | Progress completion (0.00-100.00)    | DEFAULT 0.00     |
+
+**Status Values:**
+- `draft`: Initial document state
+- `in_progress`: Active handover process
+- `review`: Under review phase
+- `completed`: Handover completed
+
+### Table: handover_data
+Flexible key-value storage for handover step data with JSON support.
+
+| Field                   | Type           | Description                           | Constraints      |
+|-------------------------|----------------|---------------------------------------|------------------|
+| id                      | int(11)        | Primary key, auto-increment          | NOT NULL, PK     |
+| handover_document_id    | int(11)        | FK to handover_documents table        | NOT NULL, MUL    |
+| section_name            | varchar(100)   | Handover section identifier           | NOT NULL         |
+| field_name              | varchar(100)   | Field identifier within section       | NOT NULL         |
+| field_value             | text           | Field data (supports JSON arrays)    | NULL             |
+| field_type              | enum           | Data type indicator                   | DEFAULT 'text'   |
+| sort_order              | int(11)        | Display order within section          | DEFAULT 0        |
+| created_at              | timestamp      | Field creation timestamp              | DEFAULT CURRENT  |
+| updated_at              | timestamp      | Last modification timestamp           | ON UPDATE        |
+
+**Field Types:**
+- `text`: Standard text fields
+- `table`: JSON array data for dynamic tables
+- `file`: File attachment metadata
+
+### Table: handover_participants
+Dynamic participant management for handover processes.
+
+| Field                   | Type           | Description                           | Constraints      |
+|-------------------------|----------------|---------------------------------------|------------------|
+| id                      | int(11)        | Primary key, auto-increment          | NOT NULL, PK     |
+| handover_document_id    | int(11)        | FK to handover_documents table        | NOT NULL, MUL    |
+| role                    | varchar(100)   | Participant role/function             | NOT NULL         |
+| name                    | varchar(255)   | Participant full name                 | NULL             |
+| organization            | varchar(255)   | Participant organization              | NULL             |
+| contact_info            | varchar(255)   | Contact details                       | NULL             |
+| created_at              | timestamp      | Participant addition timestamp        | DEFAULT CURRENT  |
+
+### Table: handover_signatures
+Digital signature and approval tracking for handover completion.
+
+| Field                   | Type           | Description                           | Constraints      |
+|-------------------------|----------------|---------------------------------------|------------------|
+| id                      | int(11)        | Primary key, auto-increment          | NOT NULL, PK     |
+| handover_document_id    | int(11)        | FK to handover_documents table        | NOT NULL, MUL    |
+| role                    | varchar(100)   | Signing role/authority                | NOT NULL         |
+| signed_by               | int(11)        | FK to users table (optional)         | NULL, MUL        |
+| signed_at               | timestamp      | Signature timestamp                   | NULL             |
+| signature_data          | text           | Digital signature data                | NULL             |
+| created_at              | timestamp      | Signature record creation             | DEFAULT CURRENT  |
 
 ## Data Integrity & Constraints
 

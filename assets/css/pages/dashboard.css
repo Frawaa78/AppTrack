@@ -1,0 +1,185 @@
+/* Dashboard Page Specific Styles */
+
+/* View Toggle Controls */
+.view-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 0;
+    gap: 0.5rem;
+}
+
+.view-toggle-label {
+    font-weight: 500;
+    color: #495057;
+    margin-right: 0.5rem;
+}
+
+.view-toggle-group {
+    display: flex;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 0.25rem;
+    border: 1px solid #dee2e6;
+}
+
+.view-toggle-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.view-toggle-btn:hover {
+    color: #495057;
+    background-color: #e9ecef;
+}
+
+.view-toggle-btn.active {
+    background-color: #0d6efd;
+    color: white;
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.view-toggle-btn i {
+    font-size: 0.875rem;
+}
+
+/* Dashboard Content Areas */
+.dashboard-table-view {
+    display: block;
+}
+
+.dashboard-kanban-view {
+    display: none;
+}
+
+.dashboard-kanban-view.active {
+    display: block;
+}
+
+.dashboard-table-view.active {
+    display: block;
+}
+
+/* Statistics Bar Above Kanban */
+.kanban-stats {
+    background-color: white;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #dee2e6;
+}
+
+.kanban-stats-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.kanban-stats-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.kanban-stats-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 0.25rem;
+}
+
+.kanban-stats-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Phase-specific stat colors - Removed for plain text display */
+
+/* Responsive adjustments for dashboard */
+@media (max-width: 768px) {
+    .view-toggle-container {
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+    }
+    
+    .view-toggle-label {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .kanban-stats-content {
+        justify-content: center;
+    }
+    
+    .kanban-stats-item {
+        min-width: 80px;
+    }
+}
+
+/* Loading overlay for view switching */
+.dashboard-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+.dashboard-content-wrapper {
+    position: relative;
+}
+
+/* Smooth transitions between views */
+.view-transition {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.view-transition.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* View Toggle Button Styling - Override Bootstrap */
+.view-toggle .btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.view-toggle .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.view-toggle .btn-outline-secondary.active {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}

@@ -10,7 +10,36 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $db = Database::getInstance()->getConnection();
-$applications = $db->query('SELECT * FROM applications ORDER BY updated_at DESC')->fetchAll();
+
+// Check if filtering for current user
+$showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 'true';
+$userEmail = $_SESSION['user_email'] ?? '';
+
+if ($showMineOnly && !empty($userEmail)) {
+    // Join with users table to filter applications assigned to current user
+    $stmt = $db->prepare('
+        SELECT DISTINCT a.* 
+        FROM applications a
+        LEFT JOIN users u ON u.email = ?
+        WHERE (
+            a.project_manager = u.display_name OR 
+            a.project_manager = CONCAT(COALESCE(u.first_name, ""), " ", COALESCE(u.last_name, "")) OR
+            a.project_manager = u.email OR
+            a.product_owner = u.display_name OR 
+            a.product_owner = CONCAT(COALESCE(u.first_name, ""), " ", COALESCE(u.last_name, "")) OR
+            a.product_owner = u.email OR
+            a.assigned_to = u.display_name OR 
+            a.assigned_to = CONCAT(COALESCE(u.first_name, ""), " ", COALESCE(u.last_name, "")) OR
+            a.assigned_to = u.email
+        )
+        ORDER BY a.updated_at DESC
+    ');
+    $stmt->execute([$userEmail]);
+    $applications = $stmt->fetchAll();
+} else {
+    // Show all applications
+    $applications = $db->query('SELECT * FROM applications ORDER BY updated_at DESC')->fetchAll();
+}
 
 // Function to calculate time-based badge
 function getTimeBadge($updatedAt) {
@@ -51,6 +80,8 @@ function getTimeBadge($updatedAt) {
     <link rel="manifest" href="../assets/favicon/site.webmanifest">
     <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
     <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/pages/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Dashboard Table Styles */
         .dashboard-table {
@@ -232,15 +263,38 @@ function getTimeBadge($updatedAt) {
         <div class="table-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Applications</h2>
-                <?php if (isset($_SESSION['user_role']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'editor')): ?>
-                    <a href="app_form.php" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> New Application
-                    </a>
-                <?php endif; ?>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Show Mine Only Toggle -->
+                    <?php if (isset($_SESSION['user_role']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'editor')): ?>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="showMineOnlyToggle" style="cursor: pointer;">
+                            <label class="form-check-label" for="showMineOnlyToggle" style="cursor: pointer; font-size: 0.875rem; color: #6c757d;">
+                                Show mine only
+                            </label>
+                        </div>
+                    <?php endif; ?>
+                    <!-- View Toggle -->
+                    <div class="view-toggle-container">
+                        <div class="btn-group view-toggle" role="group" aria-label="View toggle">
+                            <button type="button" class="btn btn-outline-secondary active" id="tableViewBtn" aria-pressed="true">
+                                <i class="fas fa-table"></i> Table
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="kanbanViewBtn" aria-pressed="false">
+                                <i class="fas fa-columns"></i> Kanban
+                            </button>
+                        </div>
+                    </div>
+                    <!-- New Application Button -->
+                    <?php if (isset($_SESSION['user_role']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'editor')): ?>
+                        <a href="app_form.php" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> New Application
+                        </a>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         
-        <div class="table-responsive">
+        <div class="table-responsive" id="tableContainer">
             <table class="table dashboard-table mb-0" id="applications-table">
                 <thead>
                     <tr>
@@ -281,10 +335,25 @@ function getTimeBadge($updatedAt) {
                 </tbody>
             </table>
         </div>
+        
+        <!-- Kanban Board Container -->
+        <div id="kanbanContainer" style="display: none;">
+            <div class="kanban-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                Loading kanban board...
+            </div>
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Set user role and email for kanban board
+window.userRole = '<?php echo $_SESSION['user_role'] ?? 'viewer'; ?>';
+window.userEmail = '<?php echo $_SESSION['user_email'] ?? ''; ?>';
+</script>
+<script src="../assets/js/components/kanban-board.js"></script>
+<script src="../assets/js/pages/dashboard.js"></script>
 <script>
 // Table sorting functionality
 document.addEventListener('DOMContentLoaded', function() {

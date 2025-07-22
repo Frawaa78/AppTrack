@@ -1,30 +1,31 @@
-# AppTrack Technical Architecture
+# AppTrack Technical Architecture v3.4.0
 
 ## System Overview
 
-AppTrack is a production-ready web application built with a modern, scalable architecture that integrates AI-powered analysis capabilities with traditional application lifecycle management.
+AppTrack is a production-ready web application built with a modern, scalable architecture that integrates AI-powered analysis capabilities with traditional application lifecycle management. Version 3.4.0 introduces advanced dashboard management with dual-view kanban system and comprehensive filtering capabilities.
 
 ## Architecture Stack
 
 ### Backend
 - **Language**: PHP 8+
-- **Database**: MySQL 8.0 with InnoDB engine
+- **Database**: MySQL 8.0 with InnoDB engine (25 tables)
 - **AI Integration**: OpenAI GPT-3.5-turbo API
 - **Authentication**: Session-based with BCrypt password hashing
-- **API Design**: RESTful endpoints with JSON responses
+- **API Design**: RESTful endpoints with JSON responses (21 active endpoints)
 
 ### Frontend
 - **Framework**: Bootstrap 5.3 for responsive design
 - **JavaScript**: Vanilla ES6+ with modular components
 - **UI Components**: Choices.js for enhanced multi-select functionality
+- **Kanban System**: Interactive drag-and-drop kanban board with audit logging
 - **Icons**: Bootstrap Icons
-- **Modal System**: Bootstrap modals for AI analysis interface
+- **Modal System**: Bootstrap modals for AI analysis and integration diagrams
 
 ### Infrastructure
 - **Web Server**: Apache/Nginx compatible
 - **File Storage**: Database BLOB storage for attachments
 - **Caching**: Application-level caching for AI analysis results
-- **Logging**: Comprehensive audit trail and AI usage tracking
+- **Logging**: Comprehensive audit trail, AI usage tracking, and kanban change logging
 
 ## Core System Components
 
@@ -47,8 +48,42 @@ src/
 - User authentication and authorization
 - Activity tracking and audit logging
 - Data validation and sanitization
+- Kanban board data management
+- Cross-view filtering consistency
 
-### 2. AI Analysis Engine
+### 2. Dashboard Management System (v3.4.0 NEW)
+```
+public/
+├── dashboard.php           # Dual-view dashboard (table/kanban)
+└── api/
+    ├── kanban_data.php     # Kanban board data endpoint
+    ├── update_phase.php    # Phase updates with audit logging
+    └── update_status.php   # Status updates with change tracking
+```
+
+**Features:**
+- **Dual-View Interface**: Seamless switching between table and kanban views
+- **Advanced Filtering**: "Show mine only" toggle with cross-view consistency
+- **Kanban Board**: Interactive drag-and-drop with 5-phase workflow
+- **State Persistence**: URL parameter-based filter state management
+- **Audit Logging**: Comprehensive change tracking for all kanban operations
+
+### 3. Handover Management System (v3.3.0)
+```
+public/handover/
+├── index.php              # Handover overview dashboard
+├── wizard.php             # Comprehensive handover wizard
+├── preview.php            # Document preview and export
+└── sections/              # Modular handover sections
+```
+
+**Features:**
+- **Application-Specific Isolation**: Documents tied to specific applications
+- **Flexible Data Storage**: JSON-enabled storage for complex participant tables
+- **Progress Tracking**: Step-by-step completion with visual indicators
+- **Export Functionality**: Document generation and printing capabilities
+
+### 4. AI Analysis Engine
 ```
 src/services/
 ├── AIService.php           # OpenAI integration
@@ -62,21 +97,64 @@ src/services/
 - **Configurable Models**: Support for different AI models and parameters per analysis type
 - **Usage Tracking**: Comprehensive logging for cost monitoring and performance optimization
 
-### 3. Database Layer
+### 5. Database Layer
 ```
 src/
 ├── db/
 │   └── db.php              # PDO connection management
 └── config/
     ├── config.php          # Application configuration
-    └── ai_config.php       # AI-specific settings
+    └── database.php        # Database-specific settings
 ```
 
 **Design Principles:**
-- Normalized schema with proper foreign key relationships
-- Prepared statements for SQL injection prevention
-- Transaction support for data integrity
-- Audit logging for all critical operations
+- **25-Table Architecture**: Normalized schema with proper foreign key relationships
+- **Reference Data Management**: Standardized lookup tables for consistent data entry
+- **Handover Management**: Dedicated tables for application handover documentation
+- **Audit Capabilities**: Comprehensive change tracking for compliance requirements
+- **Security**: Prepared statements for SQL injection prevention
+- **Performance**: Strategic indexing and transaction support for data integrity
+
+## Kanban Board Workflow (v3.4.0 NEW)
+
+### 1. Phase-Based Organization
+```
+Need → Solution → Build → Implement → Operate
+```
+
+**Phase Management:**
+- Applications organized across 5 standardized delivery phases
+- Real-time statistics with dynamic phase counters
+- Visual progress tracking with total application counts
+- Professional #F6F7FB background styling with 1px borders
+
+### 2. Drag-and-Drop Functionality
+```javascript
+// Kanban board interaction workflow
+dragStart(applicationId)
+  ↓
+dragOver(targetPhase)
+  ↓
+drop(applicationId, newPhase)
+  ↓
+// API call to update_phase.php
+updatePhaseAPI(applicationId, newPhase)
+  ↓
+// Automatic audit logging
+logKanbanChange(userId, applicationId, oldPhase, newPhase)
+```
+
+### 3. Cross-View Filtering
+```php
+// Consistent filtering logic across table and kanban views
+$showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === '1';
+
+if ($showMineOnly && in_array($role, ['admin', 'editor'])) {
+    $whereConditions[] = "(a.assigned_to = :user_email 
+                          OR a.project_manager = :user_email2 
+                          OR a.product_owner = :user_email3)";
+}
+```
 
 ## AI Analysis Workflow
 
@@ -171,9 +249,10 @@ Web Server (Apache/Nginx)
 ```
 
 ### Database Schema
-- **17 Tables**: Normalized design with proper relationships
-- **AI Integration**: 3 dedicated tables for analysis system
-- **Audit System**: Comprehensive change tracking
+- **25 Tables**: Normalized design with proper relationships and reference data
+- **Handover Management**: 2 dedicated tables for application handover documentation
+- **AI Integration**: 4 dedicated tables for analysis system
+- **Audit System**: Comprehensive change tracking including kanban operations
 - **File Storage**: BLOB-based attachment system
 
 ### Configuration Management
@@ -184,6 +263,7 @@ Web Server (Apache/Nginx)
 ## Monitoring & Maintenance
 
 ### Logging
+- **Kanban Audit Logs**: All drag-and-drop operations and phase changes tracked
 - **AI Usage Logs**: Token consumption, processing time, success rates
 - **Audit Logs**: All data changes with user attribution
 - **Error Logs**: Comprehensive error tracking and reporting
