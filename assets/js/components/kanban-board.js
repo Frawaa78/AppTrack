@@ -300,6 +300,7 @@ class KanbanBoard {
 
     // Refresh kanban data
     async refresh(showMineOnly = false) {
+        console.log('REFRESH DEBUG: showMineOnly parameter =', showMineOnly);
         await this.loadData(showMineOnly);
     }
 
@@ -543,7 +544,11 @@ class KanbanBoard {
                 
                 // Reload data after brief delay to show success state
                 setTimeout(async () => {
-                    await this.refresh();
+                    // Check if "Show mine only" filter is active and preserve it during refresh
+                    const showMineOnlyToggle = document.getElementById('showMineOnlyToggle');
+                    const showMineOnly = showMineOnlyToggle ? showMineOnlyToggle.checked : false;
+                    console.log('DRAG DROP DEBUG: showMineOnly toggle checked =', showMineOnly);
+                    await this.refresh(showMineOnly);
                 }, 300);
             } else {
                 throw new Error(result.error || 'Failed to update phase');
@@ -829,7 +834,11 @@ class KanbanBoard {
 
             const result = await response.json();
             if (result.success) {
-                await this.refresh();
+                // Check if "Show mine only" filter is active and preserve it during refresh
+                const showMineOnlyToggle = document.getElementById('showMineOnlyToggle');
+                const showMineOnly = showMineOnlyToggle ? showMineOnlyToggle.checked : false;
+                console.log('STATUS UPDATE DEBUG: showMineOnly toggle checked =', showMineOnly);
+                await this.refresh(showMineOnly);
             } else {
                 throw new Error(result.error || 'Failed to update status');
             }
