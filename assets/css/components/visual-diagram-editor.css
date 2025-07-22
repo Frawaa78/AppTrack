@@ -17,79 +17,82 @@
     cursor: default;
 }
 
-/* Diagram elements base styles */
-.diagram-element {
-    position: absolute;
-    border: 2px solid #6b7280;
-    border-radius: 4px;
-    background-color: #e2e8f0;
-    padding: 8px;
-    cursor: move;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-size: 0.875rem;
-    font-weight: 500;
-    min-width: 60px;
-    min-height: 40px;
-    box-sizing: border-box;
+/* Diagram elements base styles - ENHANCED for guaranteed visibility */
+.visual-diagram-editor .diagram-element {
+    position: absolute !important;
+    border: 2px solid #6b7280 !important;
+    border-radius: 4px !important;
+    background-color: #e2e8f0 !important;
+    padding: 8px !important;
+    cursor: move !important;
+    user-select: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    min-width: 60px !important;
+    min-height: 40px !important;
+    box-sizing: border-box !important;
     transition: none !important; /* DISABLE transitions to prevent position issues */
-    z-index: 10;
-    pointer-events: all;
+    z-index: 10 !important;
+    pointer-events: all !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
 }
 
-.diagram-element:hover {
-    border-color: #6b7280;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+.visual-diagram-editor .diagram-element:hover {
+    border-color: #6b7280 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
     /* transform: translateY(-1px); REMOVED - causes position issues */
 }
 
-.diagram-element.selected {
-    border-color: #3b82f6;
+.visual-diagram-editor .diagram-element.selected {
+    border-color: #3b82f6 !important;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Element types */
-.element-process {
-    background-color: #dbeafe;
-    border-color: #3b82f6;
+/* Element types - ENHANCED specificity */
+.visual-diagram-editor .diagram-element.element-process {
+    background-color: #dbeafe !important;
+    border-color: #3b82f6 !important;
 }
 
-.element-decision {
-    background-color: #fef3c7;
-    border-color: #f59e0b;
-    border-radius: 50% 20px 50% 20px;
-    transform: rotate(45deg);
+.visual-diagram-editor .diagram-element.element-decision {
+    background-color: #fef3c7 !important;
+    border-color: #f59e0b !important;
+    border-radius: 50% 20px 50% 20px !important;
+    transform: rotate(45deg) !important;
 }
 
-.element-decision .element-text {
-    transform: rotate(-45deg);
+.visual-diagram-editor .diagram-element.element-decision .element-text {
+    transform: rotate(-45deg) !important;
 }
 
-.element-start {
-    background-color: #d1fae5;
-    border-color: #10b981;
-    border-radius: 50%;
+.visual-diagram-editor .diagram-element.element-start {
+    background-color: #d1fae5 !important;
+    border-color: #10b981 !important;
+    border-radius: 50% !important;
 }
 
-.element-database {
-    background-color: #e0e7ff;
-    border-color: #6366f1;
-    border-radius: 8px 8px 20px 20px;
+.visual-diagram-editor .diagram-element.element-database {
+    background-color: #e0e7ff !important;
+    border-color: #6366f1 !important;
+    border-radius: 8px 8px 20px 20px !important;
 }
 
-.element-api {
-    background-color: #fce7f3;
-    border-color: #ec4899;
-    border-radius: 4px;
+.visual-diagram-editor .diagram-element.element-api {
+    background-color: #fce7f3 !important;
+    border-color: #ec4899 !important;
+    border-radius: 4px !important;
 }
 
-.element-user {
-    background-color: #f3e8ff;
-    border-color: #8b5cf6;
-    border-radius: 16px;
+.visual-diagram-editor .diagram-element.element-user {
+    background-color: #f3e8ff !important;
+    border-color: #8b5cf6 !important;
+    border-radius: 16px !important;
 }
 
 /* Element text */

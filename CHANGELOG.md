@@ -5,6 +5,86 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.1] - 2025-07-22 - Visual Diagram Editor Enhancements
+
+### Added
+- **Visual Integration Architecture Editor in Application Form**
+  - Integrated complete visual diagram editor functionality from app_view.php to app_form.php
+  - Full feature parity with viewing mode including element creation, editing, and connection tools
+  - Real-time diagram editing capabilities during application creation and editing workflows
+  - Seamless integration with existing application form without navigation disruption
+
+- **Enhanced Property Panel**
+  - Draggable property panel with improved user experience
+  - Professional header with visual feedback for drag operations
+  - Smart positioning system that avoids overlapping with UI controls
+  - Boundary detection to keep panel within viewport bounds
+  - Visual cursor feedback during drag operations (grabbing/move states)
+
+### Enhanced
+- **Element Visibility and Styling**
+  - Resolved CSS conflicts that prevented diagram element borders from displaying
+  - Restored proper border styling for all element types (process, decision, start, database, API, user)
+  - Fixed element type-specific color schemes and visual differentiation
+  - Eliminated interference from conflicting CSS rules that overrode element styling
+
+- **User Interface Improvements**
+  - Repositioned property panel to avoid overlapping with Save button (moved from top: 10px to top: 120px)
+  - Improved property panel structure with dedicated header and content areas
+  - Enhanced dragging mechanics with accurate mouse tracking and offset calculations
+  - Better visual feedback with cursor changes and grab states
+
+### Fixed
+- **CSS Conflicts Resolution**
+  - Identified and resolved border transparency override that hid element borders
+  - Removed conflicting `.diagram-element` CSS rule that set `border: 2px solid transparent`
+  - Ensured proper inheritance of element-specific border styles
+  - Maintained visual consistency between app_view.php and app_form.php implementations
+
+- **JavaScript Cleanup**
+  - Removed problematic force-fix scripts that created unwanted light blue overlay boxes
+  - Eliminated setTimeout-based element manipulation that interfered with proper element display
+  - Cleaned up cached script references that continued to execute after file removal
+  - Improved cache-busting mechanism to ensure updated scripts load properly
+
+- **Dragging Mechanics**
+  - Fixed mouse cursor offset issues during property panel dragging
+  - Improved coordinate calculation for accurate mouse-to-panel positioning
+  - Enhanced boundary detection using modal content container as reference
+  - Resolved transform and positioning conflicts in modal environment
+
+### Technical Implementation
+- **Code Synchronization**
+  - Successfully copied and adapted complete CSS styling from app_view.php to app_form.php
+  - Integrated 200+ lines of element-specific styling including all element types and states
+  - Maintained connection line styling, resize handles, and tool state management
+  - Preserved all visual editor functionality while adapting to form context
+
+- **Drag and Drop System**
+  - Implemented robust draggable property panel with proper event handling
+  - Added offset-based positioning calculation for accurate cursor tracking
+  - Integrated viewport boundary checking with padding for optimal positioning
+  - Enhanced visual feedback system with cursor state management
+
+- **Performance Optimization**
+  - Removed unnecessary force-fix scripts that added 3-second delays
+  - Eliminated overlay creation that interfered with native element display
+  - Improved loading sequence by removing problematic timeout-based fixes
+  - Enhanced cache management with improved versioning system
+
+### User Experience
+- **Unified Workflow**
+  - Users can now create and edit integration diagrams directly within application forms
+  - No need to switch between form view and diagram view for complete workflow
+  - Seamless integration maintains form context while providing full diagram editing capabilities
+  - Improved productivity through unified interface design
+
+- **Professional Interface**
+  - Property panel now behaves like professional design software with smooth dragging
+  - Clear visual hierarchy with dedicated header area for drag operations
+  - Proper positioning that respects UI boundaries and doesn't obscure controls
+  - Enhanced responsiveness and intuitive interaction patterns
+
 ## [3.2.0] - 2025-07-21 - User Profile Management System
 
 ### Added

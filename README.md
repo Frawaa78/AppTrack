@@ -183,10 +183,16 @@ Built for enterprise scalability with planned integrations:
 - **Database Optimization**: ActivityManager queries optimized to fetch user display names alongside activity data
 - **Cross-Platform Consistency**: Activity display improvements work in both work notes and audit log entries
 
-#### 🏗️ **Integration Architecture System v3.2** - ENHANCED FEATURE
+#### 🏗️ **Integration Architecture System v3.2.1** - ENHANCED FEATURE
+- **Unified Workflow**: Complete visual diagram editor now available directly in application forms (app_form.php)
 - **Dual-Mode Editor**: Choose between Visual Editor (drag & drop) or Code Editor (Mermaid syntax)
 - **Visual Diagram Creation**: Intuitive drag-and-drop interface with double-click text editing
 - **Interactive Canvas**: Grid-snapped positioning, visual connection tools, and auto-layout functionality
+- **Enhanced Property Panel**: 
+  - Draggable property panel with professional drag-and-drop mechanics
+  - Smart positioning system avoiding UI control overlap
+  - Visual cursor feedback and boundary detection
+  - Dedicated header area for drag operations
 - **Enhanced Templates**: One-click template application with visual positioning:
   - Basic Integration (Database + API connections)
   - Data Pipeline (ETL process flow)  
@@ -194,6 +200,7 @@ Built for enterprise scalability with planned integrations:
   - Microservices (Load Balancer + Multiple Services)
 - **Real-time Synchronization**: Seamless switching between visual and code modes with automatic sync
 - **Professional Interface**: Full-screen modal workspace for dedicated diagram creation
+- **Element Styling**: Properly rendered element borders and type-specific color schemes
 - **User-Friendly Design**: Reduced learning curve with visual tools for non-technical users
 - **Advanced Code Support**: Full Mermaid.js syntax support for power users
 - **Persistent Storage**: Database storage for both diagram code and notes with application_id relationships
@@ -208,10 +215,19 @@ Built for enterprise scalability with planned integrations:
 - **New API Endpoints**: 
   - `get_integration_diagram.php`: Retrieves diagram code and notes for specific application
   - `save_integration_diagram.php`: Saves diagram code and notes with role validation
+- **Enhanced CSS Integration**: Resolved styling conflicts between app_view.php and app_form.php
+  - Fixed element border visibility issues caused by CSS override conflicts
+  - Implemented proper CSS inheritance for element-specific styling
+  - Maintained visual consistency across viewing and editing modes
+- **JavaScript Optimization**: 
+  - Removed problematic force-fix scripts that created visual artifacts
+  - Enhanced cache-busting mechanism for reliable script updates
+  - Improved dragging mechanics with accurate mouse tracking
 - **ActivityManager Enhancement**: Modified SQL queries to include user display_name in both work_notes and audit_log joins
 - **JavaScript Date Formatting**: Enhanced formatDateTime function with English day names and standardized format
 - **CSS Flexbox Optimization**: Improved S.A. Document field layout with proper text truncation in flex containers
 - **Responsive Design**: Integration Architecture modal is fully responsive with proper mobile support
+- **Draggable UI Components**: Professional drag-and-drop implementation with viewport boundary detection
 
 #### 🤖 **AI Analysis Suite** - Production Ready
 - **Intelligent Application Insights**: Complete AI-powered analysis system generating comprehensive business summaries from application data and work notes
@@ -1281,13 +1297,11 @@ AppTrack utilizes a normalized MySQL 8.0 database with 16 core tables supporting
 
 ## 🔄 Version History
 
-**Current Version**: 3.3.0 (July 22, 2025) ✅
-- Complete application handover management system with 15-step wizard
-- Application-specific handover document isolation and tracking
-- Progressive step completion with intelligent form state management
-- Dynamic participant and contact management with JavaScript controls
-- Comprehensive document preview with structured section display
-- Consistent topbar styling across all handover module pages
+**Current Version**: 3.2.1 (July 22, 2025) ✅
+- Visual Integration Architecture Editor now available in application forms
+- Enhanced draggable property panel with professional drag-and-drop mechanics
+- Fixed CSS conflicts preventing proper element border display
+- Improved user interface with unified workflow between editing and viewing
 
 **Previous Versions**:
 - 3.2.0: User profile management system with self-service editing capabilities
