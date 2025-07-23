@@ -1,18 +1,90 @@
-# AppTrack v3.4.0 - Technical Architecture Documentation
+# AppTrack v3.3.0 - Technical Architecture Documentation
 
-This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.4.0, focusing on the Advanced Dashboard Management & Kanban System, User Profile Management System, Activity Tracking System enhancements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in July 2025.
+This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.3.0, focusing on the User Stories Management System, Activity Tracking System enhancements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in 2025.
 
-## Version 3.4.0 Overview (July 22, 2025)
+## Version 3.3.0 Overview (2025)
 
-AppTrack v3.4.0 introduces comprehensive dual-view dashboard management:
-- **Advanced Dashboard Management**: Complete dual-view system with kanban board and table views
-- **Kanban Board System**: Interactive drag-and-drop kanban with 5-phase workflow
-- **Cross-View Filtering**: "Show mine only" toggle working consistently across both views
-- **Comprehensive Audit Logging**: All kanban changes automatically tracked in audit_log table
-- **Visual Interface Improvements**: Clean design with consistent #F6F7FB styling
-- **Session Management**: Fixed inconsistencies between $_SESSION variables for reliable filtering
+AppTrack v3.3.0 introduces the comprehensive User Stories Management System:
+- **User Stories Module**: Complete Agile User Stories management with application integration
+- **Advanced Filtering**: Filter by application, priority, status, and personal stories
+- **Statistics Dashboard**: Real-time statistics cards showing story distribution
+- **Jira Integration**: Built-in Jira ID field for external project management  
+- **File Attachments**: Complete file management system for story documentation
+- **Consistent UI/UX**: Unified design language matching app_view.php patterns
+- **Header Navigation**: Integrated User Stories tab in application header
+- **Design Consistency**: Comprehensive design alignment across all module files
 
-## Dual-View Dashboard Management System - New Feature v3.4.0
+## User Stories Management System - New Feature v3.3.0
+
+### System Architecture
+
+#### User Stories Module Structure
+```php
+// User Stories complete module implementation
+├── Database Layer
+│   ├── user_stories table (17 fields with constraints)
+│   └── user_story_attachments table (9 fields)
+├── Model Layer
+│   └── src/models/UserStory.php (Complete data access layer)
+├── Controller Layer
+│   └── src/controllers/UserStoryController.php (Business logic)
+├── API Layer (7 dedicated endpoints)
+│   ├── get_stories.php (List and filter stories)
+│   ├── get_story.php (Individual story details)
+│   ├── create_story.php (Create new stories)
+│   ├── update_story.php (Update existing stories)
+│   ├── delete_story.php (Delete stories)
+│   ├── get_form_options.php (Dynamic form options)
+│   └── upload_attachment.php (File attachment support)
+└── Frontend Layer
+    ├── user_stories.php (Main dashboard)
+    ├── user_story_form.php (Create/edit form)
+    └── user_story_view.php (Detailed view)
+```
+
+#### User Stories Database Schema
+```sql
+-- user_stories table (Complete schema)
+CREATE TABLE user_stories (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    application_id INT,
+    title VARCHAR(255) NOT NULL,
+    user_role VARCHAR(100),
+    functionality TEXT,
+    benefit TEXT,
+    description TEXT,
+    acceptance_criteria TEXT,
+    priority ENUM('Low', 'Medium', 'High', 'Critical'),
+    status ENUM('Backlog', 'In Progress', 'Testing', 'Done'),
+    story_points INT,
+    assigned_to INT,
+    jira_id VARCHAR(100),
+    tags TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_by INT,
+    FOREIGN KEY (application_id) REFERENCES applications(id),
+    FOREIGN KEY (assigned_to) REFERENCES users(id),
+    FOREIGN KEY (created_by) REFERENCES users(id)
+);
+
+-- user_story_attachments table (File management)
+CREATE TABLE user_story_attachments (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_story_id INT NOT NULL,
+    filename VARCHAR(255) NOT NULL,
+    original_filename VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size INT NOT NULL,
+    mime_type VARCHAR(100),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    uploaded_by INT,
+    FOREIGN KEY (user_story_id) REFERENCES user_stories(id) ON DELETE CASCADE,
+    FOREIGN KEY (uploaded_by) REFERENCES users(id)
+);
+```
+
+## Dual-View Dashboard Management System
 
 ### System Architecture
 

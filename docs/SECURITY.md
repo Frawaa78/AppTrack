@@ -1,6 +1,6 @@
-# AppTrack Security Documentation v3.4.0
+# AppTrack Security Documentation v3.3.0
 
-This document outlines the comprehensive security measures implemented in AppTrack v3.4.0 to protect enterprise application portfolio data, including enhanced security for the new kanban system and dual-view dashboard functionality.
+This document outlines the comprehensive security measures implemented in AppTrack v3.3.0 to protect enterprise application portfolio data, including enhanced security for the new User Stories Management System.
 
 ## 🔒 Security Overview
 
@@ -14,18 +14,17 @@ AppTrack implements enterprise-grade security across multiple layers:
 - **Secure API Integration**: OpenAI API calls use encrypted connections
 - **Environment Variables**: API keys stored securely outside codebase
 - **Content Filtering**: AI prompts filtered to prevent information leakage
-- **Kanban Data Protection**: Phase change audit logs exclude sensitive business information
+- **User Stories Privacy**: Story data protected with application-level access control
 
 ### 2. Access Control & Authentication
 - **Role-Based Access Control (RBAC)**:
   - **Admin**: Full system access including user management and all filtering options
-  - **Editor**: View and edit applications, access to "Show mine only" filtering
-  - **Viewer**: Read-only access to application data, no filtering capabilities
+  - **Editor**: View and edit applications, access to User Stories management
+  - **Viewer**: Read-only access to application data, limited User Stories access
 - **Session Security**: Secure session management with automatic timeout
-- **Session Consistency**: Fixed $_SESSION variable inconsistencies for reliable filtering
 - **Domain Restrictions**: Configurable allowed domains list
 - **Request Rate Limiting**: 20 requests per user per hour
-- **Kanban Access Control**: Phase updates restricted by user role and ownership
+- **User Stories Access Control**: Create/edit restricted by user role and application ownership
 
 ### 3. API Security Measures
 - **Input Validation**: Multi-layer validation and sanitization
@@ -33,21 +32,43 @@ AppTrack implements enterprise-grade security across multiple layers:
 - **CSRF Protection**: Cross-site request forgery prevention
 - **Token Usage Limits**: Daily AI token limits (50,000 per user)
 - **Error Handling**: Production-safe error messages
-- **Kanban API Security**: Drag-and-drop operations validated against user permissions
-- **Audit Trail Integrity**: All kanban changes logged with user attribution and timestamps
+- **User Stories API Security**: 7 dedicated endpoints with proper validation
+- **File Upload Security**: Comprehensive validation for User Stories attachments
 
-### 4. Enhanced Kanban Security (v3.4.0 NEW)
-- **Phase Change Authorization**: Only authorized users can move applications between phases
-- **Ownership Validation**: "Show mine only" filtering based on three-tier user matching
-- **Audit Logging**: All kanban operations automatically logged in audit_log table
-- **Cross-View Consistency**: Security model maintained across table and kanban views
-- **Session Variable Security**: Harmonized session management prevents privilege escalation
+### 4. Enhanced User Stories Security (v3.3.0 NEW)
+- **Application Binding**: User Stories securely linked to applications with foreign key constraints
+- **File Upload Protection**: Comprehensive validation for story attachments
+  - File type restrictions (documents, images only)
+  - File size limits (configurable per installation)
+  - Malware scanning integration points
+  - Secure file storage outside web root
+- **User Story Ownership**: Created by tracking with user attribution
+- **Assignment Validation**: Only valid users can be assigned to stories
+- **Audit Logging**: All User Story operations logged with user attribution
+- **Cross-Application Security**: Stories isolated by application_id to prevent data leakage
 
-### 5. Audit & Compliance
+### 5. File Attachment Security (v3.3.0 NEW)
+- **Upload Validation**: 
+  - MIME type verification
+  - File extension whitelist
+  - Content-based validation
+  - Virus scanning hooks
+- **Storage Security**:
+  - Files stored outside web root
+  - Unique filename generation
+  - Access controlled through PHP scripts
+  - Download logging and tracking
+- **Database Security**:
+  - File metadata in separate table (user_story_attachments)
+  - Foreign key cascading for data integrity
+  - User attribution for all uploads
+
+### 6. Audit & Compliance
 - **Complete Audit Trail**: All changes logged with user attribution
 - **Timestamp Integrity**: Immutable timestamps for compliance
 - **AI Usage Logging**: Full tracking of AI requests and costs
 - **Data Snapshots**: Automatic preservation before critical operations
+- **User Stories Tracking**: Complete audit trail for all story operations
 - **Change Monitoring**: Real-time tracking of modifications
 - **Kanban Audit Trail**: Comprehensive logging of all drag-and-drop operations and phase changes
 

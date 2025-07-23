@@ -1,18 +1,180 @@
-# UI/UX Implementation Guide v3.4.0
+# UI/UX Implementation Guide v3.3.0
 
-This document details the technical implementation of the enhanced user interface in AppTrack v3.4.0, focusing on the Advanced Dashboard Management & Kanban System, User Profile Management System, Activity Tracker improvements, Integration Architecture feature, and Visual Diagram Editor enhancements implemented in July 2025.
+This document details the technical implementation of the enhanced user interface in AppTrack v3.3.0, focusing on the User Stories Management System, Activity Tracker improvements, Integration Architecture feature, and Visual Diagram Editor enhancements implemented in 2025.
 
 ## Overview
 
-AppTrack v3.4.0 introduces comprehensive dual-view dashboard management UI:
-- **Dual-View Dashboard System**: Seamless switching between table and kanban views
-- **Interactive Kanban Board**: Drag-and-drop kanban with 5-phase workflow
-- **Advanced Filtering Interface**: "Show mine only" toggle with cross-view consistency
-- **Clean Visual Design**: Professional #F6F7FB styling with consistent 1px borders
-- **Responsive State Management**: URL parameter-based filter persistence
-- **Enhanced User Experience**: Simplified navigation with single chevron arrows
+AppTrack v3.3.0 introduces comprehensive User Stories Management UI:
+- **User Stories Module**: Complete Agile User Stories management interface
+- **Statistics Dashboard**: Real-time statistics cards showing story distribution
+- **Advanced Filtering Interface**: Filter by application, priority, status, and personal stories
+- **Consistent Design Language**: Unified styling matching app_view.php patterns
+- **Header Navigation Integration**: User Stories tab in application header
+- **File Attachment System**: Complete file management interface
+- **Form Design Consistency**: Horizontal form groups and standardized styling
 
-## Dual-View Dashboard System - UI Implementation v3.4.0
+## User Stories Management System - UI Implementation v3.3.0
+
+### User Stories Interface Architecture
+
+#### 1. Header Navigation Integration
+```html
+<!-- Integrated User Stories tab in app_view.php header -->
+<div class="d-flex gap-2 mb-3">
+    <!-- Existing buttons -->
+    <a href="app_view.php?id=<?= $application['id'] ?>&tab=details" 
+       class="btn header-action-btn <?= $activeTab === 'details' ? 'active' : '' ?>">
+        <i class="fas fa-info-circle me-1"></i>Details
+    </a>
+    <a href="app_view.php?id=<?= $application['id'] ?>&tab=history" 
+       class="btn header-action-btn <?= $activeTab === 'history' ? 'active' : '' ?>">
+        <i class="fas fa-history me-1"></i>History
+    </a>
+    <a href="app_view.php?id=<?= $application['id'] ?>&tab=ai" 
+       class="btn header-action-btn <?= $activeTab === 'ai' ? 'active' : '' ?>">
+        <i class="fas fa-brain me-1"></i>AI Insights
+    </a>
+    
+    <!-- NEW: User Stories tab -->
+    <a href="user_stories.php?application_id=<?= $application['id'] ?>" 
+       class="btn header-action-btn">
+        <i class="fas fa-user-edit me-1"></i>User Stories
+    </a>
+    
+    <!-- Integration Architecture moved from S.A. Document field -->
+    <a href="javascript:void(0)" onclick="openDiagramEditor()" 
+       class="btn header-action-btn">
+        <i class="fas fa-project-diagram me-1"></i>Integration Architecture
+    </a>
+    
+    <a href="handover/index.php?application_id=<?= $application['id'] ?>" 
+       class="btn header-action-btn">
+        <i class="fas fa-exchange-alt me-1"></i>Handover Wizard
+    </a>
+</div>
+```
+
+#### 2. Statistics Dashboard Design
+```css
+/* User Stories statistics cards with consistent styling */
+.stats-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: #FCFCFC;
+    border: 1px solid #F0F1F2;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    min-width: 150px;
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+```
+
+#### 3. User Stories Table Design
+```css
+/* Consistent table styling matching app_view.php */
+.table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table thead th {
+    background: #F8F9FA;
+    border-bottom: 2px solid #E9ECEF;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.table tbody tr:hover {
+    background-color: #F8F9FA;
+}
+
+/* Priority badges with consistent colors */
+.priority-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.priority-critical { background-color: #dc3545; color: white; }
+.priority-high { background-color: #fd7e14; color: white; }
+.priority-medium { background-color: #ffc107; color: #212529; }
+.priority-low { background-color: #28a745; color: white; }
+```
+
+#### 4. Form Design Consistency
+```css
+/* Horizontal form groups matching app_view.php patterns */
+.form-group-horizontal {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.form-group-horizontal label {
+    flex: 0 0 200px;
+    margin-right: 1rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #333;
+    padding-top: 0.375rem;
+}
+
+.form-group-horizontal .form-control,
+.form-group-horizontal .form-select {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+/* Header action button styling */
+.header-action-btn {
+    background: #FCFCFC;
+    border: 1px solid #F0F1F2;
+    color: #333;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.header-action-btn:hover {
+    background: #F8F9FA;
+    border-color: #DEE2E6;
+    color: #495057;
+}
+
+.header-action-btn.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+```
+
+## Dual-View Dashboard System
 
 ### Dashboard Interface Architecture
 

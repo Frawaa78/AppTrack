@@ -33,7 +33,57 @@ Built for enterprise scalability with planned integrations:
 
 ## 🚀 Current Status & Latest Updates
 
-### Version 3.4.0 (July 22, 2025) - Advanced Dashboard Management & Kanban System ✅
+### Version 3.3.0 (July 23, 2025) - User Stories Management System ✅
+
+**Major Feature**: Complete User Stories management system with Agile methodology support and Jira integration capabilities.
+
+#### 🎯 **User Stories Management - NEW MAJOR FEATURE** 🆕
+- **Complete CRUD Operations**: Full create, read, update, delete functionality for User Stories with comprehensive form validation
+- **Agile Methodology Support**: Native support for User Story format: "As a [role], I want [functionality], so that [benefit]"
+- **Advanced Story Management**: Story points, priority levels (Low/Medium/High/Critical), status tracking (Backlog/In Progress/Review/Done)
+- **Application Integration**: Seamless linking between User Stories and Applications with context-aware navigation
+- **Statistics Dashboard**: Visual statistics cards showing story counts by status and priority with real-time updates
+- **Jira Integration Ready**: Built-in Jira ID field support for external project management tool integration
+
+#### 🛠️ **User Stories Technical Features**
+- **Comprehensive API**: 7 dedicated endpoints for complete User Stories functionality:
+  - `get_stories.php` - List and filter stories with statistics
+  - `get_story.php` - Individual story details
+  - `create_story.php` - New story creation
+  - `update_story.php` - Story modification
+  - `delete_story.php` - Story deletion with validation
+  - `get_form_options.php` - Dynamic form options
+  - `upload_attachment.php` - File attachment support
+- **Advanced Filtering System**: Filter by application, priority, status, search terms, and "show only my stories"
+- **MVC Architecture**: Clean separation with `UserStory.php` model and `UserStoryController.php`
+- **Database Integration**: Normalized schema with proper foreign key relationships to applications and users
+
+#### 🎨 **User Stories User Interface**
+- **Consistent Design Language**: Unified styling with app_view.php using `.header-action-btn` and `.form-group-horizontal` patterns
+- **Three-Page Workflow**: 
+  - `user_stories.php` - Main dashboard with filtering and statistics
+  - `user_story_form.php` - Create/edit form with comprehensive fields
+  - `user_story_view.php` - Detailed story view with metadata sidebar
+- **Smart Navigation**: Context-aware back buttons preserving application relationships
+- **Responsive Design**: Mobile-optimized interface with Bootstrap 5.3 integration
+
+#### 🔧 **User Stories Database Schema**
+- **`user_stories` Table**: 18 comprehensive fields including:
+  - Core Agile fields: role, want_to, so_that, acceptance_criteria
+  - Project management: priority, status, story_points, epic, sprint
+  - Integration: application_id, jira_id, category, tags
+  - Tracking: created_by, created_at, updated_at
+- **`user_story_attachments` Table**: File attachment support with:
+  - File metadata: filename, file_path, file_size, mime_type
+  - Relationship tracking: user_story_id, uploaded_by, uploaded_at
+
+#### 🚀 **Navigation Integration**
+- **App View Integration**: User Stories button in app_view.php header for application-specific stories
+- **Same-Tab Navigation**: Improved UX with same-tab opening and proper back button functionality
+- **Context Preservation**: Application context maintained throughout User Stories workflow
+- **Breadcrumb Navigation**: Clear navigation paths with application relationship awareness
+
+### Version 3.2.1 (July 22, 2025) - Advanced Dashboard Management & Kanban System ✅
 
 **Major Feature**: Complete dual-view dashboard system with advanced kanban board, comprehensive filtering, and consistent user experience.
 

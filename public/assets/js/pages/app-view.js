@@ -40,13 +40,6 @@ async function loadUserStories() {
   try {
     console.log('🌐 Fetching:', `api/user_stories/get_stories_by_app.php?application_id=${window.currentAppId}`);
     const response = await fetch(`api/user_stories/get_stories_by_app.php?application_id=${window.currentAppId}`);
-    console.log('📡 Response received:', response.status, response.statusText);
-    
-    if (!response.ok) {
-      console.error('❌ Response not OK:', response.status, response.statusText);
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    
     const result = await response.json();
     console.log('📦 API Response:', result);
     

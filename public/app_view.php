@@ -67,6 +67,8 @@ if (empty($statuses)) {
   <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <!-- FontAwesome Pro -->
+  <script src="https://kit.fontawesome.com/d67c79608d.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/pages/app-view.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="../assets/css/components/activity-tracker.css">
@@ -106,6 +108,76 @@ if (empty($statuses)) {
     }
     .choices--disabled .choices__button {
       display: none !important;
+    }
+
+    /* Header Action Button Styling */
+    .header-action-btn {
+        background-color: #FCFCFC;
+        border: 1px solid #F0F1F2;
+        color: #212529;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    .header-action-btn:hover {
+        background-color: #F8F9FA;
+        border-color: #DEE2E6;
+        color: #212529;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-action-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+        background-color: #F8F9FA;
+        border-color: #86B7FE;
+        color: #212529;
+    }
+    
+    .header-action-btn i {
+        font-size: 16px;
+        min-width: 16px;
+        text-align: center;
+    }
+
+    /* FontAwesome Pro icons */
+    .fa-light.fa-lightbulb:before {
+        content: "\f0eb" !important;
+        font-family: "Font Awesome 6 Pro" !important;
+        font-weight: 300;
+    }
+    
+    .fa-light.fa-microchip:before {
+        content: "\f2db" !important;
+        font-family: "Font Awesome 6 Pro" !important;
+        font-weight: 300;
+    }
+    
+    .fa-light.fa-wand-magic-sparkles:before {
+        content: "\e2ca" !important;
+        font-family: "Font Awesome 6 Pro" !important;
+        font-weight: 300;
+    }
+    
+    .fa-light.fa-sitemap:before {
+        content: "\f0e8" !important;
+        font-family: "Font Awesome 6 Pro" !important;
+        font-weight: 300;
+    }
+
+    /* Fallback for when FontAwesome Pro is not loaded */
+    .fa-light:before {
+        font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", "Bootstrap Icons" !important;
+        font-weight: 900;
     }
 
     /* Range Slider Styling for Handover Status */
@@ -580,12 +652,34 @@ if (empty($statuses)) {
       <h5 class="mb-0">Status & Details</h5>
     </div>
     <div class="header-buttons">
-      <button type="button" class="btn btn-info me-2" onclick="openAIAnalysis()" title="AI Analysis">
-        <i class="bi bi-robot"></i> AI Insights
+      <button type="button" 
+              class="header-action-btn" 
+              onclick="openUserStories()" 
+              title="View and manage user stories">
+        <i class="fa-light fa-lightbulb" data-fallback="fa-solid fa-lightbulb,fas fa-lightbulb,bi bi-lightbulb"></i>
+        User Stories
       </button>
-      <a href="handover/index.php?app_id=<?php echo $app['id']; ?>" class="btn btn-warning me-2">
-        <i class="fas fa-clipboard-list"></i> Handover Wizard
-      </a>
+      <button type="button" 
+              class="header-action-btn" 
+              onclick="openAIAnalysis()" 
+              title="Get AI-powered insights and analysis">
+        <i class="fa-light fa-microchip" data-fallback="fa-solid fa-microchip,fas fa-microchip,bi bi-cpu"></i>
+        AI Insights
+      </button>
+      <button type="button" 
+              class="header-action-btn" 
+              onclick="openIntegrationDiagram()" 
+              title="Open Integration Architecture Editor - Create visual diagrams">
+        <i class="fa-light fa-sitemap" data-fallback="fa-solid fa-sitemap,fas fa-project-diagram,fas fa-network-wired,bi bi-diagram-3"></i>
+        Integration Architecture
+      </button>
+      <button type="button" 
+              class="header-action-btn" 
+              onclick="window.open('handover/index.php?app_id=<?php echo $app['id']; ?>', '_blank')" 
+              title="Open handover wizard">
+        <i class="fa-light fa-wand-magic-sparkles" data-fallback="fa-solid fa-wand-magic-sparkles,fas fa-magic,bi bi-magic"></i>
+        Handover Wizard
+      </button>
       <a href="dashboard.php" class="btn btn-secondary">Back</a>
       <?php if (isset($_SESSION['user_role'])) { $role = $_SESSION['user_role']; } else { $role = null; } ?>
       <?php if ($role === 'admin' || $role === 'editor') : ?>
@@ -778,38 +872,14 @@ if (empty($statuses)) {
         </div>
         <div class="form-group-horizontal" id="sa_document_group" style="display: <?php echo ($app['integrations']==='Yes') ? 'flex' : 'none'; ?>;">
           <label for="saDocument" class="form-label">S.A. Document</label>
-          <div style="flex: 1; display: flex; gap: 8px; align-items: center; min-width: 0;">
-            <?php if (!empty($app['sa_document'])): ?>
-              <div style="flex: 1; min-width: 0; overflow: hidden;">
-                <a href="<?php echo htmlspecialchars($app['sa_document']); ?>" target="_blank" rel="noopener noreferrer" class="form-control" style="position: relative; text-decoration: none; color: #0d6efd; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; display: block !important; width: 100% !important; padding-right: 2.5rem !important;">
-                  <?php echo htmlspecialchars($app['sa_document']); ?>
-                  <i class="bi bi-box-arrow-up-right" style="position: absolute !important; right: 0.75rem !important; top: 50% !important; transform: translateY(-50%) !important; pointer-events: none !important;"></i>
-                </a>
-              </div>
-            <?php else: ?>
-              <input type="url" class="form-control" id="saDocument" name="sa_document" placeholder="S.A. Document" value="" readonly style="flex: 1; min-width: 0;">
-            <?php endif; ?>
-            <?php if ($app['integrations'] === 'Yes'): ?>
-            <button type="button" 
-                    class="btn btn-outline-success btn-sm integration-arch-btn" 
-                    onclick="openIntegrationDiagram()" 
-                    title="Open Integration Architecture Editor - Create visual diagrams"
-                    style="height: 38px; width: 38px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;">
-              <i class="bi bi-diagram-3" style="font-size: 14px;"></i>
-              <span class="integration-badge" style="position: absolute; top: -5px; right: -5px; background: #28a745; color: white; border-radius: 50%; width: 12px; height: 12px; font-size: 8px; display: flex; align-items: center; justify-content: center;">•</span>
-            </button>
-            <?php else: ?>
-            <!-- DEBUG: Show integration value and always show button for testing -->
-            <button type="button" 
-                    class="btn btn-outline-warning btn-sm integration-arch-btn" 
-                    onclick="openIntegrationDiagram()" 
-                    title="Debug: Integration Architecture Editor (integrations=<?php echo htmlspecialchars($app['integrations'] ?? 'NULL'); ?>)"
-                    style="height: 38px; width: 38px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;">
-              <i class="bi bi-diagram-3" style="font-size: 14px;"></i>
-              <span style="position: absolute; top: -5px; right: -5px; background: #ffc107; color: black; border-radius: 50%; width: 12px; height: 12px; font-size: 8px; display: flex; align-items: center; justify-content: center;">?</span>
-            </button>
-            <?php endif; ?>
-          </div>
+          <?php if (!empty($app['sa_document'])): ?>
+            <a href="<?php echo htmlspecialchars($app['sa_document']); ?>" target="_blank" rel="noopener noreferrer" class="form-control" style="position: relative; text-decoration: none; color: #0d6efd; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; display: block !important; width: 100% !important; padding-right: 2.5rem !important;">
+              <?php echo htmlspecialchars($app['sa_document']); ?>
+              <i class="bi bi-box-arrow-up-right" style="position: absolute !important; right: 0.75rem !important; top: 50% !important; transform: translateY(-50%) !important; pointer-events: none !important;"></i>
+            </a>
+          <?php else: ?>
+            <input type="url" class="form-control" id="saDocument" name="sa_document" placeholder="S.A. Document" value="" readonly>
+          <?php endif; ?>
         </div>
       </div>
     </div>
@@ -830,7 +900,7 @@ if (empty($statuses)) {
 <script src="../assets/js/components/activity-tracker.js"></script>
 <script src="../assets/js/components/form-handlers.js"></script>
 <script src="../assets/js/components/visual-diagram-editor.js?v=<?php echo time(); ?>"></script>
-<script src="../assets/js/pages/app-view.js"></script>
+<script src="../assets/js/pages/app-view.js?v=<?php echo time(); ?>"></script>
 <script>
 // Set current app ID for JavaScript modules
 window.currentAppId = <?php echo $id; ?>;
@@ -968,6 +1038,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, 500);
 });
+
+// Function to open User Stories page
+function openUserStories() {
+  console.log('User Stories button clicked');
+  window.location.href = 'user_stories.php?application_id=<?php echo $id; ?>';
+}
 </script>
 
 <!-- AI Analysis Modal -->
@@ -2339,6 +2415,49 @@ async function saveIntegrationData(event) {
 <!-- Test script to verify function availability -->
 <script>
 // Test script ready
+</script>
+
+<!-- FontAwesome Icon Fallback System -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // FontAwesome icon fallback system
+    function setupIconFallback(iconElement) {
+        if (!iconElement) return;
+        
+        const fallbackIcons = iconElement.dataset.fallback ? iconElement.dataset.fallback.split(',') : [];
+        
+        // Test if current icon is working
+        setTimeout(() => {
+            const styles = window.getComputedStyle(iconElement, ':before');
+            const content = styles.content;
+            
+            // If no content is generated, try fallback icons
+            if (!content || content === 'none' || content === '""') {
+                console.log('FontAwesome icon not loading, trying fallbacks for:', iconElement.className);
+                
+                // Try each fallback icon
+                for (let i = 0; i < fallbackIcons.length; i++) {
+                    const iconClass = fallbackIcons[i].trim();
+                    iconElement.className = iconClass;
+                    
+                    // Give a moment for the icon to load and check again
+                    setTimeout(() => {
+                        const newStyles = window.getComputedStyle(iconElement, ':before');
+                        const newContent = newStyles.content;
+                        
+                        if (newContent && newContent !== 'none' && newContent !== '""') {
+                            console.log('Working icon found:', iconClass);
+                            return;
+                        }
+                    }, 50);
+                }
+            }
+        }, 200);
+    }
+    
+    // Apply fallback to all header action button icons
+    document.querySelectorAll('.header-action-btn i').forEach(setupIconFallback);
+});
 </script>
 
 </body>

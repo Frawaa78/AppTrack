@@ -142,6 +142,26 @@ $dashboard_path = str_repeat('../', $levels_deep) . 'dashboard.php';
         </div>
       </div>
     </div>
+    
+    <!-- Main Navigation -->
+    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+      <li class="nav-item">
+        <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>dashboard.php">
+          <i class="bi bi-grid-3x3-gap"></i> Applications
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>user_stories.php">
+          <i class="bi bi-journals"></i> User Stories
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>handover/">
+          <i class="bi bi-arrow-right-circle"></i> Handover
+        </a>
+      </li>
+    </ul>
+    
     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">

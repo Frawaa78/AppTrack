@@ -2,9 +2,10 @@
 
 /* Button group text styling */
 .btn-group .btn {
-  font-size: 0.77rem;
-  height: 38px;
-  line-height: 1.5;
+  font-size: 0.693rem; /* Reduced by 10% from 0.77rem */
+  height: 36px; /* Reduced height to prevent text wrapping */
+  line-height: 1.4; /* Slightly reduced line-height for better fit */
+  padding: 0.25rem 0.5rem; /* Reduced padding for more compact buttons */
 }
 
 /* Enhanced active state for disabled buttons */

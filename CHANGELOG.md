@@ -5,6 +5,94 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2025-07-23 - User Stories Module Release
+
+### Added
+- **Complete User Stories Management System**
+  - Full CRUD functionality for User Stories with Agile methodology support
+  - Jira integration capabilities for seamless project management workflows
+  - Standalone User Stories module that works independently of applications
+  - Advanced filtering and search capabilities across all user stories
+
+- **Database Schema for User Stories**
+  - `user_stories` table with comprehensive fields for Agile development
+  - `user_story_attachments` table for file management support
+  - Foreign key relationships with applications and users tables
+  - Support for story points, priority levels, status tracking, and categorization
+
+- **User Stories API Endpoints**
+  - 7 comprehensive API endpoints for complete functionality:
+    - `get_stories.php` - Retrieve and filter user stories with statistics
+    - `get_story.php` - Get individual story details
+    - `create_story.php` - Create new user stories
+    - `update_story.php` - Update existing stories
+    - `delete_story.php` - Delete stories with proper validation
+    - `get_form_options.php` - Dynamic form options for applications
+    - `upload_attachment.php` - File attachment management
+
+- **Frontend User Interface**
+  - `user_stories.php` - Main dashboard with statistics cards and filtering
+  - `user_story_form.php` - Create/edit form with comprehensive fields
+  - `user_story_view.php` - Detailed story view with metadata sidebar
+  - Responsive design matching AppTrack's consistent UI/UX patterns
+
+- **Navigation Integration**
+  - User Stories button in app_view.php header for application-specific stories
+  - Same-tab navigation with proper back button functionality
+  - Context preservation when navigating between applications and stories
+  - Breadcrumb navigation with application relationship awareness
+
+### Enhanced
+- **Design Consistency Across AppTrack**
+  - Unified `.header-action-btn` styling matching app_view.php design patterns
+  - Consistent form layouts using `.form-group-horizontal` structure
+  - Matching color scheme: `#FCFCFC` backgrounds, `#F0F1F2` borders
+  - Typography consistency with 0.9rem font sizing and proper spacing
+
+- **User Experience Improvements**
+  - Statistics dashboard showing story counts by status and priority
+  - Advanced filtering panel with application, priority, status, and search filters
+  - "Show only my stories" functionality for personalized views
+  - Proper error handling and user feedback with toast notifications
+
+- **Data Management**
+  - Proper SQL relationships and foreign key constraints
+  - User attribution for story creation and modification tracking
+  - Application association for integrated project management
+  - Tag support for flexible categorization and organization
+
+### Technical Implementation
+- **MVC Architecture Compliance**
+  - `UserStory.php` model with comprehensive data access methods
+  - `UserStoryController.php` for business logic and API handling
+  - Proper separation of concerns with reusable components
+  - Integration with existing AppTrack authentication and session management
+
+- **JavaScript Components**
+  - `user-stories.js` with modern ES6 class-based architecture
+  - Real-time filtering and search with debouncing
+  - Dynamic table rendering with proper escaping and sanitization
+  - Client-side validation and error handling
+
+- **Asset Management**
+  - Corrected asset paths for One.com hosting compatibility (`../assets/` instead of `assets/`)
+  - FontAwesome Pro integration with fallback icon system
+  - CSS component organization following existing AppTrack structure
+  - Responsive design with Bootstrap 5.3 integration
+
+### Fixed
+- **Hosting Platform Compatibility**
+  - Resolved One.com symlink limitations affecting asset loading
+  - Fixed 404 errors on CSS and JavaScript file loading
+  - Corrected asset path references throughout User Stories module
+  - Ensured proper file structure for deployment environment
+
+- **Navigation and Context Issues**
+  - Fixed new tab opening behavior for User Stories button
+  - Implemented proper back navigation with application context preservation
+  - Resolved parameter passing between related pages
+  - Enhanced breadcrumb navigation with proper URL handling
+
 ## [3.2.1] - 2025-07-22 - Visual Diagram Editor Enhancements
 
 ### Added

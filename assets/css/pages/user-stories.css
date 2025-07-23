@@ -1,0 +1,249 @@
+/* User Stories Page Styling */
+
+/* Statistics Cards */
+.stat-card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-card .card-body {
+    padding: 1rem 0.5rem;
+}
+
+.stat-card h5 {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Header with buttons */
+.header-with-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.header-with-buttons h2 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Priority badges */
+.priority-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.priority-critical {
+    background-color: #dc3545;
+    color: white;
+}
+
+.priority-high {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.priority-medium {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.priority-low {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Status badges */
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.status-backlog {
+    background-color: #6c757d;
+    color: white;
+}
+
+.status-in_progress {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.status-review {
+    background-color: #0dcaf0;
+    color: #212529;
+}
+
+.status-done {
+    background-color: #198754;
+    color: white;
+}
+
+.status-cancelled {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Story table styling */
+.story-title {
+    font-weight: 600;
+    color: #0d6efd;
+    text-decoration: none;
+}
+
+.story-title:hover {
+    text-decoration: underline;
+}
+
+.story-summary {
+    font-size: 0.9rem;
+    color: #6c757d;
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.story-role {
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Filters panel */
+#filtersPanel {
+    border: 1px solid #dee2e6;
+}
+
+#filtersPanel .card-body {
+    padding: 1rem;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.action-buttons .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* Loading state */
+.loading-row {
+    height: 100px;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-with-buttons {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .header-buttons {
+        justify-content: flex-end;
+    }
+    
+    .stat-card h3 {
+        font-size: 1.2rem;
+    }
+    
+    .stat-card h5 {
+        font-size: 0.7rem;
+    }
+    
+    .story-summary {
+        max-width: 200px;
+    }
+}
+
+/* Form styling specific to user stories */
+.form-group-horizontal {
+    margin-bottom: 1rem;
+}
+
+.user-story-structure {
+    background-color: #f8f9fa;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-story-preview {
+    border-left: 4px solid #0d6efd;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    background-color: #f8f9fa;
+    border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.user-story-preview p {
+    margin: 0.5rem 0;
+}
+
+.user-story-preview strong {
+    color: #0d6efd;
+}
+
+/* Jira integration styling */
+.jira-section {
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.jira-badge {
+    background-color: #0052cc;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Source indicators */
+.source-manual {
+    color: #198754;
+}
+
+.source-jira_import {
+    color: #0052cc;
+}
+
+.source-sharepoint_import {
+    color: #0078d4;
+}

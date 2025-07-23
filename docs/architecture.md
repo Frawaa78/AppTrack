@@ -1,31 +1,31 @@
-# AppTrack Technical Architecture v3.4.0
+# AppTrack Technical Architecture v3.3.0
 
 ## System Overview
 
-AppTrack is a production-ready web application built with a modern, scalable architecture that integrates AI-powered analysis capabilities with traditional application lifecycle management. Version 3.4.0 introduces advanced dashboard management with dual-view kanban system and comprehensive filtering capabilities.
+AppTrack is a production-ready web application built with a modern, scalable architecture that integrates AI-powered analysis capabilities with traditional application lifecycle management. Version 3.3.0 introduces comprehensive User Stories management with Agile methodology support and Jira integration capabilities.
 
 ## Architecture Stack
 
 ### Backend
 - **Language**: PHP 8+
-- **Database**: MySQL 8.0 with InnoDB engine (25 tables)
+- **Database**: MySQL 8.0 with InnoDB engine (27 tables)
 - **AI Integration**: OpenAI GPT-3.5-turbo API
 - **Authentication**: Session-based with BCrypt password hashing
-- **API Design**: RESTful endpoints with JSON responses (21 active endpoints)
+- **API Design**: RESTful endpoints with JSON responses (28 active endpoints)
 
 ### Frontend
 - **Framework**: Bootstrap 5.3 for responsive design
 - **JavaScript**: Vanilla ES6+ with modular components
 - **UI Components**: Choices.js for enhanced multi-select functionality
 - **Kanban System**: Interactive drag-and-drop kanban board with audit logging
-- **Icons**: Bootstrap Icons
+- **Icons**: Bootstrap Icons with FontAwesome Pro integration
 - **Modal System**: Bootstrap modals for AI analysis and integration diagrams
 
 ### Infrastructure
 - **Web Server**: Apache/Nginx compatible
-- **File Storage**: Database BLOB storage for attachments
+- **File Storage**: Database BLOB storage for attachments + file system for User Stories
 - **Caching**: Application-level caching for AI analysis results
-- **Logging**: Comprehensive audit trail, AI usage tracking, and kanban change logging
+- **Logging**: Comprehensive audit trail, AI usage tracking, and User Stories activity logging
 
 ## Core System Components
 
@@ -34,24 +34,52 @@ AppTrack is a production-ready web application built with a modern, scalable arc
 src/
 ├── models/
 │   ├── Application.php      # Core application entity
-│   └── User.php            # User management
+│   ├── User.php            # User management
+│   └── UserStory.php       # User Stories data access
 ├── controllers/
 │   ├── ApplicationController.php
 │   ├── UserController.php
-│   └── AuthController.php
+│   ├── AuthController.php
+│   └── UserStoryController.php  # User Stories business logic
 └── managers/
     └── ActivityManager.php  # Work notes & audit logging
 ```
 
 **Responsibilities:**
-- CRUD operations for applications
+- CRUD operations for applications and User Stories
 - User authentication and authorization
 - Activity tracking and audit logging
 - Data validation and sanitization
 - Kanban board data management
 - Cross-view filtering consistency
+- User Stories and application relationship management
 
-### 2. Dashboard Management System (v3.4.0 NEW)
+### 2. User Stories Management System (v3.3.0 NEW)
+```
+public/
+├── user_stories.php           # Main User Stories dashboard
+├── user_story_form.php        # Create/edit User Stories
+├── user_story_view.php        # Detailed story view
+└── api/user_stories/
+    ├── get_stories.php         # List and filter stories
+    ├── get_story.php           # Individual story details
+    ├── create_story.php        # Create new stories
+    ├── update_story.php        # Update existing stories
+    ├── delete_story.php        # Delete stories
+    ├── get_form_options.php    # Dynamic form options
+    └── upload_attachment.php   # File attachment support
+```
+
+**Features:**
+- **Agile Methodology**: Native User Story format support ("As a [role], I want [functionality], so that [benefit]")
+- **Application Integration**: Seamless linking between User Stories and Applications
+- **Advanced Filtering**: Filter by application, priority, status, and personal stories
+- **Statistics Dashboard**: Real-time statistics cards showing story distribution
+- **Jira Integration**: Built-in Jira ID field for external project management
+- **File Attachments**: Complete file management system for story documentation
+- **Consistent UI/UX**: Unified design language matching app_view.php patterns
+
+### 3. Dashboard Management System (v3.2.1)
 ```
 public/
 ├── dashboard.php           # Dual-view dashboard (table/kanban)
@@ -68,7 +96,7 @@ public/
 - **State Persistence**: URL parameter-based filter state management
 - **Audit Logging**: Comprehensive change tracking for all kanban operations
 
-### 3. Handover Management System (v3.3.0)
+### 4. Handover Management System (v3.3.0)
 ```
 public/handover/
 ├── index.php              # Handover overview dashboard

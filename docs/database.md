@@ -4,12 +4,13 @@ This document provides a comprehensive overview of the AppTrack database structu
 
 ## Overview
 
-The database follows an enterprise-grade normalized design pattern with comprehensive AI analytics integration. Key architectural features include:
+The database follows an enterprise-grade normalized design pattern with comprehensive AI analytics integration and User Stories management. Key architectural features include:
 
-- **25 Core Tables** with optimized relationships and constraints
+- **27 Core Tables** with optimized relationships and constraints
 - **AI Analysis Engine** with intelligent caching and change detection  
 - **Comprehensive Audit System** with full change tracking and timestamps
 - **Rich Work Notes** with attachment support and priority management
+- **User Stories Management** with Agile methodology support and Jira integration
 - **Role-Based Access Control** with granular permission mapping
 - **Data Integrity** through foreign key constraints and ACID transactions
 - **Production Optimization** with strategic indexing and performance tuning
@@ -27,12 +28,14 @@ The database follows an enterprise-grade normalized design pattern with comprehe
 ✅ **SECURITY HARDENED**: Data privacy controls with sensitive field exclusion for AI processing
 ✅ **HANDOVER SYSTEM**: Complete 15-step handover management with participant tracking
 ✅ **KANBAN WORKFLOW**: Phase-based kanban system with drag-and-drop functionality
+✅ **USER STORIES MODULE**: Complete Agile User Stories management with application integration
 
 ## Database Architecture Summary
 
 | Category | Tables | Purpose | Key Features |
 |----------|--------|---------|--------------|
 | **Core Application** | applications, work_notes, audit_log | Primary business data | Full lifecycle tracking |
+| **User Stories** | user_stories, user_story_attachments | Agile story management | Jira integration, CRUD operations |
 | **AI Analysis** | ai_analysis, ai_configurations, ai_usage_log, data_snapshots | AI insights & caching | Smart change detection |
 | **User Management** | users, application_user_relations | Authentication & authorization | Role-based access |
 | **Reference Data** | phases, statuses, deployment_models, portfolios, project_managers, product_owners | Controlled vocabularies | Data consistency |
@@ -468,6 +471,84 @@ Manual activity entries and collaboration tracking with file attachment support.
 - Maximum file size: 10MB
 - Supported formats: Images (JPEG, PNG, GIF, WebP), Documents (PDF, Word, Excel, PowerPoint), Text files, Archives (ZIP, RAR)
 - Files stored as LONGBLOB in database for security and backup consistency
+
+## User Stories Management Tables
+
+### Table: user_stories
+Complete Agile User Stories management with application integration and Jira support.
+
+| Field                | Type                                                | Description                           | Constraints      |
+|----------------------|----------------------------------------------------|------------------------------------- |------------------|
+| id                   | int(11)                                            | Primary key, auto-increment          | NOT NULL, PK     |
+| title                | varchar(255)                                       | User story title/summary              | NOT NULL         |
+| role                 | varchar(255)                                       | User role: "As a [role]"              | NOT NULL         |
+| want_to              | text                                               | Functionality: "I want to [action]"  | NOT NULL         |
+| so_that              | text                                               | Benefit: "So that [value]"            | NOT NULL         |
+| acceptance_criteria  | text                                               | Acceptance criteria and DoD           | NULL             |
+| business_value       | text                                               | Business justification and value      | NULL             |
+| technical_notes      | text                                               | Implementation notes and constraints  | NULL             |
+| priority             | enum('Low','Medium','High','Critical')            | Story priority level                  | DEFAULT 'Medium' |
+| status               | enum('backlog','in_progress','review','done','cancelled') | Current story status          | DEFAULT 'backlog'|
+| story_points         | int(11)                                            | Estimation points (1-100)             | NULL             |
+| application_id       | int(11)                                            | FK to applications table              | NULL, MUL        |
+| jira_id              | varchar(50)                                        | External Jira issue key               | NULL             |
+| jira_url             | text                                               | Link to Jira issue                    | NULL             |
+| sharepoint_url       | text                                               | SharePoint document link              | NULL             |
+| category             | varchar(100)                                       | Story category/theme                  | NULL             |
+| tags                 | text                                               | Comma-separated tags                  | NULL             |
+| epic                 | varchar(255)                                       | Epic or theme association             | NULL             |
+| sprint               | varchar(100)                                       | Sprint assignment                     | NULL             |
+| source               | enum('manual','jira_import','template')          | Story creation source                 | DEFAULT 'manual' |
+| created_by           | int(11)                                            | FK to users table                     | NOT NULL, MUL    |
+| created_at           | timestamp                                          | Story creation timestamp              | DEFAULT CURRENT  |
+| updated_at           | timestamp                                          | Last modification timestamp           | ON UPDATE        |
+
+**Features:**
+- **Agile Compliance**: Native support for standard User Story format with role, functionality, and benefit
+- **Application Integration**: Optional linking to applications for integrated project management
+- **Jira Integration**: Built-in fields for external project management tool integration
+- **Status Tracking**: Complete workflow from backlog through done with cancelled option
+- **Estimation Support**: Story points for sprint planning and velocity tracking
+- **Flexible Categorization**: Tags, categories, epics, and sprints for organization
+
+**Foreign Key Constraints:**
+```sql
+CONSTRAINT `fk_user_stories_application` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+CONSTRAINT `fk_user_stories_user` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+```
+
+### Table: user_story_attachments
+File attachment support for User Stories with comprehensive metadata tracking.
+
+| Field             | Type         | Description                           | Constraints      |
+|-------------------|--------------|---------------------------------------|------------------|
+| id                | int(11)      | Primary key, auto-increment           | NOT NULL, PK     |
+| user_story_id     | int(11)      | FK to user_stories table              | NOT NULL, MUL    |
+| filename          | varchar(255) | Original filename                     | NOT NULL         |
+| file_path         | varchar(500) | Relative path to stored file          | NOT NULL         |
+| file_size         | int(11)      | File size in bytes                    | NOT NULL         |
+| mime_type         | varchar(100) | MIME type of file                     | NOT NULL         |
+| uploaded_by       | int(11)      | FK to users table                     | NOT NULL, MUL    |
+| uploaded_at       | timestamp    | File upload timestamp                 | DEFAULT CURRENT  |
+
+**Features:**
+- **File Storage**: Secure file storage with path-based organization
+- **Metadata Tracking**: Complete file information including size and MIME type
+- **User Attribution**: Track who uploaded each file with timestamp
+- **Multiple Attachments**: Support for multiple files per User Story
+
+**Foreign Key Constraints:**
+```sql
+CONSTRAINT `fk_attachments_user_story` FOREIGN KEY (`user_story_id`) REFERENCES `user_stories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+CONSTRAINT `fk_attachments_user` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+```
+
+**Supported File Types:**
+- Documents: PDF, Word (.docx), Excel (.xlsx), PowerPoint (.pptx)
+- Images: JPEG, PNG, GIF, WebP, SVG
+- Text: TXT, CSV, JSON, XML
+- Archives: ZIP, RAR, 7Z
+- Maximum file size: 10MB per attachment
 
 ### Table: application_relations
 Many-to-many relationships between applications with bidirectional support.

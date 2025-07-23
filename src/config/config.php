@@ -1,6 +1,9 @@
 <?php
 // src/config/config.php
 
+// Load environment variables from .env file (for One.com compatibility)
+require_once __DIR__ . '/load_env.php';
+
 // Set timezone to match Norwegian time
 date_default_timezone_set('Europe/Oslo');
 
@@ -13,7 +16,7 @@ define('DB_CHARSET', 'utf8mb4');
 // AI Configuration
 define('AI_CONFIG', [
     // OpenAI API Configuration - Set your API key as environment variable
-    'openai_api_key' => getenv('OPENAI_API_KEY') ?: '',
+    'openai_api_key' => getenv('OPENAI_API_KEY') ?: 'key_GXEPIwntltbzskkK',
     
     // Default model settings
     'default_model' => 'gpt-3.5-turbo',
