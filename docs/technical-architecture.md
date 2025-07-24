@@ -1,12 +1,15 @@
 # AppTrack v3.3.0 - Technical Architecture Documentation
 
-This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.3.0, focusing on the User Stories Management System, Activity Tracking System enhancements, Integration Architecture feature, and critical Visual Diagram Editor bug fixes implemented in 2025.
+This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.3.0, focusing on the User Stories Management System, Executive Dashboard with area chart visualization, Activity Tracking System enhancements, Integration Architecture feature, AI Insights User Stories integration, and critical Visual Diagram Editor bug fixes implemented in 2025.
 
-## Version 3.3.0 Overview (2025)
+## Version 3.3.0 Overview (July 2025)
 
-AppTrack v3.3.0 introduces the comprehensive User Stories Management System:
-- **User Stories Module**: Complete Agile User Stories management with application integration
-- **Advanced Filtering**: Filter by application, priority, status, and personal stories
+AppTrack v3.3.0 introduces comprehensive enterprise features:
+- **User Stories Module**: Complete Agile User Stories management with application integration and inline editing
+- **Executive Dashboard**: Professional C-level dashboard with area chart timeline visualization
+- **AI Integration Enhancement**: User Stories data integration with OpenAI analysis for comprehensive insights  
+- **Advanced Filtering**: Filter by application, priority, status, and personal stories with real-time search
+- **25-Table Database**: Complete normalized schema with comprehensive relationships and audit trails
 - **Statistics Dashboard**: Real-time statistics cards showing story distribution
 - **Jira Integration**: Built-in Jira ID field for external project management  
 - **File Attachments**: Complete file management system for story documentation
@@ -53,10 +56,8 @@ CREATE TABLE user_stories (
     functionality TEXT,
     benefit TEXT,
     description TEXT,
-    acceptance_criteria TEXT,
     priority ENUM('Low', 'Medium', 'High', 'Critical'),
     status ENUM('Backlog', 'In Progress', 'Testing', 'Done'),
-    story_points INT,
     assigned_to INT,
     jira_id VARCHAR(100),
     tags TEXT,

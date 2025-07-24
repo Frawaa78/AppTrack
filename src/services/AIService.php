@@ -243,11 +243,65 @@ class AIService {
             $work_notes_summary = "No work notes found for this application.";
             error_log("AIService buildPrompt - No work notes found. Data structure: " . json_encode($context_data['work_notes']));
         }
+
+        // Process User Stories data
+        $user_stories_summary = '';
+        $user_stories_data = $context_data['user_stories'] ?? [];
+        
+        if (!empty($user_stories_data['stories'])) {
+            $stories = $user_stories_data['stories'];
+            $summary = $user_stories_data['summary'] ?? [];
+            
+            $total_stories = count($stories);
+            $user_stories_summary .= "Total user stories found: {$total_stories}\n";
+            
+            // Add completion insights
+            if (!empty($summary['completion_insights'])) {
+                $insights = $summary['completion_insights'];
+                $user_stories_summary .= "Story completion: {$insights['completion_rate']}% done, {$insights['in_progress_rate']}% in progress, {$insights['backlog_rate']}% in backlog\n";
+            }
+            
+            // Add priority breakdown
+            if (!empty($summary['by_priority'])) {
+                $priorities = [];
+                foreach ($summary['by_priority'] as $priority => $count) {
+                    $priorities[] = "{$priority}: {$count}";
+                }
+                $user_stories_summary .= "Priority breakdown: " . implode(', ', $priorities) . "\n";
+            }
+            
+            // Add business value themes
+            if (!empty($summary['business_value_themes'])) {
+                $themes = [];
+                foreach ($summary['business_value_themes'] as $theme => $count) {
+                    $themes[] = "{$theme}: {$count}";
+                }
+                $user_stories_summary .= "Business value themes: " . implode(', ', $themes) . "\n\n";
+            }
+            
+            // Add detailed stories (top 10)
+            $user_stories_summary .= "Key User Stories:\n";
+            foreach (array_slice($stories, 0, 10) as $story) {
+                $title = $story['title'] ?? 'Untitled';
+                $status = $story['status'] ?? 'unknown';
+                $priority = $story['priority'] ?? 'unknown';
+                $role = $story['role'] ?? '';
+                $want_to = $story['want_to'] ?? '';
+                $so_that = $story['so_that'] ?? '';
+                
+                $user_stories_summary .= "- [{$status}/{$priority}] {$title}\n";
+                $user_stories_summary .= "  As a {$role}, I want to {$want_to}, so that {$so_that}\n";
+            }
+        } else {
+            $user_stories_summary = "No user stories found for this application.";
+        }
         
         $replacements = [
             '{application_data}' => json_encode($context_data['application'], JSON_PRETTY_PRINT),
             '{work_notes}' => $work_notes_summary,
+            '{user_stories}' => $user_stories_summary,
             '{work_notes_raw}' => json_encode($context_data['work_notes'], JSON_PRETTY_PRINT),
+            '{user_stories_raw}' => json_encode($context_data['user_stories'], JSON_PRETTY_PRINT),
             '{relationships}' => json_encode($context_data['relationships'], JSON_PRETTY_PRINT),
             '{audit_history}' => json_encode($context_data['audit_history'], JSON_PRETTY_PRINT),
             '{attachments}' => json_encode($context_data['attachments'], JSON_PRETTY_PRINT)

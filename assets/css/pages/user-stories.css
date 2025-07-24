@@ -1,5 +1,44 @@
 /* User Stories Page Styling */
 
+/* Inline editing with Choices.js popover */
+.inline-edit-applications .choices {
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.inline-edit-applications .choices__inner {
+    min-height: 35px;
+    padding: 5px 8px;
+    font-size: 0.875rem;
+}
+
+.inline-edit-applications .choices__input {
+    font-size: 0.875rem;
+}
+
+.inline-edit-applications .choices__list--dropdown {
+    max-height: 200px;
+    z-index: 1050;
+}
+
+.inline-edit-applications .choices__item {
+    font-size: 0.875rem;
+}
+
+.inline-edit-applications .choices__item--selectable {
+    padding: 8px 12px;
+}
+
+/* Override existing inline-edit-choices for applications */
+.inline-edit-choices.inline-edit-applications {
+    min-width: 300px;
+}
+
+.inline-edit-choices.inline-edit-applications .choices__inner {
+    min-height: 35px;
+    padding: 5px 8px;
+}
+
 /* Statistics Cards */
 .stat-card {
     border: none;
@@ -96,6 +135,28 @@
 .status-done {
     background-color: #198754;
     color: white;
+}
+
+/* Application badges */
+.badge.bg-light {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #dee2e6;
+    font-weight: 500;
+    text-decoration: none !important;
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+
+.badge.bg-light:hover {
+    background-color: #e9ecef !important;
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+}
+
+.badge.bg-light:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
 }
 
 .status-cancelled {

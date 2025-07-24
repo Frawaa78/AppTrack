@@ -94,6 +94,14 @@ class UserStoryForm {
                 body: JSON.stringify(formData)
             });
             
+            // Check if response is ok
+            if (!response.ok) {
+                // Try to get error text instead of JSON
+                const errorText = await response.text();
+                console.error('Server error response:', errorText);
+                throw new Error(`Server error: ${response.status} - ${errorText}`);
+            }
+            
             const result = await response.json();
             
             if (result.success) {
@@ -126,9 +134,8 @@ class UserStoryForm {
         
         // Text inputs
         const textFields = [
-            'title', 'jira_id', 'role', 'want_to', 'so_that', 'sprint', 'epic',
-            'jira_url', 'sharepoint_url', 'tags', 'category', 'acceptance_criteria',
-            'technical_notes', 'business_value'
+            'title', 'jira_id', 'role', 'want_to', 'so_that',
+            'jira_url', 'sharepoint_url', 'tags', 'category'
         ];
         
         textFields.forEach(field => {
@@ -144,22 +151,26 @@ class UserStoryForm {
         formData.jira_id = document.getElementById('jiraId').value.trim() || null;
         formData.jira_url = document.getElementById('jiraUrl').value.trim() || null;
         formData.sharepoint_url = document.getElementById('sharepointUrl').value.trim() || null;
-        formData.story_points = document.getElementById('storyPoints').value.trim() || null;
-        formData.application_id = document.getElementById('applicationId').value || null;
-        formData.acceptance_criteria = document.getElementById('acceptanceCriteria').value.trim() || null;
-        formData.technical_notes = document.getElementById('technicalNotes').value.trim() || null;
-        formData.business_value = document.getElementById('businessValue').value.trim() || null;
+        
+        // Handle multiple application IDs
+        const applicationSelect = document.getElementById('applicationIds');
+        if (applicationSelect) {
+            const selectedApplications = Array.from(applicationSelect.selectedOptions).map(option => parseInt(option.value));
+            formData.application_ids = selectedApplications.length > 0 ? selectedApplications : null;
+        } else {
+            formData.application_ids = null;
+        }
         
         // Select fields
         formData.priority = document.getElementById('priority').value;
         formData.status = document.getElementById('status').value;
         
-        // Numeric fields
-        if (formData.story_points) {
-            formData.story_points = parseInt(formData.story_points);
-        }
-        if (formData.application_id) {
-            formData.application_id = parseInt(formData.application_id);
+        // Handle multiple application IDs - keep backward compatibility
+        if (formData.application_ids && formData.application_ids.length > 0) {
+            // For now, take the first selected application for backward compatibility
+            formData.application_id = formData.application_ids[0];
+        } else {
+            formData.application_id = null;
         }
         
         // Source tracking

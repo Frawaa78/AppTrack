@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Changelog
+
+## [3.3.1] - 2025-07-24 - Documentation Update & File Cleanup
+
+### Changed
+- **Database Documentation Updated**
+  - Corrected database schema documentation to reflect actual 25-table production structure
+  - Updated technical architecture documentation to match current v3.3.0 implementation
+  - Enhanced Executive Dashboard documentation with area chart timeline details
+  - Consolidated all documentation to reflect current system state
+
+### Removed
+- **Obsolete Development Files**
+  - `debug_table_structure.php` - Debug script no longer needed in production
+  - `migrate_application_id_column.sql` - Migration already implemented in database
+  - `simple_migration_steps.sql` - Duplicate migration file removed
+  - `docs/remove_user_story_fields.sql` - SQL for fields already removed
+  - `public/assets/` - Duplicate asset directory that caused confusion
+
+### Fixed
+- **File Structure Cleanup**
+  - Eliminated duplicate JavaScript files that could cause loading conflicts
+  - Cleaned up asset path references for better maintainability
+  - Removed temporary migration files that were implemented in production database
+  - Consolidated documentation to match actual 25-table database schema
+
+---
+
 ## [3.3.0] - 2025-07-23 - User Stories Module Release
 
 ### Added

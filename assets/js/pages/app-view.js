@@ -99,7 +99,6 @@ function renderUserStories(stories) {
             <div class="d-flex gap-2">
               <span class="badge priority-badge priority-${story.priority.toLowerCase()}">${story.priority}</span>
               <span class="badge status-badge status-${story.status}">${formatStatus(story.status)}</span>
-              ${story.story_points ? `<span class="badge bg-secondary">${story.story_points} SP</span>` : ''}
             </div>
           </div>
           <div class="ms-3">

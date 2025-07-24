@@ -18,10 +18,8 @@ $db = Database::getInstance()->getConnection();
 
 // Get user story with related information
 $stmt = $db->prepare('
-    SELECT us.*, a.short_description as application_name, a.id as application_id,
-           u.display_name as created_by_name, u.email as created_by_email
+    SELECT us.*, u.display_name as created_by_name, u.email as created_by_email
     FROM user_stories us 
-    LEFT JOIN applications a ON us.application_id = a.id 
     LEFT JOIN users u ON us.created_by = u.id
     WHERE us.id = :id
 ');
@@ -31,6 +29,24 @@ $story = $stmt->fetch();
 if (!$story) {
     header('Location: user_stories.php');
     exit;
+}
+
+// Handle multiple application IDs
+$relatedApplications = [];
+if (!empty($story['application_id'])) {
+    $applicationIds = [];
+    if (strpos($story['application_id'], ',') !== false) {
+        $applicationIds = array_map('intval', array_map('trim', explode(',', $story['application_id'])));
+    } else {
+        $applicationIds = [(int)$story['application_id']];
+    }
+    
+    if (!empty($applicationIds)) {
+        $placeholders = implode(',', array_fill(0, count($applicationIds), '?'));
+        $stmt = $db->prepare("SELECT id, short_description, application_service FROM applications WHERE id IN ($placeholders)");
+        $stmt->execute($applicationIds);
+        $relatedApplications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 
 // Format tags
@@ -45,6 +61,12 @@ $tags = array_map('trim', $tags);
     <title><?php echo htmlspecialchars($story['title']); ?> - User Story - AppTrack</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon/favicon-16x16.png">
+    <link rel="manifest" href="../assets/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
     <!-- FontAwesome Pro -->
     <script src="https://kit.fontawesome.com/d67c79608d.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="../assets/css/main.css">
@@ -167,9 +189,6 @@ $tags = array_map('trim', $tags);
                                 <span class="badge status-badge status-<?php echo $story['status']; ?>">
                                     <?php echo ucfirst(str_replace('_', ' ', $story['status'])); ?>
                                 </span>
-                                <?php if ($story['story_points']): ?>
-                                    <span class="badge bg-secondary"><?php echo $story['story_points']; ?> SP</span>
-                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -180,33 +199,7 @@ $tags = array_map('trim', $tags);
                         <p><strong>As a</strong> <?php echo htmlspecialchars($story['role']); ?></p>
                         <p><strong>I want to</strong> <?php echo htmlspecialchars($story['want_to']); ?></p>
                         <p><strong>So that</strong> <?php echo htmlspecialchars($story['so_that']); ?></p>
-                    <!-- Business Value -->
-                    <?php if ($story['business_value']): ?>
-                        <div class="mb-4">
-                            <h6 style="color: #6c757d;"><i class="bi bi-graph-up"></i> Business Value</h6>
-                            <p class="text-muted"><?php echo nl2br(htmlspecialchars($story['business_value'])); ?></p>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Acceptance Criteria -->
-                    <?php if ($story['acceptance_criteria']): ?>
-                        <div class="mb-4">
-                            <h6 style="color: #6c757d;"><i class="bi bi-check2-square"></i> Acceptance Criteria</h6>
-                            <div class="bg-light p-3 rounded">
-                                <?php echo nl2br(htmlspecialchars($story['acceptance_criteria'])); ?>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Technical Notes -->
-                    <?php if ($story['technical_notes']): ?>
-                        <div class="mb-4">
-                            <h6 style="color: #6c757d;"><i class="bi bi-gear"></i> Technical Notes</h6>
-                            <div class="bg-light p-3 rounded">
-                                <?php echo nl2br(htmlspecialchars($story['technical_notes'])); ?>
-                            </div>
-                        </div>
-                    <?php endif; ?>
+                    </div>
 
                     <!-- Tags -->
                     <?php if (!empty($tags)): ?>
@@ -242,18 +235,6 @@ $tags = array_map('trim', $tags);
                             <span><?php echo htmlspecialchars($story['category']); ?></span>
                         </div>
                     <?php endif; ?>
-                    <?php if ($story['epic']): ?>
-                        <div class="form-group-horizontal">
-                            <label class="form-label">Epic:</label>
-                            <span><?php echo htmlspecialchars($story['epic']); ?></span>
-                        </div>
-                    <?php endif; ?>
-                    <?php if ($story['sprint']): ?>
-                        <div class="form-group-horizontal">
-                            <label class="form-label">Sprint:</label>
-                            <span><?php echo htmlspecialchars($story['sprint']); ?></span>
-                        </div>
-                    <?php endif; ?>
                     <div class="form-group-horizontal">
                         <label class="form-label">Source:</label>
                         <span class="badge source-<?php echo $story['source']; ?>">
@@ -262,14 +243,21 @@ $tags = array_map('trim', $tags);
                     </div>
                 </div>
 
-                <!-- Related Application -->
-                <?php if ($story['application_name']): ?>
+                <!-- Related Applications -->
+                <?php if (!empty($relatedApplications)): ?>
                     <div class="content-card">
-                        <h6 class="mb-3" style="color: #6c757d;"><i class="bi bi-link-45deg"></i> Related Application</h6>
-                        <a href="app_view.php?id=<?php echo $story['application_id']; ?>" class="text-decoration-none">
-                            <i class="bi bi-grid-3x3-gap me-2"></i>
-                            <?php echo htmlspecialchars($story['application_name']); ?>
-                        </a>
+                        <h6 class="mb-3" style="color: #6c757d;"><i class="bi bi-link-45deg"></i> Related Applications</h6>
+                        <?php foreach ($relatedApplications as $app): ?>
+                            <div class="mb-2">
+                                <a href="app_view.php?id=<?php echo $app['id']; ?>" class="text-decoration-none d-block">
+                                    <i class="bi bi-grid-3x3-gap me-2"></i>
+                                    <?php echo htmlspecialchars($app['short_description']); ?>
+                                    <?php if ($app['application_service']): ?>
+                                        <small class="text-muted"> - <?php echo htmlspecialchars($app['application_service']); ?></small>
+                                    <?php endif; ?>
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
 

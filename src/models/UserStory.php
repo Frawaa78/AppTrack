@@ -14,10 +14,8 @@ class UserStory {
      * Get all user stories with optional filtering
      */
     public function getAll($filters = []) {
-        $sql = "SELECT us.*, a.short_description as application_name, 
-                       u.display_name as created_by_name
+        $sql = "SELECT us.*, u.display_name as created_by_name
                 FROM user_stories us 
-                LEFT JOIN applications a ON us.application_id = a.id 
                 LEFT JOIN users u ON us.created_by = u.id";
         
         $conditions = [];
@@ -25,7 +23,8 @@ class UserStory {
         
         // Apply filters
         if (!empty($filters['application_id'])) {
-            $conditions[] = "us.application_id = :application_id";
+            // Handle both single application_id and comma-separated values using FIND_IN_SET
+            $conditions[] = "FIND_IN_SET(:application_id, us.application_id) > 0";
             $params[':application_id'] = $filters['application_id'];
         }
         
@@ -58,24 +57,62 @@ class UserStory {
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Resolve application names for each story
+        foreach ($stories as &$story) {
+            $story['application_name'] = $this->getApplicationNames($story['application_id']);
+        }
+        
+        return $stories;
+    }
+    
+    /**
+     * Get application names for comma-separated application IDs
+     */
+    private function getApplicationNames($applicationIds) {
+        if (empty($applicationIds)) {
+            return '';
+        }
+        
+        // Split comma-separated IDs
+        $ids = array_map('trim', explode(',', $applicationIds));
+        $ids = array_filter($ids); // Remove empty values
+        
+        if (empty($ids)) {
+            return '';
+        }
+        
+        // Create placeholders for IN clause
+        $placeholders = str_repeat('?,', count($ids) - 1) . '?';
+        
+        $sql = "SELECT short_description FROM applications WHERE id IN ($placeholders) ORDER BY short_description";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($ids);
+        
+        $names = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return implode(', ', $names);
     }
     
     /**
      * Get a single user story by ID
      */
     public function getById($id) {
-        $sql = "SELECT us.*, a.short_description as application_name, 
-                       u.display_name as created_by_name
+        $sql = "SELECT us.*, u.display_name as created_by_name
                 FROM user_stories us 
-                LEFT JOIN applications a ON us.application_id = a.id 
                 LEFT JOIN users u ON us.created_by = u.id
                 WHERE us.id = :id";
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $id]);
         
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $story = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($story) {
+            $story['application_name'] = $this->getApplicationNames($story['application_id']);
+        }
+        
+        return $story;
     }
     
     /**
@@ -91,19 +128,25 @@ class UserStory {
     public function create($data) {
         $sql = "INSERT INTO user_stories (
                     title, jira_id, role, want_to, so_that, priority, 
-                    story_points, sprint, epic, application_id, jira_url, 
+                    application_id, jira_url, 
                     sharepoint_url, source, manual_entry, tags, category, 
-                    created_by, status, acceptance_criteria, technical_notes, 
-                    business_value
+                    created_by, status
                 ) VALUES (
                     :title, :jira_id, :role, :want_to, :so_that, :priority,
-                    :story_points, :sprint, :epic, :application_id, :jira_url,
+                    :application_id, :jira_url,
                     :sharepoint_url, :source, :manual_entry, :tags, :category,
-                    :created_by, :status, :acceptance_criteria, :technical_notes,
-                    :business_value
+                    :created_by, :status
                 )";
         
         $stmt = $this->db->prepare($sql);
+        
+        // Handle multiple application IDs - for now store as comma-separated
+        $applicationId = null;
+        if (isset($data['application_ids']) && is_array($data['application_ids']) && !empty($data['application_ids'])) {
+            $applicationId = implode(',', array_map('intval', $data['application_ids']));
+        } elseif (isset($data['application_id']) && !empty($data['application_id'])) {
+            $applicationId = $data['application_id'];
+        }
         
         $result = $stmt->execute([
             ':title' => $data['title'],
@@ -112,10 +155,7 @@ class UserStory {
             ':want_to' => $data['want_to'],
             ':so_that' => $data['so_that'],
             ':priority' => $data['priority'] ?? 'Medium',
-            ':story_points' => $data['story_points'] ?? null,
-            ':sprint' => $data['sprint'] ?? null,
-            ':epic' => $data['epic'] ?? null,
-            ':application_id' => $data['application_id'] ?? null,
+            ':application_id' => $applicationId,
             ':jira_url' => $data['jira_url'] ?? null,
             ':sharepoint_url' => $data['sharepoint_url'] ?? null,
             ':source' => $data['source'] ?? 'manual',
@@ -123,10 +163,7 @@ class UserStory {
             ':tags' => $data['tags'] ?? null,
             ':category' => $data['category'] ?? null,
             ':created_by' => $data['created_by'] ?? null,
-            ':status' => $data['status'] ?? 'backlog',
-            ':acceptance_criteria' => $data['acceptance_criteria'] ?? null,
-            ':technical_notes' => $data['technical_notes'] ?? null,
-            ':business_value' => $data['business_value'] ?? null
+            ':status' => $data['status'] ?? 'backlog'
         ]);
         
         if ($result) {
@@ -140,40 +177,44 @@ class UserStory {
      * Update an existing user story
      */
     public function update($id, $data) {
-        $sql = "UPDATE user_stories SET 
-                    title = :title, jira_id = :jira_id, role = :role, 
-                    want_to = :want_to, so_that = :so_that, priority = :priority,
-                    story_points = :story_points, sprint = :sprint, epic = :epic,
-                    application_id = :application_id, jira_url = :jira_url,
-                    sharepoint_url = :sharepoint_url, tags = :tags, category = :category,
-                    status = :status, acceptance_criteria = :acceptance_criteria,
-                    technical_notes = :technical_notes, business_value = :business_value,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE id = :id";
+        // Build dynamic SQL based on provided fields
+        $allowedFields = [
+            'title', 'jira_id', 'role', 'want_to', 'so_that', 'priority',
+            'application_id', 'jira_url', 'sharepoint_url', 'tags', 'category', 'status'
+        ];
         
+        $updateFields = [];
+        $params = [':id' => $id];
+        
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $updateFields[] = "$field = :$field";
+                $params[":$field"] = $data[$field];
+            }
+        }
+        
+        // Handle application_ids array (convert to comma-separated string)
+        if (isset($data['application_ids']) && is_array($data['application_ids'])) {
+            if (!empty($data['application_ids'])) {
+                $updateFields[] = "application_id = :application_id";
+                $params[':application_id'] = implode(',', array_map('intval', $data['application_ids']));
+            } else {
+                $updateFields[] = "application_id = :application_id";
+                $params[':application_id'] = null;
+            }
+        }
+        
+        // Always update the timestamp
+        $updateFields[] = "updated_at = CURRENT_TIMESTAMP";
+        
+        if (empty($updateFields)) {
+            return true; // Nothing to update
+        }
+        
+        $sql = "UPDATE user_stories SET " . implode(', ', $updateFields) . " WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         
-        return $stmt->execute([
-            ':id' => $id,
-            ':title' => $data['title'],
-            ':jira_id' => $data['jira_id'] ?? null,
-            ':role' => $data['role'],
-            ':want_to' => $data['want_to'],
-            ':so_that' => $data['so_that'],
-            ':priority' => $data['priority'] ?? 'Medium',
-            ':story_points' => $data['story_points'] ?? null,
-            ':sprint' => $data['sprint'] ?? null,
-            ':epic' => $data['epic'] ?? null,
-            ':application_id' => $data['application_id'] ?? null,
-            ':jira_url' => $data['jira_url'] ?? null,
-            ':sharepoint_url' => $data['sharepoint_url'] ?? null,
-            ':tags' => $data['tags'] ?? null,
-            ':category' => $data['category'] ?? null,
-            ':status' => $data['status'] ?? 'backlog',
-            ':acceptance_criteria' => $data['acceptance_criteria'] ?? null,
-            ':technical_notes' => $data['technical_notes'] ?? null,
-            ':business_value' => $data['business_value'] ?? null
-        ]);
+        return $stmt->execute($params);
     }
     
     /**

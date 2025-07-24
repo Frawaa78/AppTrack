@@ -2,15 +2,12 @@
 // src/controllers/UserStoryController.php
 
 require_once __DIR__ . '/../models/UserStory.php';
-require_once __DIR__ . '/../managers/ActivityManager.php';
 
 class UserStoryController {
     private $userStoryModel;
-    private $activityManager;
     
     public function __construct() {
         $this->userStoryModel = new UserStory();
-        $this->activityManager = new ActivityManager();
     }
     
     /**
@@ -84,16 +81,6 @@ class UserStoryController {
             $storyId = $this->userStoryModel->create($cleanData);
             
             if ($storyId) {
-                // Log activity if we have an application association
-                if (!empty($cleanData['application_id'])) {
-                    $this->activityManager->logActivity(
-                        $cleanData['application_id'],
-                        $_SESSION['user_id'] ?? null,
-                        'user_story_created',
-                        "User story '{$cleanData['title']}' was created"
-                    );
-                }
-                
                 return [
                     'success' => true,
                     'data' => ['id' => $storyId],
@@ -128,14 +115,20 @@ class UserStoryController {
                 ];
             }
             
-            // Validate required fields
-            $requiredFields = ['title', 'role', 'want_to', 'so_that'];
-            foreach ($requiredFields as $field) {
-                if (empty($data[$field])) {
-                    return [
-                        'success' => false,
-                        'error' => ucfirst(str_replace('_', ' ', $field)) . ' is required'
-                    ];
+            // For partial updates (inline editing), only validate provided fields
+            // Only validate all required fields if this is a complete update
+            $isPartialUpdate = count($data) < 4; // If less than 4 fields, it's likely a partial update
+            
+            if (!$isPartialUpdate) {
+                // Validate required fields for complete updates
+                $requiredFields = ['title', 'role', 'want_to', 'so_that'];
+                foreach ($requiredFields as $field) {
+                    if (empty($data[$field])) {
+                        return [
+                            'success' => false,
+                            'error' => ucfirst(str_replace('_', ' ', $field)) . ' is required'
+                        ];
+                    }
                 }
             }
             
@@ -145,16 +138,6 @@ class UserStoryController {
             $result = $this->userStoryModel->update($id, $cleanData);
             
             if ($result) {
-                // Log activity if we have an application association
-                if (!empty($cleanData['application_id'])) {
-                    $this->activityManager->logActivity(
-                        $cleanData['application_id'],
-                        $_SESSION['user_id'] ?? null,
-                        'user_story_updated',
-                        "User story '{$cleanData['title']}' was updated"
-                    );
-                }
-                
                 return [
                     'success' => true,
                     'message' => 'User story updated successfully'
@@ -191,16 +174,6 @@ class UserStoryController {
             $result = $this->userStoryModel->delete($id);
             
             if ($result) {
-                // Log activity if we have an application association
-                if (!empty($existingStory['application_id'])) {
-                    $this->activityManager->logActivity(
-                        $existingStory['application_id'],
-                        $_SESSION['user_id'] ?? null,
-                        'user_story_deleted',
-                        "User story '{$existingStory['title']}' was deleted"
-                    );
-                }
-                
                 return [
                     'success' => true,
                     'message' => 'User story deleted successfully'
@@ -290,29 +263,28 @@ class UserStoryController {
         
         // Text fields that should be trimmed and escaped
         $textFields = [
-            'title', 'jira_id', 'role', 'want_to', 'so_that', 'sprint', 'epic',
-            'jira_url', 'sharepoint_url', 'tags', 'category', 'acceptance_criteria',
-            'technical_notes', 'business_value'
+            'title', 'jira_id', 'role', 'want_to', 'so_that',
+            'jira_url', 'sharepoint_url', 'tags', 'category'
         ];
         
         foreach ($textFields as $field) {
             if (isset($data[$field])) {
                 $cleanData[$field] = trim($data[$field]);
-                // Convert empty strings to null
-                if ($cleanData[$field] === '') {
+                // Only convert empty strings to null for non-required fields
+                if ($cleanData[$field] === '' && !in_array($field, ['title', 'role', 'want_to', 'so_that'])) {
                     $cleanData[$field] = null;
                 }
             }
         }
         
-        // Numeric fields
-        $numericFields = ['story_points', 'application_id'];
-        foreach ($numericFields as $field) {
-            if (isset($data[$field]) && $data[$field] !== '') {
-                $cleanData[$field] = (int)$data[$field];
-            } else {
-                $cleanData[$field] = null;
-            }
+        // Handle application_id as comma-separated string for partial updates
+        if (isset($data['application_id']) && !empty($data['application_id'])) {
+            $cleanData['application_id'] = $data['application_id'];
+        }
+        
+        // Handle multiple application IDs
+        if (isset($data['application_ids']) && is_array($data['application_ids'])) {
+            $cleanData['application_ids'] = array_filter(array_map('intval', $data['application_ids']));
         }
         
         // Enum fields with validation

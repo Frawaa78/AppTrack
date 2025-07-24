@@ -25,8 +25,16 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
     <title>User Stories - AppTrack</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon/favicon-16x16.png">
+    <link rel="manifest" href="../assets/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
     <!-- FontAwesome Pro -->
     <script src="https://kit.fontawesome.com/d67c79608d.js" crossorigin="anonymous"></script>
+    <!-- Choices.js for multi-select -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages/user-stories.css">
     <link rel="stylesheet" href="../assets/css/components/buttons.css">
@@ -139,6 +147,59 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
             border-color: #F0F1F2;
             font-size: 0.9rem;
         }
+
+        /* Inline editing styles */
+        .editable-field {
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+            min-height: 24px;
+            display: inline-block;
+            min-width: 60px;
+        }
+
+        .editable-field:hover {
+            background-color: #f8f9fa;
+        }
+
+        .editable-field.editing {
+            background-color: #fff3cd;
+            cursor: default;
+        }
+
+        .inline-edit-select {
+            width: 100%;
+            min-width: 100px;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.5rem;
+            height: auto;
+        }
+
+        .inline-edit-choices {
+            min-width: 180px;
+        }
+
+        .inline-edit-choices .choices__list--dropdown {
+            font-size: 0.85rem;
+        }
+
+        .inline-edit-choices .choices__inner {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+            min-height: 32px;
+        }
+
+        .inline-edit-choices .choices__item {
+            font-size: 0.8rem;
+            padding: 0.15rem 0.4rem;
+        }
+
+        .saving-indicator {
+            color: #6c757d;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -163,58 +224,6 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
                 <a href="user_story_form.php<?php echo isset($_GET['application_id']) ? '?application_id=' . htmlspecialchars($_GET['application_id']) : ''; ?>" class="btn btn-primary">
                     <i class="bi bi-plus"></i> New Story
                 </a>
-            </div>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="row mb-4" id="statisticsCards">
-            <div class="col-md-2">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-muted">Total Stories</h5>
-                        <h3 class="text-primary" id="totalStories">-</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-muted">Backlog</h5>
-                        <h3 class="text-secondary" id="backlogCount">-</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-muted">In Progress</h5>
-                        <h3 class="text-warning" id="inProgressCount">-</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-muted">Review</h5>
-                        <h3 class="text-info" id="reviewCount">-</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-muted">Done</h5>
-                        <h3 class="text-success" id="doneCount">-</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card stat-card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-muted">Critical</h5>
-                        <h3 class="text-danger" id="criticalCount">-</h3>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -288,14 +297,12 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
                         <th>Application</th>
                         <th>Priority</th>
                         <th>Status</th>
-                        <th>Created By</th>
-                        <th>Created</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="storiesTableBody">
                     <tr>
-                        <td colspan="8" class="text-center">
+                        <td colspan="6" class="text-center">
                             <div class="spinner-border" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
@@ -303,6 +310,22 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="successMessage"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+        <div id="errorToast" class="toast align-items-center text-white bg-danger border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="errorMessage"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
         </div>
     </div>
 
@@ -326,6 +349,7 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="../assets/js/pages/user-stories.js"></script>
 </body>
 </html>

@@ -36,6 +36,7 @@ class DataAggregator {
         return [
             'application' => $this->getApplicationData($application_id),
             'work_notes' => $this->getWorkNotesData($application_id),
+            'user_stories' => $this->getUserStoriesData($application_id),
             'relationships' => $this->getRelationshipData($application_id),
             'audit_history' => $this->getAuditHistory($application_id),
             'attachments' => $this->getAttachmentSummary($application_id),
@@ -577,6 +578,140 @@ class DataAggregator {
         });
         
         return $activities;
+    }
+
+    /**
+     * Get user stories data for the application
+     */
+    public function getUserStoriesData($application_id, $limit = 50) {
+        try {
+            // Check if user_stories table exists
+            if (!$this->tableExists('user_stories')) {
+                error_log("DataAggregator: user_stories table does not exist");
+                return [
+                    'stories' => [],
+                    'summary' => [
+                        'total_count' => 0,
+                        'by_status' => [],
+                        'by_priority' => [],
+                        'by_category' => [],
+                        'recent_activity' => false,
+                        'debug_info' => 'user_stories table not found'
+                    ]
+                ];
+            }
+
+            // Get user stories for the application
+            $sql = "
+                SELECT 
+                    us.id,
+                    us.title,
+                    us.role,
+                    us.want_to,
+                    us.so_that,
+                    us.priority,
+                    us.status,
+                    us.category,
+                    us.tags,
+                    us.jira_id,
+                    us.jira_url,
+                    us.sharepoint_url,
+                    us.source,
+                    us.created_at,
+                    us.updated_at,
+                    u.display_name as created_by_name,
+                    u.email as created_by_email
+                FROM user_stories us
+                LEFT JOIN users u ON us.created_by = u.id
+                WHERE FIND_IN_SET(?, us.application_id) > 0
+                ORDER BY us.created_at DESC
+                LIMIT ?
+            ";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$application_id, $limit]);
+            $user_stories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("DataAggregator: Found " . count($user_stories) . " user stories for application_id: " . $application_id);
+
+            // Build summary statistics
+            $summary = [
+                'total_count' => count($user_stories),
+                'by_status' => [],
+                'by_priority' => [],
+                'by_category' => [],
+                'recent_activity' => array_slice($user_stories, 0, 5),
+                'completion_insights' => [],
+                'business_value_themes' => []
+            ];
+
+            // Group by different dimensions
+            foreach ($user_stories as $story) {
+                // Status statistics
+                $summary['by_status'][$story['status']] = ($summary['by_status'][$story['status']] ?? 0) + 1;
+                
+                // Priority statistics
+                $summary['by_priority'][$story['priority']] = ($summary['by_priority'][$story['priority']] ?? 0) + 1;
+                
+                // Category statistics
+                if (!empty($story['category'])) {
+                    $summary['by_category'][$story['category']] = ($summary['by_category'][$story['category']] ?? 0) + 1;
+                }
+
+                // Extract business value themes from "so_that" field
+                if (!empty($story['so_that'])) {
+                    $value_text = strtolower($story['so_that']);
+                    // Look for common business value keywords
+                    $value_keywords = [
+                        'efficiency' => ['efficient', 'faster', 'quick', 'speed', 'time'],
+                        'user_experience' => ['user', 'experience', 'usability', 'interface', 'friendly'],
+                        'automation' => ['automat', 'manual', 'process', 'workflow'],
+                        'integration' => ['integrat', 'connect', 'sync', 'data', 'system'],
+                        'compliance' => ['complian', 'security', 'audit', 'regulation', 'policy'],
+                        'analytics' => ['report', 'analytic', 'insight', 'track', 'monitor']
+                    ];
+
+                    foreach ($value_keywords as $theme => $keywords) {
+                        foreach ($keywords as $keyword) {
+                            if (strpos($value_text, $keyword) !== false) {
+                                $summary['business_value_themes'][$theme] = ($summary['business_value_themes'][$theme] ?? 0) + 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Calculate completion insights
+            $total = count($user_stories);
+            if ($total > 0) {
+                $done = $summary['by_status']['done'] ?? 0;
+                $in_progress = $summary['by_status']['in_progress'] ?? 0;
+                $backlog = $summary['by_status']['backlog'] ?? 0;
+
+                $summary['completion_insights'] = [
+                    'completion_rate' => round(($done / $total) * 100, 1),
+                    'in_progress_rate' => round(($in_progress / $total) * 100, 1),
+                    'backlog_rate' => round(($backlog / $total) * 100, 1),
+                    'total_stories' => $total
+                ];
+            }
+
+            return [
+                'stories' => $user_stories,
+                'summary' => $summary
+            ];
+
+        } catch (Exception $e) {
+            error_log("DataAggregator getUserStoriesData error: " . $e->getMessage());
+            return [
+                'stories' => [],
+                'summary' => [
+                    'total_count' => 0,
+                    'error' => $e->getMessage()
+                ]
+            ];
+        }
     }
 }
 ?>

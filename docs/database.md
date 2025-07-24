@@ -6,21 +6,23 @@ This document provides a comprehensive overview of the AppTrack database structu
 
 The database follows an enterprise-grade normalized design pattern with comprehensive AI analytics integration and User Stories management. Key architectural features include:
 
-- **27 Core Tables** with optimized relationships and constraints
+- **25 Core Tables** with optimized relationships and constraints (based on SQL schema analysis)
 - **AI Analysis Engine** with intelligent caching and change detection  
 - **Comprehensive Audit System** with full change tracking and timestamps
 - **Rich Work Notes** with attachment support and priority management
-- **User Stories Management** with Agile methodology support and Jira integration
+- **User Stories Management** with Agile methodology support and application integration
+- **Handover Management System** with 15-step wizard and document generation
 - **Role-Based Access Control** with granular permission mapping
 - **Data Integrity** through foreign key constraints and ACID transactions
 - **Production Optimization** with strategic indexing and performance tuning
-- **Advanced Handover Management** with 15-step wizard and document tracking
 - **Kanban Integration** with phase-based workflow and audit logging
 
 ## Current Schema Status ✅
 
-✅ **PRODUCTION READY**: All 24 application form fields properly mapped and validated  
+✅ **PRODUCTION READY**: All 25 application tables properly mapped and validated (confirmed by SQL schema)
 ✅ **AI INTEGRATED**: Complete OpenAI analysis system with multilingual support (4 dedicated tables)  
+✅ **USER STORIES MODULE**: Complete Agile User Stories management (2 dedicated tables with attachment support)
+✅ **HANDOVER SYSTEM**: Complete 15-step handover management (4 dedicated tables)
 ✅ **OPTIMIZED PERFORMANCE**: Smart caching with configurable expiration policies (6-48 hours)  
 ✅ **AUDIT COMPLETE**: Full change tracking with user attribution and visibility controls  
 ✅ **FILE MANAGEMENT**: Attachment system with BLOB storage and comprehensive metadata  
@@ -484,20 +486,14 @@ Complete Agile User Stories management with application integration and Jira sup
 | role                 | varchar(255)                                       | User role: "As a [role]"              | NOT NULL         |
 | want_to              | text                                               | Functionality: "I want to [action]"  | NOT NULL         |
 | so_that              | text                                               | Benefit: "So that [value]"            | NOT NULL         |
-| acceptance_criteria  | text                                               | Acceptance criteria and DoD           | NULL             |
-| business_value       | text                                               | Business justification and value      | NULL             |
-| technical_notes      | text                                               | Implementation notes and constraints  | NULL             |
 | priority             | enum('Low','Medium','High','Critical')            | Story priority level                  | DEFAULT 'Medium' |
 | status               | enum('backlog','in_progress','review','done','cancelled') | Current story status          | DEFAULT 'backlog'|
-| story_points         | int(11)                                            | Estimation points (1-100)             | NULL             |
 | application_id       | int(11)                                            | FK to applications table              | NULL, MUL        |
 | jira_id              | varchar(50)                                        | External Jira issue key               | NULL             |
 | jira_url             | text                                               | Link to Jira issue                    | NULL             |
 | sharepoint_url       | text                                               | SharePoint document link              | NULL             |
 | category             | varchar(100)                                       | Story category/theme                  | NULL             |
 | tags                 | text                                               | Comma-separated tags                  | NULL             |
-| epic                 | varchar(255)                                       | Epic or theme association             | NULL             |
-| sprint               | varchar(100)                                       | Sprint assignment                     | NULL             |
 | source               | enum('manual','jira_import','template')          | Story creation source                 | DEFAULT 'manual' |
 | created_by           | int(11)                                            | FK to users table                     | NOT NULL, MUL    |
 | created_at           | timestamp                                          | Story creation timestamp              | DEFAULT CURRENT  |
@@ -508,8 +504,7 @@ Complete Agile User Stories management with application integration and Jira sup
 - **Application Integration**: Optional linking to applications for integrated project management
 - **Jira Integration**: Built-in fields for external project management tool integration
 - **Status Tracking**: Complete workflow from backlog through done with cancelled option
-- **Estimation Support**: Story points for sprint planning and velocity tracking
-- **Flexible Categorization**: Tags, categories, epics, and sprints for organization
+- **Flexible Categorization**: Tags and categories for organization
 
 **Foreign Key Constraints:**
 ```sql

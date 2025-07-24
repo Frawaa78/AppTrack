@@ -1,0 +1,287 @@
+/* Enhanced AI Analysis Styles with User Stories Integration */
+
+/* AI Analysis Modal Enhancements */
+.analysis-result {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+}
+
+.analysis-header {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.analysis-header h6 {
+    color: #495057;
+    font-weight: 600;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.analysis-meta small {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Enhanced Content Formatting */
+.analysis-content h3 {
+    color: #2c3e50;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #3498db;
+}
+
+.analysis-content h4 {
+    color: #34495e;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid #3498db;
+}
+
+.analysis-content h5 {
+    color: #5a6c7d;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1.2rem;
+    margin-bottom: 0.6rem;
+}
+
+/* User Stories Specific Styling */
+.analysis-content .user-story-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-left: 4px solid #28a745;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+}
+
+.analysis-content .story-completion-metrics {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.completion-badge {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.completion-badge.high { border-color: #28a745; color: #28a745; }
+.completion-badge.medium { border-color: #ffc107; color: #e4a808; }
+.completion-badge.low { border-color: #dc3545; color: #dc3545; }
+
+/* Enhanced List Styling */
+.analysis-content ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.analysis-content li {
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.analysis-content li::marker {
+    color: #3498db;
+}
+
+/* Priority and Status Indicators */
+.priority-indicator {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-right: 0.5rem;
+}
+
+.priority-critical { background: #dc3545; color: white; }
+.priority-high { background: #fd7e14; color: white; }
+.priority-medium { background: #ffc107; color: #000; }
+.priority-low { background: #6c757d; color: white; }
+
+.status-indicator {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.status-done { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.status-in-progress { background: #cce7ff; color: #004085; border: 1px solid #9fcdff; }
+.status-backlog { background: #e2e3e5; color: #383d41; border: 1px solid #d1d3d4; }
+.status-review { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+
+/* Business Value Themes */
+.value-theme {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.3rem 0.7rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    margin: 0.2rem;
+    font-weight: 500;
+}
+
+/* Recommendations Section */
+.analysis-content .recommendations {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    border-left: 4px solid #ff6b6b;
+    padding: 1.2rem;
+    margin: 1.5rem 0;
+    border-radius: 0 8px 8px 0;
+}
+
+.analysis-content .recommendations h4,
+.analysis-content .recommendations h5 {
+    color: #c0392b;
+    margin-top: 0.8rem;
+}
+
+/* Risk Assessment Styling */
+.risk-section {
+    background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
+    border-left: 4px solid #e74c3c;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+}
+
+.risk-level {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.risk-high { background: #e74c3c; color: white; }
+.risk-medium { background: #f39c12; color: white; }
+.risk-low { background: #27ae60; color: white; }
+
+/* Key Metrics Display */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.metric-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    display: block;
+}
+
+.metric-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.3rem;
+}
+
+/* Timeline Integration */
+.timeline-integration {
+    background: linear-gradient(135deg, #e8f4ff 0%, #d1ecff 100%);
+    border-left: 4px solid #007bff;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0 6px 6px 0;
+}
+
+/* Enhanced Action Buttons */
+.analysis-actions {
+    border-top: 1px solid #e9ecef;
+    padding-top: 1rem;
+    margin-top: 2rem;
+}
+
+.analysis-actions .btn {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .story-completion-metrics {
+        flex-direction: column;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .analysis-content h3 {
+        font-size: 1.2rem;
+    }
+    
+    .analysis-content h4 {
+        font-size: 1rem;
+    }
+}
+
+/* Dark theme support (if implemented) */
+@media (prefers-color-scheme: dark) {
+    .analysis-result {
+        background: #2c3e50;
+        color: #ecf0f1;
+    }
+    
+    .metric-card {
+        background: #34495e;
+        border-color: #4a6741;
+        color: #ecf0f1;
+    }
+    
+    .completion-badge {
+        background: #34495e;
+        border-color: #4a6741;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .analysis-actions,
+    .analysis-header .analysis-meta {
+        display: none;
+    }
+    
+    .analysis-content {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+    
+    .analysis-content h3,
+    .analysis-content h4,
+    .analysis-content h5 {
+        break-after: avoid;
+    }
+}

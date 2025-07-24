@@ -151,6 +151,11 @@ $dashboard_path = str_repeat('../', $levels_deep) . 'dashboard.php';
         </a>
       </li>
       <li class="nav-item">
+        <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>executive_dashboard.php">
+          <i class="bi bi-graph-up"></i> Executive Dashboard
+        </a>
+      </li>
+      <li class="nav-item">
         <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>user_stories.php">
           <i class="bi bi-journals"></i> User Stories
         </a>

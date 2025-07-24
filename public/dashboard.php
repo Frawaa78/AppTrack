@@ -264,6 +264,11 @@ function getTimeBadge($updatedAt) {
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Applications</h2>
                 <div class="d-flex align-items-center gap-3">
+                    <!-- Executive Dashboard Link -->
+                    <a href="executive_dashboard.php" class="btn btn-primary btn-sm" title="Executive Dashboard">
+                        <i class="fas fa-chart-line me-1"></i>Executive Dashboard
+                    </a>
+                    
                     <!-- Show Mine Only Toggle -->
                     <?php if (isset($_SESSION['user_role']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'editor')): ?>
                         <div class="form-check form-switch">

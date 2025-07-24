@@ -122,7 +122,7 @@ src/
 - **Real-time Preview**: See story structure as you type
 - **Smart Suggestions**: Auto-populate fields based on title keywords
 - **Jira Integration**: Basic Jira ID and URL linking (expandable)
-- **Rich Metadata**: Priority, status, story points, epic, sprint
+- **Rich Metadata**: Priority, status, category, and tags for organization
 - **Application Linking**: Connect stories to specific applications
 
 ### Story View Features

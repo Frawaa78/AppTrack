@@ -19,49 +19,83 @@ try {
     $query = isset($_GET['q']) ? trim($_GET['q']) : '';
     $exclude = isset($_GET['exclude']) ? (int)$_GET['exclude'] : 0;
     $selectedIds = isset($_GET['selected']) ? $_GET['selected'] : '';
+    $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 50) : 20;
     
+    // If query is empty or very short, return some popular/recent applications
     if (strlen($query) < 2) {
-        echo json_encode([]);
-        exit;
-    }
-    
-    $db = Database::getInstance()->getConnection();
-    
-    // Search in short_description and application_service
-    $searchTerm = '%' . $query . '%';
-    
-    // Build exclusion conditions
-    $excludeConditions = [];
-    $params = [$searchTerm, $searchTerm];
-    
-    if ($exclude > 0) {
-        $excludeConditions[] = "id != ?";
-        $params[] = $exclude;
-    }
-    
-    // Handle already selected applications
-    if (!empty($selectedIds)) {
-        $selectedArray = array_filter(explode(',', $selectedIds), 'is_numeric');
-        if (!empty($selectedArray)) {
-            $placeholders = implode(',', array_fill(0, count($selectedArray), '?'));
-            $excludeConditions[] = "id NOT IN ($placeholders)";
-            $params = array_merge($params, $selectedArray);
+        $db = Database::getInstance()->getConnection();
+        
+        // Build exclusion conditions
+        $excludeConditions = [];
+        $params = [];
+        
+        if ($exclude > 0) {
+            $excludeConditions[] = "id != ?";
+            $params[] = $exclude;
         }
+        
+        // Handle already selected applications
+        if (!empty($selectedIds)) {
+            $selectedArray = array_filter(explode(',', $selectedIds), 'is_numeric');
+            if (!empty($selectedArray)) {
+                $placeholders = implode(',', array_fill(0, count($selectedArray), '?'));
+                $excludeConditions[] = "id NOT IN ($placeholders)";
+                $params = array_merge($params, $selectedArray);
+            }
+        }
+        
+        $whereClause = "1=1";
+        if (!empty($excludeConditions)) {
+            $whereClause .= " AND " . implode(' AND ', $excludeConditions);
+        }
+        
+        $sql = "SELECT id, short_description, application_service 
+                FROM applications 
+                WHERE $whereClause 
+                ORDER BY short_description LIMIT $limit";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        $db = Database::getInstance()->getConnection();
+        
+        // Search in short_description and application_service
+        $searchTerm = '%' . $query . '%';
+        
+        // Build exclusion conditions
+        $excludeConditions = [];
+        $params = [$searchTerm, $searchTerm];
+        
+        if ($exclude > 0) {
+            $excludeConditions[] = "id != ?";
+            $params[] = $exclude;
+        }
+        
+        // Handle already selected applications
+        if (!empty($selectedIds)) {
+            $selectedArray = array_filter(explode(',', $selectedIds), 'is_numeric');
+            if (!empty($selectedArray)) {
+                $placeholders = implode(',', array_fill(0, count($selectedArray), '?'));
+                $excludeConditions[] = "id NOT IN ($placeholders)";
+                $params = array_merge($params, $selectedArray);
+            }
+        }
+        
+        $whereClause = "(short_description LIKE ? OR application_service LIKE ?)";
+        if (!empty($excludeConditions)) {
+            $whereClause .= " AND " . implode(' AND ', $excludeConditions);
+        }
+        
+        $sql = "SELECT id, short_description, application_service 
+                FROM applications 
+                WHERE $whereClause 
+                ORDER BY short_description LIMIT $limit";
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
-    $whereClause = "(short_description LIKE ? OR application_service LIKE ?)";
-    if (!empty($excludeConditions)) {
-        $whereClause .= " AND " . implode(' AND ', $excludeConditions);
-    }
-    
-    $sql = "SELECT id, short_description, application_service 
-            FROM applications 
-            WHERE $whereClause 
-            ORDER BY short_description LIMIT 20";
-    
-    $stmt = $db->prepare($sql);
-    $stmt->execute($params);
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Format for Choices.js
     $choices = [];

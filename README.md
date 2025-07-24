@@ -70,7 +70,7 @@ Built for enterprise scalability with planned integrations:
 #### 🔧 **User Stories Database Schema**
 - **`user_stories` Table**: 18 comprehensive fields including:
   - Core Agile fields: role, want_to, so_that, acceptance_criteria
-  - Project management: priority, status, story_points, epic, sprint
+  - Project management: priority, status, category, tags
   - Integration: application_id, jira_id, category, tags
   - Tracking: created_by, created_at, updated_at
 - **`user_story_attachments` Table**: File attachment support with:
@@ -488,7 +488,7 @@ AppTrack/
 │   └── logo.png              # Application branding
 ├── docs/                      # Comprehensive documentation
 │   ├── database.md           # Complete database schema (25 tables)
-│   ├── technical-architecture.md  # System architecture guide
+│   ├── technical-architecture.md  # System architecture guide (v3.3.0)
 │   ├── ui-implementation.md       # UI/UX technical guide
 │   ├── AI_FEATURES_README.md      # AI system documentation
 │   ├── architecture.md            # System architecture overview
