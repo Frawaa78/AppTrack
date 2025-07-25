@@ -171,8 +171,8 @@ class UserStoriesDashboard {
                 </td>
                 <td>
                     <div class="story-summary">
-                        <span class="story-role">As a ${this.escapeHtml(story.role)}</span><br>
-                        <small class="text-muted">${this.truncateText(story.want_to, 60)}</small>
+                        <span class="story-role"><span style="color: #0D8ABC; font-weight: bold;">As a</span> ${this.escapeHtml(story.role)}</span><br>
+                        <small class="text-muted"><span style="color: #0D8ABC; font-weight: bold;">I want to</span> ${this.truncateText(story.want_to, 60)}</small>
                     </div>
                 </td>
                 <td>

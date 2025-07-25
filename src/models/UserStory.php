@@ -180,20 +180,13 @@ class UserStory {
         // Build dynamic SQL based on provided fields
         $allowedFields = [
             'title', 'jira_id', 'role', 'want_to', 'so_that', 'priority',
-            'application_id', 'jira_url', 'sharepoint_url', 'tags', 'category', 'status'
+            'jira_url', 'sharepoint_url', 'tags', 'category', 'status'
         ];
         
         $updateFields = [];
         $params = [':id' => $id];
         
-        foreach ($allowedFields as $field) {
-            if (array_key_exists($field, $data)) {
-                $updateFields[] = "$field = :$field";
-                $params[":$field"] = $data[$field];
-            }
-        }
-        
-        // Handle application_ids array (convert to comma-separated string)
+        // Handle application_ids array first (convert to comma-separated string for application_id field)
         if (isset($data['application_ids']) && is_array($data['application_ids'])) {
             if (!empty($data['application_ids'])) {
                 $updateFields[] = "application_id = :application_id";
@@ -201,6 +194,14 @@ class UserStory {
             } else {
                 $updateFields[] = "application_id = :application_id";
                 $params[':application_id'] = null;
+            }
+        }
+        
+        // Handle regular fields (excluding application_id to avoid conflicts)
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $data)) {
+                $updateFields[] = "$field = :$field";
+                $params[":$field"] = $data[$field];
             }
         }
         

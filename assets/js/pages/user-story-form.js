@@ -165,14 +165,6 @@ class UserStoryForm {
         formData.priority = document.getElementById('priority').value;
         formData.status = document.getElementById('status').value;
         
-        // Handle multiple application IDs - keep backward compatibility
-        if (formData.application_ids && formData.application_ids.length > 0) {
-            // For now, take the first selected application for backward compatibility
-            formData.application_id = formData.application_ids[0];
-        } else {
-            formData.application_id = null;
-        }
-        
         // Source tracking
         formData.source = 'manual';
         formData.manual_entry = true;
