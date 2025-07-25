@@ -121,6 +121,29 @@ $dashboard_path = str_repeat('../', $levels_deep) . 'dashboard.php';
 .user-search-item .search-item-title {
   color: #6c757d;
 }
+
+/* Navigation Menu Hover Effects */
+.navbar-nav .nav-link {
+  transition: all 0.3s ease;
+  border-radius: 0.375rem;
+  margin: 0 0.25rem;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: #f8f9fa;
+  color: #0d6efd !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-nav .nav-link i {
+  transition: transform 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover i {
+  transform: scale(1.1);
+}
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 sticky-top" style="z-index: 1030; margin-bottom:0; padding-top:0; padding-bottom:0;">
@@ -147,22 +170,17 @@ $dashboard_path = str_repeat('../', $levels_deep) . 'dashboard.php';
     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
       <li class="nav-item">
         <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>dashboard.php">
-          <i class="bi bi-grid-3x3-gap"></i> Applications
+          <i class="fa-regular fa-grid-2"></i> Applications
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>executive_dashboard.php">
-          <i class="bi bi-graph-up"></i> Executive Dashboard
+          <i class="fa-light fa-monitor-waveform"></i> Dashboard
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>user_stories.php">
-          <i class="bi bi-journals"></i> User Stories
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="<?php echo str_repeat('../', $levels_deep); ?>handover/">
-          <i class="bi bi-arrow-right-circle"></i> Handover
+          <i class="fa-light fa-lightbulb"></i> User Stories
         </a>
       </li>
     </ul>
@@ -170,8 +188,8 @@ $dashboard_path = str_repeat('../', $levels_deep) . 'dashboard.php';
     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['user_email'] ?? 'U'); ?>&background=0D8ABC&color=fff" alt="Profile" class="profile-img me-2">
-          <span><?php echo htmlspecialchars($_SESSION['user_email'] ?? ''); ?></span>
+          <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($_SESSION['user_display_name'] ?? $_SESSION['user_email'] ?? 'U'); ?>&background=0D8ABC&color=fff" alt="Profile" class="profile-img me-2">
+          <span><?php echo htmlspecialchars($_SESSION['user_display_name'] ?? $_SESSION['user_email'] ?? ''); ?></span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
           <li><a class="dropdown-item" href="<?php echo str_repeat('../', $levels_deep); ?>profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>

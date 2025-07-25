@@ -98,7 +98,7 @@ Built for enterprise scalability with planned integrations:
 - **`user_stories` Table**: 18 comprehensive fields including:
   - Core Agile fields: role, want_to, so_that, acceptance_criteria
   - Project management: priority, status, category, tags
-  - Integration: application_id, jira_id, category, tags
+  - Integration: application_id, category, tags
   - Tracking: created_by, created_at, updated_at
 - **`user_story_attachments` Table**: File attachment support with:
   - File metadata: filename, file_path, file_size, mime_type

@@ -103,6 +103,8 @@ while ($row = $stmt->fetch()) {
     <title>Handover Wizard - Step <?php echo $current_step; ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- FontAwesome Pro -->
+    <script src="https://kit.fontawesome.com/d67c79608d.js" crossorigin="anonymous"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="../../assets/css/main.css" rel="stylesheet"> <!-- Go up two levels from handover to root -->
     <link rel="icon" type="image/png" href="../../assets/logo.png"> <!-- Go up two levels from handover to root -->

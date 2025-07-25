@@ -489,12 +489,10 @@ Complete Agile User Stories management with application integration and Jira sup
 | priority             | enum('Low','Medium','High','Critical')            | Story priority level                  | DEFAULT 'Medium' |
 | status               | enum('backlog','in_progress','review','done','cancelled') | Current story status          | DEFAULT 'backlog'|
 | application_id       | int(11)                                            | FK to applications table              | NULL, MUL        |
-| jira_id              | varchar(50)                                        | External Jira issue key               | NULL             |
-| jira_url             | text                                               | Link to Jira issue                    | NULL             |
 | sharepoint_url       | text                                               | SharePoint document link              | NULL             |
 | category             | varchar(100)                                       | Story category/theme                  | NULL             |
 | tags                 | text                                               | Comma-separated tags                  | NULL             |
-| source               | enum('manual','jira_import','template')          | Story creation source                 | DEFAULT 'manual' |
+| source               | enum('manual','template')                         | Story creation source                 | DEFAULT 'manual' |
 | created_by           | int(11)                                            | FK to users table                     | NOT NULL, MUL    |
 | created_at           | timestamp                                          | Story creation timestamp              | DEFAULT CURRENT  |
 | updated_at           | timestamp                                          | Last modification timestamp           | ON UPDATE        |
@@ -502,7 +500,6 @@ Complete Agile User Stories management with application integration and Jira sup
 **Features:**
 - **Agile Compliance**: Native support for standard User Story format with role, functionality, and benefit
 - **Application Integration**: Optional linking to applications for integrated project management
-- **Jira Integration**: Built-in fields for external project management tool integration
 - **Status Tracking**: Complete workflow from backlog through done with cancelled option
 - **Flexible Categorization**: Tags and categories for organization
 

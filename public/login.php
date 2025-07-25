@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $db = Database::getInstance()->getConnection();
-        $stmt = $db->prepare('SELECT id, email, password_hash, role, is_active FROM users WHERE email = :email');
+        $stmt = $db->prepare('SELECT id, email, password_hash, role, is_active, display_name FROM users WHERE email = :email');
         $stmt->execute([':email' => $email]);
         $user = $stmt->fetch();
         if ($user && password_verify($password, $user['password_hash'])) {
@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['user_role'] = $user['role'];
+                $_SESSION['user_display_name'] = $user['display_name'];
                 header('Location: dashboard.php');
                 exit;
             }

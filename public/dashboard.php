@@ -73,6 +73,8 @@ function getTimeBadge($updatedAt) {
     <title>Applications Dashboard | AppTrack</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- FontAwesome Pro -->
+    <script src="https://kit.fontawesome.com/d67c79608d.js" crossorigin="anonymous"></script>
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon/favicon-32x32.png">
@@ -81,7 +83,6 @@ function getTimeBadge($updatedAt) {
     <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/pages/dashboard.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Dashboard Table Styles */
         .dashboard-table {
@@ -264,11 +265,6 @@ function getTimeBadge($updatedAt) {
             <div class="d-flex justify-content-between align-items-center">
                 <h2>Applications</h2>
                 <div class="d-flex align-items-center gap-3">
-                    <!-- Executive Dashboard Link -->
-                    <a href="executive_dashboard.php" class="btn btn-primary btn-sm" title="Executive Dashboard">
-                        <i class="fas fa-chart-line me-1"></i>Executive Dashboard
-                    </a>
-                    
                     <!-- Show Mine Only Toggle -->
                     <?php if (isset($_SESSION['user_role']) && ($_SESSION['user_role'] === 'admin' || $_SESSION['user_role'] === 'editor')): ?>
                         <div class="form-check form-switch">
@@ -353,6 +349,34 @@ function getTimeBadge($updatedAt) {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// FontAwesome icon fallback system
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for FontAwesome to load
+    setTimeout(function() {
+        // Check if FontAwesome Pro icons are loaded, if not use Bootstrap Icons as fallback
+        const iconElements = document.querySelectorAll('.fa-regular.fa-grid-2, .fa-light.fa-monitor-waveform, .fa-light.fa-lightbulb');
+        
+        iconElements.forEach(function(iconElement) {
+            const computedStyle = window.getComputedStyle(iconElement, ':before');
+            const content = computedStyle.getPropertyValue('content');
+            
+            // If content is empty or 'none', the FontAwesome icon didn't load
+            if (!content || content === 'none' || content === '""') {
+                console.log('FontAwesome icon not loading, trying fallbacks for:', iconElement.className);
+                
+                // Replace with Bootstrap Icons
+                if (iconElement.classList.contains('fa-grid-2')) {
+                    iconElement.className = 'bi bi-grid-3x3-gap';
+                } else if (iconElement.classList.contains('fa-monitor-waveform')) {
+                    iconElement.className = 'bi bi-graph-up';
+                } else if (iconElement.classList.contains('fa-lightbulb')) {
+                    iconElement.className = 'bi bi-lightbulb';
+                }
+            }
+        });
+    }, 1000); // Wait 1 second for FontAwesome to load
+});
+
 // Set user role and email for kanban board
 window.userRole = '<?php echo $_SESSION['user_role'] ?? 'viewer'; ?>';
 window.userEmail = '<?php echo $_SESSION['user_email'] ?? ''; ?>';

@@ -648,7 +648,13 @@ if (empty($statuses)) {
 <?php include __DIR__ . '/shared/topbar.php'; ?>
 <div class="container">
   <div class="header-with-buttons">
-    <div>
+    <div class="d-flex align-items-center">
+      <button type="button" 
+              class="header-action-btn me-3" 
+              onclick="goBack()" 
+              title="Go back">
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
       <h5 class="mb-0">Status & Details</h5>
     </div>
     <div class="header-buttons">
@@ -680,7 +686,6 @@ if (empty($statuses)) {
         <i class="fa-light fa-wand-magic-sparkles" data-fallback="fa-solid fa-wand-magic-sparkles,fas fa-magic,bi bi-magic"></i>
         Handover Wizard
       </button>
-      <a href="dashboard.php" class="btn btn-secondary">Back</a>
       <?php if (isset($_SESSION['user_role'])) { $role = $_SESSION['user_role']; } else { $role = null; } ?>
       <?php if ($role === 'admin' || $role === 'editor') : ?>
         <a href="app_form.php?id=<?php echo $id; ?>" class="btn btn-primary">Edit</a>
@@ -1043,6 +1048,16 @@ document.addEventListener('DOMContentLoaded', function() {
 function openUserStories() {
   console.log('User Stories button clicked');
   window.location.href = 'user_stories.php?application_id=<?php echo $id; ?>';
+}
+
+// Function to go back
+function goBack() {
+  // Try to go back in history, fallback to dashboard
+  if (document.referrer && document.referrer !== window.location.href) {
+    window.history.back();
+  } else {
+    window.location.href = 'dashboard.php';
+  }
 }
 </script>
 

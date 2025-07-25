@@ -200,6 +200,54 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
             font-size: 0.8rem;
             font-style: italic;
         }
+
+        /* Empty state styling */
+        .empty-state {
+            padding: 2rem 1rem !important;
+        }
+        
+        .empty-state i {
+            font-size: 2rem !important;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            font-size: 1rem !important;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        
+        /* Empty state button styling */
+        .empty-state-btn {
+            background-color: transparent !important;
+            color: #212529 !important;
+            border: 1px solid #0d6efd !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            padding: 8px 16px !important;
+            border-radius: 6px !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            text-decoration: none !important;
+        }
+        
+        .empty-state-btn i {
+            font-size: 14px !important;
+            margin: 0 !important;
+        }
+        
+        .empty-state-btn:hover,
+        .empty-state-btn:focus {
+            background-color: #0d6efd !important;
+            color: white !important;
+            border-color: #0d6efd !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-decoration: none !important;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -208,13 +256,9 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
     <div class="container">
         <div class="header-with-buttons">
             <div class="d-flex align-items-center">
-                <?php if (isset($_GET['application_id'])): ?>
-                    <a href="app_view.php?id=<?php echo htmlspecialchars($_GET['application_id']); ?>" 
-                       class="header-action-btn me-3" 
-                       title="Back to Application">
-                        <i class="bi bi-arrow-left"></i> Back
-                    </a>
-                <?php endif; ?>
+                <button class="header-action-btn me-3" onclick="goBack()" title="Go Back">
+                    <i class="bi bi-arrow-left"></i> Back
+                </button>
                 <h5 class="mb-0"><i class="bi bi-journals"></i> User Stories</h5>
             </div>
             <div class="header-buttons">
@@ -351,5 +395,11 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="../assets/js/pages/user-stories.js"></script>
+    
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+    </script>
 </body>
 </html>
