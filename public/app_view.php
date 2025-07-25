@@ -156,6 +156,12 @@ if (empty($statuses)) {
         font-weight: 300;
     }
     
+    .fa-light.fa-monitor-waveform:before {
+        content: "\f611" !important;
+        font-family: "Font Awesome 6 Pro" !important;
+        font-weight: 300;
+    }
+    
     .fa-light.fa-microchip:before {
         content: "\f2db" !important;
         font-family: "Font Awesome 6 Pro" !important;
@@ -649,12 +655,11 @@ if (empty($statuses)) {
 <div class="container">
   <div class="header-with-buttons">
     <div class="d-flex align-items-center">
-      <button type="button" 
-              class="header-action-btn me-3" 
-              onclick="goBack()" 
-              title="Go back">
+      <a href="dashboard.php" 
+         class="header-action-btn me-3" 
+         title="Go back to dashboard">
         <i class="bi bi-arrow-left"></i> Back
-      </button>
+      </a>
       <h5 class="mb-0">Status & Details</h5>
     </div>
     <div class="header-buttons">
@@ -2435,44 +2440,32 @@ async function saveIntegrationData(event) {
 <!-- FontAwesome Icon Fallback System -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // FontAwesome icon fallback system
-    function setupIconFallback(iconElement) {
-        if (!iconElement) return;
+    // Wait a bit for FontAwesome to load
+    setTimeout(function() {
+        // Check if FontAwesome Pro icons are loaded, if not use Bootstrap Icons as fallback
+        const iconElements = document.querySelectorAll('.fa-regular.fa-grid-2, .fa-light.fa-monitor-waveform, .fa-light.fa-lightbulb');
         
-        const fallbackIcons = iconElement.dataset.fallback ? iconElement.dataset.fallback.split(',') : [];
-        
-        // Test if current icon is working
-        setTimeout(() => {
-            const styles = window.getComputedStyle(iconElement, ':before');
-            const content = styles.content;
+        iconElements.forEach(function(iconElement) {
+            const computedStyle = window.getComputedStyle(iconElement, ':before');
+            const content = computedStyle.getPropertyValue('content');
             
-            // If no content is generated, try fallback icons
+            // If content is empty or 'none', the FontAwesome icon didn't load
             if (!content || content === 'none' || content === '""') {
                 console.log('FontAwesome icon not loading, trying fallbacks for:', iconElement.className);
                 
-                // Try each fallback icon
-                for (let i = 0; i < fallbackIcons.length; i++) {
-                    const iconClass = fallbackIcons[i].trim();
-                    iconElement.className = iconClass;
-                    
-                    // Give a moment for the icon to load and check again
-                    setTimeout(() => {
-                        const newStyles = window.getComputedStyle(iconElement, ':before');
-                        const newContent = newStyles.content;
-                        
-                        if (newContent && newContent !== 'none' && newContent !== '""') {
-                            console.log('Working icon found:', iconClass);
-                            return;
-                        }
-                    }, 50);
+                // Replace with Bootstrap Icons
+                if (iconElement.classList.contains('fa-grid-2')) {
+                    iconElement.className = 'bi bi-grid-3x3-gap';
+                } else if (iconElement.classList.contains('fa-monitor-waveform')) {
+                    iconElement.className = 'bi bi-speedometer2';
+                } else if (iconElement.classList.contains('fa-lightbulb')) {
+                    iconElement.className = 'bi bi-lightbulb';
                 }
             }
-        }, 200);
-    }
-    
-    // Apply fallback to all header action button icons
-    document.querySelectorAll('.header-action-btn i').forEach(setupIconFallback);
+        });
+    }, 1000); // Wait 1 second for FontAwesome to load
 });
+</script>
 </script>
 
 </body>
