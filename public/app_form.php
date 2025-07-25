@@ -443,6 +443,9 @@ if (empty($statuses)) {
         position: relative;
         overflow: hidden;
         background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
     }
 
     /* Visual Diagram Editor Styles - COPIED FROM WORKING app_view.php */
@@ -513,16 +516,16 @@ if (empty($statuses)) {
       transform: scale(1.05);
     }
     
-    .element-process {
-      border: 2px solid #6b7280;
-      border-radius: 4px;
-      background: #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-size: 0.875rem;
-      font-weight: 500;
+    .diagram-element.element-process {
+      border: 2px solid #6b7280 !important;
+      border-radius: 4px !important;
+      background: #e2e8f0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      font-size: 0.875rem !important;
+      font-weight: 500 !important;
     }
     
     .element-decision {
@@ -540,16 +543,16 @@ if (empty($statuses)) {
       font-size: 0.75rem;
     }
     
-    .element-start {
-      border: 2px solid #059669;
-      border-radius: 50%;
-      background: #dcfce7;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      font-size: 0.875rem;
-      font-weight: 500;
+    .diagram-element.element-start {
+      border: 2px solid #059669 !important;
+      border-radius: 50% !important;
+      background: #dcfce7 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      font-size: 0.875rem !important;
+      font-weight: 500 !important;
     }
     
     .element-database {
@@ -601,6 +604,33 @@ if (empty($statuses)) {
       left: 50%;
       transform: translateX(-50%);
       font-size: 1.2rem;
+    }
+
+    .diagram-element.element-data {
+      border: 2px solid #dc3545 !important;
+      background: #f8d7da !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-align: center !important;
+      font-size: 0.875rem !important;
+      border-radius: 2px !important; /* Sharp corners for data elements */
+    }
+
+    /* Free Lines */
+    .free-line {
+      cursor: pointer;
+      transition: stroke-width 0.2s ease;
+    }
+
+    .free-line:hover {
+      stroke-width: 3px;
+      stroke: #007bff;
+    }
+
+    .free-line.selected {
+      stroke: #007bff;
+      stroke-width: 3px;
     }
     
     /* Text Notes */
@@ -781,6 +811,12 @@ if (empty($statuses)) {
         gap: 0.25rem;
     }
 
+    .toolbar-section .btn.active {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white;
+    }
+
     .editor-container {
         flex: 1;
         position: relative;
@@ -848,6 +884,156 @@ if (empty($statuses)) {
 
     .diagram-element.hover {
         border-color: #6c757d !important;
+    }
+
+    /* Element Palette Styles */
+    .editor-main-container {
+        display: flex;
+        height: 100%;
+        position: relative;
+    }
+
+    .element-palette {
+        width: 180px;
+        background: #f8f9fa;
+        border-right: 2px solid #e9ecef;
+        padding: 10px;
+        overflow-y: auto;
+        flex-shrink: 0;
+        z-index: 100;
+    }
+
+    .palette-header {
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .palette-header h6 {
+        margin: 0;
+        color: #495057;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .palette-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .palette-element {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 8px 4px;
+        text-align: center;
+        cursor: grab;
+        transition: all 0.2s ease;
+        user-select: none;
+        min-height: 65px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .palette-element:hover {
+        border-color: #007bff;
+        background: #f8f9ff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+    }
+
+    .palette-element:active {
+        cursor: grabbing;
+        transform: translateY(0);
+    }
+
+    .palette-element.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+    }
+
+    .palette-element.active-tool {
+        border-color: #007bff;
+        background: #007bff;
+        color: white;
+    }
+
+    .palette-element.active-tool .element-icon,
+    .palette-element.active-tool .element-label {
+        color: white;
+    }
+
+    .element-icon {
+        font-size: 20px;
+        font-weight: bold;
+        color: #495057;
+        line-height: 1;
+        margin-bottom: 2px;
+    }
+
+    .element-label {
+        font-size: 0.7rem;
+        color: #6c757d;
+        font-weight: 500;
+        line-height: 1;
+    }
+
+    /* Specific icon colors */
+    .circle-icon { color: #17a2b8; }
+    .diamond-icon { color: #ffc107; }
+    .rounded-rect-icon { color: #28a745; }
+    .sharp-rect-icon { color: #dc3545; }
+    .line-icon { color: #6c757d; }
+    .text-icon { color: #6f42c1; }
+
+    /* Canvas drop zone styling */
+    .visual-editor-canvas.drag-over {
+        background-color: rgba(0, 123, 255, 0.05);
+        border: 2px dashed #007bff;
+    }
+
+    /* Drag preview element */
+    .drag-preview {
+        position: absolute;
+        pointer-events: none;
+        opacity: 0.6;
+        z-index: 1000;
+        border: 2px dashed #007bff;
+        background: rgba(0, 123, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.875rem;
+        color: #007bff;
+        font-weight: 500;
+        transform: rotate(-2deg);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+        .element-palette {
+            width: 160px;
+        }
+        
+        .palette-element {
+            min-height: 55px;
+            padding: 6px 3px;
+        }
+        
+        .element-icon {
+            font-size: 18px;
+        }
+        
+        .element-label {
+            font-size: 0.65rem;
+        }
     }
   </style>
 </head>
@@ -1251,32 +1437,7 @@ if (empty($statuses)) {
             </ul>
           </div>
           
-          <!-- Element Types Dropdown -->
-          <div class="dropdown me-3">
-            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="elementsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-shapes"></i> Add Element
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="elementsDropdown">
-              <li><a class="dropdown-item" href="#" onclick="addElement('process')">
-                <i class="bi bi-square"></i> Process Box
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="addElement('decision')">
-                <i class="bi bi-diamond"></i> Decision Diamond
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="addElement('start')">
-                <i class="bi bi-circle"></i> Start/End Circle
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="addElement('database')">
-                <i class="bi bi-server"></i> Database
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="addElement('api')">
-                <i class="bi bi-cloud"></i> API/Service
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="addElement('user')">
-                <i class="bi bi-person"></i> User/Actor
-              </a></li>
-            </ul>
-          </div>
+
           <?php endif; ?>
           
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1294,6 +1455,9 @@ if (empty($statuses)) {
             </button>
             <button class="btn btn-sm btn-outline-secondary" id="textTool" onclick="setActiveTool('text')" title="Add Text Note">
               <i class="bi bi-textarea-t"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="lineTool" onclick="setActiveTool('line')" title="Draw Free Line">
+              <i class="bi bi-pencil"></i>
             </button>
           </div>
           
@@ -1315,8 +1479,55 @@ if (empty($statuses)) {
         </div>
         
         <!-- Main Editor Canvas -->
-        <div class="editor-container">
-          <div id="visual-diagram-editor" class="visual-editor-canvas"></div>
+        <div class="editor-main-container">
+          <!-- Element Palette -->
+          <div class="element-palette">
+            <div class="palette-header">
+              <h6><i class="bi bi-shapes"></i> Elements</h6>
+            </div>
+            <div class="palette-grid">
+              <!-- Row 1: Circle and Diamond -->
+              <div class="palette-element" draggable="true" data-element-type="start" 
+                   title="Circle - Start, end or intermediate point">
+                <div class="element-icon circle-icon"><i class="fa-light fa-circle"></i></div>
+                <span class="element-label">Start/End</span>
+              </div>
+              <div class="palette-element" draggable="true" data-element-type="decision" 
+                   title="Diamond - Decision, choice or branching">
+                <div class="element-icon diamond-icon"><i class="fa-light fa-diamond"></i></div>
+                <span class="element-label">Decision</span>
+              </div>
+              
+              <!-- Row 2: Rounded Rectangle and Sharp Rectangle -->
+              <div class="palette-element" draggable="true" data-element-type="process" 
+                   title="Rounded rectangle - Activity or action">
+                <div class="element-icon rounded-rect-icon"><i class="fa-light fa-rectangle"></i></div>
+                <span class="element-label">Activity</span>
+              </div>
+              <div class="palette-element" draggable="true" data-element-type="data" 
+                   title="Sharp rectangle - Data object or entity">
+                <div class="element-icon sharp-rect-icon"><i class="fa-sharp fa-light fa-square"></i></div>
+                <span class="element-label">Data</span>
+              </div>
+              
+              <!-- Row 3: Line and Text -->
+              <div class="palette-element" draggable="true" data-element-type="connect" 
+                   title="Line - Draw free-form lines on canvas">
+                <div class="element-icon line-icon"><i class="fa-light fa-wave-sine"></i></div>
+                <span class="element-label">Line</span>
+              </div>
+              <div class="palette-element" draggable="true" data-element-type="text" 
+                   title="Text - Add text notes">
+                <div class="element-icon text-icon"><i class="fa-light fa-text"></i></div>
+                <span class="element-label">Text</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Canvas Container -->
+          <div class="editor-container">
+            <div id="visual-diagram-editor" class="visual-editor-canvas"></div>
+          </div>
         </div>
         
         <!-- Property Panel (appears when element is selected) -->
@@ -1501,6 +1712,9 @@ window.openIntegrationDiagram = function() {
             
             // Load existing diagram data
             initializeIntegrationDiagram();
+            
+            // Initialize element palette drag-and-drop
+            initializeElementPalette();
             
             // Load existing diagram data completed
             
@@ -1778,6 +1992,246 @@ function loadVisualTemplate(templateName) {
     console.log('✅ Template loaded successfully');
 }
 
+// Element Palette Drag-and-Drop Functions
+function initializeElementPalette() {
+    const paletteElements = document.querySelectorAll('.palette-element');
+    const canvas = document.getElementById('visual-diagram-editor');
+    
+    if (!canvas) return;
+    
+    console.log('🎨 Initializing element palette with', paletteElements.length, 'elements');
+    
+    // Initialize Bootstrap tooltips for palette elements
+    paletteElements.forEach(element => {
+        new bootstrap.Tooltip(element, {
+            placement: 'right',
+            trigger: 'hover'
+        });
+    });
+    
+    // Setup drag events for palette elements
+    paletteElements.forEach(element => {
+        element.addEventListener('dragstart', handlePaletteDragStart);
+        element.addEventListener('dragend', handlePaletteDragEnd);
+        
+        // Add click handler for special elements like connect and text
+        element.addEventListener('click', handlePaletteElementClick);
+    });
+    
+    // Setup drop events for canvas
+    canvas.addEventListener('dragover', handleCanvasDragOver);
+    canvas.addEventListener('drop', handleCanvasDrop);
+    canvas.addEventListener('dragenter', handleCanvasDragEnter);
+    canvas.addEventListener('dragleave', handleCanvasDragLeave);
+    
+    // Add document-level mousemove for drag preview positioning
+    document.addEventListener('dragover', updateDragPreviewPosition);
+    
+    console.log('✅ Element palette initialized successfully');
+}
+
+function handlePaletteElementClick(e) {
+    const elementType = e.currentTarget.dataset.elementType;
+    console.log('🖱️ Palette element clicked:', elementType);
+    
+    // Handle special tool activation for connect and text elements  
+    if (elementType === 'connect') {
+        e.preventDefault();
+        setActiveTool('line'); // Use line tool instead of connect
+        console.log('✅ Line tool activated via connect element click');
+    } else if (elementType === 'text') {
+        e.preventDefault();
+        setActiveTool('text');
+        console.log('✅ Text tool activated via click');  
+    }
+    // For other elements, let the drag behavior handle them
+}
+
+function handlePaletteDragStart(e) {
+    const elementType = e.target.dataset.elementType;
+    console.log('🎯 Drag started for element type:', elementType);
+    
+    // Store the element type in the drag data
+    e.dataTransfer.setData('text/plain', elementType);
+    e.dataTransfer.effectAllowed = 'copy';
+    
+    // Add dragging class for visual feedback
+    e.target.classList.add('dragging');
+    
+    // Create drag preview element
+    createDragPreview(elementType, e);
+    
+    // Store element type globally for preview updates
+    window.currentDragType = elementType;
+}
+
+function createDragPreview(elementType, dragEvent) {
+    // Remove any existing preview
+    const existingPreview = document.querySelector('.drag-preview');
+    if (existingPreview) {
+        existingPreview.remove();
+    }
+    
+    // Don't create preview for tool elements
+    if (elementType === 'connect' || elementType === 'text') {
+        return;
+    }
+    
+    // Create preview element
+    const preview = document.createElement('div');
+    preview.className = 'drag-preview';
+    
+    // Set dimensions based on element type
+    const dimensions = {
+        'start': { width: 80, height: 80, borderRadius: '50%' },
+        'decision': { width: 80, height: 80, borderRadius: '0', transform: 'rotate(45deg)' },
+        'process': { width: 120, height: 60, borderRadius: '8px' },
+        'data': { width: 120, height: 60, borderRadius: '2px' }
+    };
+    
+    const dim = dimensions[elementType] || dimensions['process'];
+    
+    Object.assign(preview.style, {
+        width: dim.width + 'px',
+        height: dim.height + 'px',
+        borderRadius: dim.borderRadius,
+        transform: dim.transform || 'rotate(-2deg)'
+    });
+    
+    // Set preview text
+    const textMap = {
+        'start': 'Start',
+        'decision': 'Decision',
+        'process': 'Activity',
+        'data': 'Data'
+    };
+    
+    preview.textContent = textMap[elementType] || 'Element';
+    
+    // Add to body for positioning
+    document.body.appendChild(preview);
+    
+    // Store reference for cleanup
+    window.dragPreview = preview;
+}
+
+function updateDragPreviewPosition(e) {
+    const preview = window.dragPreview;
+    if (preview && window.currentDragType) {
+        // Position preview near mouse cursor
+        const x = e.clientX + 10;
+        const y = e.clientY - 30;
+        
+        preview.style.left = x + 'px';
+        preview.style.top = y + 'px';
+    }
+}
+
+function handlePaletteDragEnd(e) {
+    console.log('🎯 Drag ended');
+    e.target.classList.remove('dragging');
+    
+    // Clean up drag preview
+    if (window.dragPreview) {
+        window.dragPreview.remove();
+        window.dragPreview = null;
+    }
+    
+    // Clear drag type
+    window.currentDragType = null;
+}
+
+function handleCanvasDragEnter(e) {
+    e.preventDefault();
+    e.target.classList.add('drag-over');
+}
+
+function handleCanvasDragLeave(e) {
+    // Only remove drag-over if we're actually leaving the canvas
+    if (!e.target.contains(e.relatedTarget)) {
+        e.target.classList.remove('drag-over');
+    }
+}
+
+function handleCanvasDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+}
+
+function handleCanvasDrop(e) {
+    e.preventDefault();
+    e.target.classList.remove('drag-over');
+    
+    const elementType = e.dataTransfer.getData('text/plain');
+    if (!elementType) {
+        console.warn('⚠️ No element type found in drop data');
+        return;
+    }
+    
+    console.log('🎯 Dropped element type:', elementType);
+    
+    // Calculate drop position relative to canvas
+    const canvas = document.getElementById('visual-diagram-editor');
+    const rect = canvas.getBoundingClientRect();
+    const scrollLeft = canvas.scrollLeft || 0;
+    const scrollTop = canvas.scrollTop || 0;
+    
+    // Account for zoom level if available
+    const zoomLevel = visualEditor ? (visualEditor.zoomLevel || 1) : 1;
+    
+    const x = (e.clientX - rect.left + scrollLeft) / zoomLevel;
+    const y = (e.clientY - rect.top + scrollTop) / zoomLevel;
+    
+    console.log('📍 Drop position:', { x, y, zoomLevel });
+    
+    // Handle different element types
+    if (elementType === 'connect') {
+        // Activate line tool instead of old connect tool
+        setActiveTool('line');
+        console.log('✅ Line tool activated via drag-drop');
+        return;
+    } else if (elementType === 'text') {
+        // Add text note instead of regular element
+        if (visualEditor && typeof visualEditor.addTextNote === 'function') {
+            const note = visualEditor.addTextNote(x, y, 'Note');
+            console.log('✅ Text note added:', note);
+        }
+        return;
+    }
+    
+    // Map palette element types to visual editor types
+    const elementTypeMap = {
+        'start': 'start',
+        'decision': 'decision', 
+        'process': 'process',
+        'data': 'data' // Now maps to actual data type
+    };
+    
+    const editorType = elementTypeMap[elementType] || elementType;
+    
+    // Add element using visual editor
+    if (visualEditor && typeof visualEditor.addElement === 'function') {
+        let defaultText = getDefaultTextForType(elementType);
+        const element = visualEditor.addElement(editorType, x, y, defaultText);
+        console.log('✅ Element added via drag-drop:', element);
+    } else {
+        console.error('❌ Visual editor not available or addElement method missing');
+    }
+}
+
+function getDefaultTextForType(elementType) {
+    const defaultTexts = {
+        'start': 'Start',
+        'decision': 'Decision',
+        'process': 'Activity', 
+        'data': 'Data',
+        'connect': 'Line',
+        'text': 'Note'
+    };
+    
+    return defaultTexts[elementType] || 'Element';
+}
+
 // Clear canvas
 function clearCanvas() {
     if (visualEditor) {
@@ -1795,7 +2249,7 @@ function setActiveTool(tool) {
     
     console.log('🔧 Setting tool to:', tool);
     
-    // Update button states
+    // Update toolbar button states
     document.querySelectorAll('.toolbar-section button').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -1803,6 +2257,25 @@ function setActiveTool(tool) {
     const toolButton = document.getElementById(tool + 'Tool');
     if (toolButton) {
         toolButton.classList.add('active');
+    }
+    
+    // Update palette element states
+    document.querySelectorAll('.palette-element').forEach(el => {
+        el.classList.remove('active-tool');
+    });
+    
+    // Highlight corresponding palette element
+    const paletteElementMap = {
+        'connect': 'connect',
+        'text': 'text',
+        'line': 'connect' // Map line tool to connect palette element
+    };
+    
+    if (paletteElementMap[tool]) {
+        const paletteElement = document.querySelector(`[data-element-type="${paletteElementMap[tool]}"]`);
+        if (paletteElement) {
+            paletteElement.classList.add('active-tool');
+        }
     }
     
     // Set tool in editor

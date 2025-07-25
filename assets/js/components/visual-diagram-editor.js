@@ -10,15 +10,23 @@ class VisualDiagramEditor {
         this.nodes = new Map();
         this.connections = new Map();
         this.textNotes = new Map();
+        this.freeLines = new Map(); // New: for free-form lines
         this.selectedElement = null;
-        this.activeTool = 'select'; // 'select', 'connect', 'text'
+        this.activeTool = 'select'; // 'select', 'connect', 'text', 'line'
         this.connectingFrom = null;
         this.isDragging = false;
         this.isResizing = false;
         this.isDrawingConnection = false;
+        this.isDrawingLine = false; // New: for line drawing state
         this.connectingFromNode = null;
         this.connectingFromSide = null;
         this.connectionCleanup = null;
+        this.currentLine = null; // New: current line being drawn
+        this.nextLineId = 1; // New: line ID counter
+        this.activeLines = new Map(); // Store active curved lines
+        this.selectedLine = null; // Currently selected line for editing
+        this.lineDragHandle = null; // Handle for curve adjustment
+        this.justFinishedLine = null; // Track recently finished line to prevent immediate deselection
         this.dragOffset = { x: 0, y: 0 };
         this.nextNodeId = 1;
         this.nextNoteId = 1;
@@ -49,7 +57,8 @@ class VisualDiagramEditor {
             start: { width: 80, height: 80, class: 'element-start' },
             database: { width: 100, height: 70, class: 'element-database' },
             api: { width: 120, height: 60, class: 'element-api' },
-            user: { width: 100, height: 80, class: 'element-user' }
+            user: { width: 100, height: 80, class: 'element-user' },
+            data: { width: 120, height: 60, class: 'element-data' }
         };
         
         this.init();
@@ -58,8 +67,13 @@ class VisualDiagramEditor {
     init() {
         this.createCanvas();
         this.setupEventListeners();
+        this.updateMouseMoveForLineDrawing(); // Enable line drawing
         this.drawGrid();
         this.setActiveTool('select');
+        
+        // Make test function available globally for debugging
+        window.testDragHandles = () => this.testDragHandles();
+        console.log('🔧 Debug: testDragHandles() function available in console');
     }
     
     createCanvas() {
@@ -139,9 +153,19 @@ class VisualDiagramEditor {
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
-            if (this.container.closest('.modal').contains(document.activeElement) || 
-                this.container.contains(document.activeElement)) {
+            // Check if the modal is open and we're in diagram editing context
+            const modal = this.container.closest('.modal');
+            const isModalOpen = modal && modal.style.display !== 'none';
+            
+            console.log('🔑 Keydown event detected:', e.key);
+            console.log('🔑 Modal open:', isModalOpen);
+            console.log('🔑 Active element:', document.activeElement.tagName, document.activeElement.className);
+            
+            if (isModalOpen) {
+                console.log('🔑 Calling handleKeyDown');
                 this.handleKeyDown(e);
+            } else {
+                console.log('🔑 Modal not open, ignoring keydown');
             }
         });
         
@@ -182,7 +206,11 @@ class VisualDiagramEditor {
         const element = this.getElementAt(x, y);
         console.log('Found element:', element);
         
-        if (this.activeTool === 'select') {
+        if (this.activeTool === 'line') {
+            // Handle line drawing tool
+            this.handleLineToolMouseDown(e, x, y);
+            return;
+        } else if (this.activeTool === 'select') {
             if (element) {
                 console.log(`Selecting element: ${element.id} (${element.type})`);
                 this.selectElement(element);
@@ -194,10 +222,8 @@ class VisualDiagramEditor {
                     };
                     console.log(`Started dragging with offset: x=${this.dragOffset.x}, y=${this.dragOffset.y}`);
                 }
-            } else {
-                console.log('No element found, deselecting all');
-                this.deselectAll();
             }
+            // Don't deselect here - let handleClick handle connection selection and deselection
         } else if (this.activeTool === 'connect') {
             if (element && element.type === 'node') {
                 if (!this.connectingFrom) {
@@ -261,7 +287,7 @@ class VisualDiagramEditor {
     }
     
     handleClick(e) {
-        // Handle connection line selection
+        // Handle connection line selection (old straight connections)
         if (e.target.classList.contains('connection-line')) {
             const connectionId = e.target.dataset.connectionId;
             const connection = this.connections.get(connectionId);
@@ -269,27 +295,54 @@ class VisualDiagramEditor {
                 this.selectConnection(connection);
                 e.stopPropagation();
             }
+            return;
+        }
+        
+        // Handle curved line selection (new SVG paths)
+        if (e.target.tagName === 'path' && e.target.id.startsWith('line_')) {
+            const lineId = e.target.id;
+            const line = this.activeLines.get(lineId);
+            if (line) {
+                this.selectLine(line);
+                e.stopPropagation();
+            }
+            return;
+        }
+        
+        // Check for element selection
+        const rect = this.canvas.getBoundingClientRect();
+        const scrollLeft = this.container.scrollLeft || 0;
+        const scrollTop = this.container.scrollTop || 0;
+        
+        const x = (e.clientX - rect.left + scrollLeft) / this.zoomLevel;
+        const y = (e.clientY - rect.top + scrollTop) / this.zoomLevel;
+        
+        const element = this.getElementAt(x, y);
+        if (element) {
+            this.selectElement(element);
         } else {
-            // Check for element selection
-            const rect = this.canvas.getBoundingClientRect();
-            const scrollLeft = this.container.scrollLeft || 0;
-            const scrollTop = this.container.scrollTop || 0;
-            
-            const x = (e.clientX - rect.left + scrollLeft) / this.zoomLevel;
-            const y = (e.clientY - rect.top + scrollTop) / this.zoomLevel;
-            
-            const element = this.getElementAt(x, y);
-            if (element) {
-                this.selectElement(element);
-            } else {
+            // Don't deselect if we just finished drawing a line
+            if (!this.justFinishedLine) {
                 this.deselectAll();
             }
         }
     }
     
     handleKeyDown(e) {
-        if (e.key === 'Delete' && this.selectedElement) {
-            this.deleteElement(this.selectedElement);
+        console.log('🔑 Key pressed:', e.key);
+        console.log('🔑 Selected element:', this.selectedElement ? this.selectedElement.id : 'none');
+        console.log('🔑 Selected line:', this.selectedLine ? this.selectedLine.id : 'none');
+        
+        if (e.key === 'Delete') {
+            if (this.selectedElement) {
+                console.log('🗑️ Deleting selected element:', this.selectedElement.id);
+                this.deleteElement(this.selectedElement);
+            } else if (this.selectedLine) {
+                console.log('🗑️ Deleting selected line:', this.selectedLine.id);
+                this.deleteSelectedLine();
+            } else {
+                console.log('⚠️ Delete pressed but nothing selected');
+            }
         } else if (e.key === 'Escape') {
             this.deselectAll();
             this.connectingFrom = null;
@@ -305,6 +358,444 @@ class VisualDiagramEditor {
         }
     }
     
+    // ===== CURVED LINE SYSTEM =====
+    
+    // Test function to verify drag handles work
+    testDragHandles() {
+        console.log('🧪 Testing drag handles...');
+        
+        // Check if we have any active lines
+        if (this.activeLines.size === 0) {
+            console.log('⚠️ No active lines to test');
+            return;
+        }
+        
+        // Get first line
+        const firstLine = Array.from(this.activeLines.values())[0];
+        console.log('🔍 Testing line:', firstLine.id);
+        
+        // Check if handles exist in DOM
+        const controlHandle = document.getElementById(firstLine.id + '_handle');
+        const startHandle = document.getElementById(firstLine.id + '_start_handle');
+        const endHandle = document.getElementById(firstLine.id + '_end_handle');
+        
+        console.log('🔍 Handle existence check:');
+        console.log('  - Control handle:', !!controlHandle);
+        console.log('  - Start handle:', !!startHandle);
+        console.log('  - End handle:', !!endHandle);
+        
+        if (controlHandle) {
+            console.log('🔍 Control handle details:');
+            console.log('  - ID:', controlHandle.id);
+            console.log('  - CX:', controlHandle.getAttribute('cx'));
+            console.log('  - CY:', controlHandle.getAttribute('cy'));
+            console.log('  - Cursor style:', controlHandle.style.cursor);
+            console.log('  - Pointer events:', controlHandle.style.pointerEvents);
+            
+            // Try to trigger a click programmatically to test event listeners
+            console.log('🧪 Simulating click on control handle...');
+            controlHandle.dispatchEvent(new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                clientX: 100,
+                clientY: 100
+            }));
+        }
+    }
+    
+    createCurvedLine(startX, startY, endX, endY) {
+        const lineId = `line_${this.nextLineId++}`;
+        
+        // Calculate default control point for curve (midpoint offset)
+        const midX = (startX + endX) / 2;
+        const midY = (startY + endY) / 2;
+        
+        // Offset control point perpendicular to the line
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        const perpX = -dy / length * 50; // 50px offset
+        const perpY = dx / length * 50;
+        
+        const controlX = midX + perpX;
+        const controlY = midY + perpY;
+        
+        const line = {
+            id: lineId,
+            startX,
+            startY,
+            endX,
+            endY,
+            controlX,
+            controlY,
+            selected: false
+        };
+        
+        this.activeLines.set(lineId, line);
+        this.renderCurvedLine(line);
+        
+        return line;
+    }
+    
+    renderCurvedLine(line) {
+        console.log('🎨 renderCurvedLine called for:', line.id, 'selected:', line.selected);
+        
+        // Remove existing line if it exists
+        const existingPath = document.getElementById(line.id);
+        if (existingPath) {
+            existingPath.remove();
+        }
+        
+        // Remove existing handles if they exist
+        const existingHandle = document.getElementById(line.id + '_handle');
+        if (existingHandle) {
+            existingHandle.remove();
+        }
+        
+        const existingStartHandle = document.getElementById(line.id + '_start_handle');
+        if (existingStartHandle) {
+            existingStartHandle.remove();
+        }
+        
+        const existingEndHandle = document.getElementById(line.id + '_end_handle');
+        if (existingEndHandle) {
+            existingEndHandle.remove();
+        }
+        
+        // Create curved SVG path
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.id = line.id;
+        path.setAttribute('d', `M ${line.startX} ${line.startY} Q ${line.controlX} ${line.controlY} ${line.endX} ${line.endY}`);
+        path.setAttribute('stroke', line.selected ? '#3b82f6' : '#6b7280');
+        path.setAttribute('stroke-width', line.selected ? '3' : '2');
+        path.setAttribute('fill', 'none');
+        path.style.cursor = 'pointer';
+        path.style.pointerEvents = 'stroke'; // Make sure the stroke is clickable
+        
+        // Add arrow markers based on direction (ensure line has direction)
+        if (!line.direction) {
+            line.direction = 'to'; // Default fallback
+            console.log(`⚠️ Line ${line.id} had no direction, set to default 'to'`);
+        }
+        
+        // Use unique arrow ID with timestamp to bypass browser cache (same as regular connections)
+        const uniqueArrowId = `curved_arrow_${line.id}_${Date.now()}`;
+        this.createArrowMarker(uniqueArrowId, true); // Force recreate markers
+        
+        console.log(`🎯 renderCurvedLine: Setting markers for ${line.id} with direction: ${line.direction}`);
+        console.log(`🎯 Using unique arrow ID: ${uniqueArrowId}`);
+        
+        // Clear existing markers first
+        path.removeAttribute('marker-start');
+        path.removeAttribute('marker-end');
+        
+        if (line.direction === 'to' || line.direction === 'both') {
+            path.setAttribute('marker-end', `url(#${uniqueArrowId}_end)`);
+            console.log(`  - Added marker-end: url(#${uniqueArrowId}_end)`);
+        }
+        if (line.direction === 'from' || line.direction === 'both') {
+            path.setAttribute('marker-start', `url(#${uniqueArrowId}_start)`);
+            console.log(`  - Added marker-start: url(#${uniqueArrowId}_start)`);
+        }
+        
+        // Add click handler for line selection
+        path.addEventListener('click', (e) => {
+            console.log('🔍 Path clicked:', line.id);
+            e.stopPropagation();
+            this.selectLine(line);
+        });
+        
+        this.svg.appendChild(path);
+        
+        // Create drag handle at control point if line is selected
+        if (line.selected) {
+            this.createLineDragHandle(line);
+            this.createLineEndpointHandles(line);
+        }
+    }
+    
+    createLineDragHandle(line) {
+        const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        handle.id = line.id + '_handle';
+        handle.setAttribute('cx', line.controlX);
+        handle.setAttribute('cy', line.controlY);
+        handle.setAttribute('r', '6');
+        handle.setAttribute('fill', '#3b82f6'); // Blue for control point
+        handle.setAttribute('stroke', '#ffffff');
+        handle.setAttribute('stroke-width', '2');
+        handle.style.cursor = 'move';
+        handle.style.pointerEvents = 'all'; // Ensure it receives mouse events
+        handle.style.zIndex = '1000'; // Bring to front
+        
+        let isDragging = false;
+        
+        handle.addEventListener('mousedown', (e) => {
+            console.log('🔍 Control handle mousedown triggered for:', line.id);
+            console.log('🔍 Event details:', {
+                clientX: e.clientX,
+                clientY: e.clientY,
+                target: e.target.id,
+                button: e.button
+            });
+            e.preventDefault();
+            e.stopPropagation();
+            isDragging = true;
+            
+            const handleMouseMove = (e) => {
+                if (!isDragging) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const scrollLeft = this.canvas.scrollLeft || 0;
+                const scrollTop = this.canvas.scrollTop || 0;
+                const x = (e.clientX - rect.left + scrollLeft) / this.zoomLevel;
+                const y = (e.clientY - rect.top + scrollTop) / this.zoomLevel;
+                
+                console.log('🔍 Control handle dragging to:', x, y);
+                
+                // Update control point
+                line.controlX = x;
+                line.controlY = y;
+                
+                // Re-render line
+                this.renderCurvedLine(line);
+            };
+            
+            const handleMouseUp = () => {
+                console.log('🔍 Control handle drag ended');
+                isDragging = false;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            };
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        });
+        
+        this.svg.appendChild(handle);
+        console.log('🔍 Control handle appended to SVG, ID:', handle.id);
+        console.log('🔍 Handle position:', handle.getAttribute('cx'), handle.getAttribute('cy'));
+        console.log('🔍 Handle in DOM:', document.getElementById(handle.id) !== null);
+    }
+    
+    createLineEndpointHandles(line) {
+        // Create start point handle
+        const startHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        startHandle.id = line.id + '_start_handle';
+        startHandle.setAttribute('cx', line.startX);
+        startHandle.setAttribute('cy', line.startY);
+        startHandle.setAttribute('r', '5');
+        startHandle.setAttribute('fill', '#10b981'); // Green for start
+        startHandle.setAttribute('stroke', '#ffffff');
+        startHandle.setAttribute('stroke-width', '2');
+        startHandle.style.cursor = 'move';
+        startHandle.style.pointerEvents = 'all'; // Ensure it receives mouse events
+        startHandle.style.zIndex = '1000'; // Bring to front
+        
+        let isDraggingStart = false;
+        
+        startHandle.addEventListener('mousedown', (e) => {
+            console.log('🔍 Start handle mousedown triggered for:', line.id);
+            console.log('🔍 Event details:', {
+                clientX: e.clientX,
+                clientY: e.clientY,
+                target: e.target.id,
+                button: e.button
+            });
+            e.preventDefault();
+            e.stopPropagation();
+            isDraggingStart = true;
+            
+            const handleMouseMove = (e) => {
+                if (!isDraggingStart) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const scrollLeft = this.canvas.scrollLeft || 0;
+                const scrollTop = this.canvas.scrollTop || 0;
+                const x = (e.clientX - rect.left + scrollLeft) / this.zoomLevel;
+                const y = (e.clientY - rect.top + scrollTop) / this.zoomLevel;
+                
+                console.log('🔍 Start handle dragging to:', x, y);
+                
+                // Update start point
+                line.startX = x;
+                line.startY = y;
+                
+                // Re-render line
+                this.renderCurvedLine(line);
+            };
+            
+            const handleMouseUp = () => {
+                console.log('🔍 Start handle drag ended');
+                isDraggingStart = false;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            };
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        });
+        
+        this.svg.appendChild(startHandle);
+        console.log('🔍 Start handle appended to SVG, ID:', startHandle.id);
+        
+        // Create end point handle
+        const endHandle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        endHandle.id = line.id + '_end_handle';
+        endHandle.setAttribute('cx', line.endX);
+        endHandle.setAttribute('cy', line.endY);
+        endHandle.setAttribute('r', '5');
+        endHandle.setAttribute('fill', '#ef4444'); // Red for end
+        endHandle.setAttribute('stroke', '#ffffff');
+        endHandle.setAttribute('stroke-width', '2');
+        endHandle.style.cursor = 'move';
+        endHandle.style.pointerEvents = 'all'; // Ensure it receives mouse events
+        endHandle.style.zIndex = '1000'; // Bring to front
+        
+        let isDraggingEnd = false;
+        
+        endHandle.addEventListener('mousedown', (e) => {
+            console.log('🔍 End handle mousedown triggered for:', line.id);
+            console.log('🔍 Event details:', {
+                clientX: e.clientX,
+                clientY: e.clientY,
+                target: e.target.id,
+                button: e.button
+            });
+            e.preventDefault();
+            e.stopPropagation();
+            isDraggingEnd = true;
+            
+            const handleMouseMove = (e) => {
+                if (!isDraggingEnd) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const scrollLeft = this.canvas.scrollLeft || 0;
+                const scrollTop = this.canvas.scrollTop || 0;
+                const x = (e.clientX - rect.left + scrollLeft) / this.zoomLevel;
+                const y = (e.clientY - rect.top + scrollTop) / this.zoomLevel;
+                
+                console.log('🔍 End handle dragging to:', x, y);
+                
+                // Update end point
+                line.endX = x;
+                line.endY = y;
+                
+                // Re-render line
+                this.renderCurvedLine(line);
+            };
+            
+            const handleMouseUp = () => {
+                console.log('🔍 End handle drag ended');
+                isDraggingEnd = false;
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            };
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        });
+        
+        this.svg.appendChild(endHandle);
+        console.log('🔍 End handle appended to SVG, ID:', endHandle.id);
+    }
+    
+    selectLine(line) {
+        console.log('🎯 selectLine called for:', line.id);
+        
+        // Deselect all elements first
+        this.deselectAll();
+        
+        // Deselect previous line
+        if (this.selectedLine && this.selectedLine !== line) {
+            console.log('🔄 Deselecting previous line:', this.selectedLine.id);
+            this.selectedLine.selected = false;
+            this.renderCurvedLine(this.selectedLine);
+        }
+        
+        // Select new line
+        this.selectedLine = line;
+        line.selected = true;
+        
+        // Set as selectedElement for property panel compatibility
+        // IMPORTANT: Don't use spread operator - we need the same reference!
+        line.type = 'curved-connection'; // Temporarily add type for property panel
+        this.selectedElement = line;
+        
+        console.log('✅ Line selected, calling renderCurvedLine');
+        this.renderCurvedLine(line);
+        
+        // Show property panel
+        this.showPropertyPanel(this.selectedElement);
+        
+        console.log('✅ Line selected and property panel should be visible:', line.id);
+    }
+    
+    deselectAllLines() {
+        if (this.selectedLine) {
+            this.selectedLine.selected = false;
+            this.renderCurvedLine(this.selectedLine);
+            this.selectedLine = null;
+        }
+    }
+    
+    deleteSelectedLine() {
+        console.log('🗑️ deleteSelectedLine called');
+        console.log('🗑️ this.selectedLine:', this.selectedLine);
+        
+        if (!this.selectedLine) {
+            console.log('❌ No selected line to delete');
+            return;
+        }
+        
+        const line = this.selectedLine;
+        console.log('🗑️ Deleting curved line:', line.id);
+        
+        // Remove SVG elements
+        const path = document.getElementById(line.id);
+        if (path) {
+            path.remove();
+            console.log('✅ Removed path element:', line.id);
+        } else {
+            console.log('⚠️ Path element not found:', line.id);
+        }
+        
+        const handle = document.getElementById(line.id + '_handle');
+        if (handle) {
+            handle.remove();
+            console.log('✅ Removed handle element');
+        }
+        
+        const startHandle = document.getElementById(line.id + '_start_handle');
+        if (startHandle) {
+            startHandle.remove();
+            console.log('✅ Removed start handle element');
+        }
+        
+        const endHandle = document.getElementById(line.id + '_end_handle');
+        if (endHandle) {
+            endHandle.remove();
+            console.log('✅ Removed end handle element');
+        }
+        
+        // Remove from collection
+        this.activeLines.delete(line.id);
+        console.log('✅ Removed from activeLines collection');
+        
+        // Clear selection
+        this.selectedLine = null;
+        this.selectedElement = null; // Also clear selectedElement since curved lines set this too
+        
+        // Hide property panel
+        this.hidePropertyPanel();
+        
+        // Save the updated diagram
+        this.saveToMermaidCode();
+        
+        console.log('✅ Deleted curved line:', line.id);
+    }
+    
+    // ===== END CURVED LINE SYSTEM =====
+
     // Grid and Canvas Utilities
     drawGrid() {
         // Grid is already drawn via CSS background-image in createCanvas
@@ -331,6 +822,9 @@ class VisualDiagramEditor {
             case 'text':
                 this.canvas.style.cursor = 'text';
                 break;
+            case 'line':
+                this.canvas.style.cursor = 'crosshair';
+                break;
         }
         
         // Update toolbar buttons
@@ -342,6 +836,8 @@ class VisualDiagramEditor {
         if (activeBtn) {
             activeBtn.classList.add('tool-active');
         }
+        
+        console.log('🔧 Active tool set to:', tool);
     }
     
     // Element Creation
@@ -426,12 +922,17 @@ class VisualDiagramEditor {
             top: ${node.y}px !important;
             width: ${node.width}px !important;
             height: ${node.height}px !important;
-            background-color: ${node.color} !important;
             z-index: 10 !important;
             pointer-events: all !important;
             cursor: move !important;
             ${node.elementType !== 'decision' ? 'transform: none !important;' : ''}
         `;
+        
+        // Apply custom background color if different from default
+        const defaultColor = this.getDefaultColor(node.elementType);
+        if (node.color && node.color !== defaultColor) {
+            element.style.backgroundColor = node.color;
+        }
         
         const textSpan = document.createElement('span');
         textSpan.className = 'element-text';
@@ -522,10 +1023,15 @@ class VisualDiagramEditor {
         element.style.setProperty('top', node.y + 'px', 'important');
         element.style.setProperty('width', node.width + 'px', 'important');
         element.style.setProperty('height', node.height + 'px', 'important');
-        element.style.setProperty('background-color', node.color, 'important');
         element.style.setProperty('z-index', '10', 'important');
         element.style.setProperty('pointer-events', 'all', 'important');
         element.style.setProperty('cursor', 'move', 'important');
+        
+        // Only set background color if it's different from default (allow CSS classes to handle default colors)
+        const defaultColor = this.getDefaultColor(node.elementType);
+        if (node.color && node.color !== defaultColor) {
+            element.style.setProperty('background-color', node.color, 'important');
+        }
         
         // Only reset transform for non-decision elements (decision elements need rotation)
         if (node.elementType !== 'decision') {
@@ -792,6 +1298,10 @@ class VisualDiagramEditor {
         }
         
         this.cancelConnectionDrawing();
+        
+        // Auto-switch back to select tool after finishing connection
+        this.setActiveTool('select');
+        console.log('🔄 Automatically switched to select tool after finishing connection drawing');
     }
     
     finishConnectionAtPoint(toNode, toSide) {
@@ -802,6 +1312,10 @@ class VisualDiagramEditor {
         }
         
         this.cancelConnectionDrawing();
+        
+        // Auto-switch back to select tool after finishing connection
+        this.setActiveTool('select');
+        console.log('🔄 Automatically switched to select tool after finishing connection');
     }
     
     cancelConnectionDrawing() {
@@ -1145,90 +1659,230 @@ class VisualDiagramEditor {
     }
 
     updateConnectionDirection(connection) {
-        if (!connection.pathElement) {
-            console.warn('⚠️ No pathElement for connection:', connection.id);
+        // Skip if already updating to prevent infinite loops
+        if (connection._isUpdatingDirection) {
+            console.log('⏸️ Skipping direction update - already in progress for:', connection.id);
             return;
         }
-
-        const arrowId = `arrow_${connection.id}`;
         
-        console.log(`🔄 Updating connection ${connection.id} direction to: ${connection.direction}`);
+        connection._isUpdatingDirection = true;
         
-        // CRITICAL: Recalculate edge-to-edge points to ensure arrows are at element edges
-        const fromNode = connection.fromNode;
-        const toNode = connection.toNode;
-        const edgePoints = this.calculateEdgeToEdgePoints(fromNode, toNode);
-        
-        // Update the path with proper edge-to-edge coordinates
-        const newPath = this.getConnectionPath(edgePoints.from.x, edgePoints.from.y, edgePoints.to.x, edgePoints.to.y);
-        connection.pathElement.setAttribute('d', newPath);
-        
-        console.log(`🎯 Recalculated edge points:`, {
-            from: edgePoints.from,
-            to: edgePoints.to,
-            direction: connection.direction
-        });
-        
-        // Remove existing arrow markers
-        connection.pathElement.removeAttribute('marker-start');
-        connection.pathElement.removeAttribute('marker-end');
-        
-        // Ensure arrow marker exists
-        this.createArrowMarker(arrowId);
-        
-        // Add new arrow markers based on direction
-        if (connection.direction === 'to' || connection.direction === 'both') {
-            connection.pathElement.setAttribute('marker-end', `url(#${arrowId}_end)`);
-            console.log(`✅ Added end marker: url(#${arrowId}_end)`);
-        }
-        if (connection.direction === 'from' || connection.direction === 'both') {
-            connection.pathElement.setAttribute('marker-start', `url(#${arrowId}_start)`);
-            console.log(`✅ Added start marker: url(#${arrowId}_start)`);
-        }
-        
-        // Force a repaint by changing and restoring a property
-        const originalStroke = connection.pathElement.getAttribute('stroke');
-        connection.pathElement.setAttribute('stroke', 'transparent');
-        setTimeout(() => {
-            connection.pathElement.setAttribute('stroke', originalStroke);
-        }, 1);
-        
-        console.log(`✅ Updated connection ${connection.id} direction to: ${connection.direction} with edge-to-edge positioning`);
-    }    redrawConnections() {
-        this.connections.forEach(connection => {
-            if (connection.pathElement) {
-                const fromNode = this.nodes.get(connection.from) || connection.fromNode;
-                const toNode = this.nodes.get(connection.to) || connection.toNode;
-                
-                if (fromNode && toNode) {
-                    let fromX, fromY, toX, toY;
-                    
-                    // Use specific connection points if available
-                    if (connection.fromSide && connection.toSide) {
-                        const fromPoint = this.getConnectionPointPosition(fromNode, connection.fromSide);
-                        const toPoint = this.getConnectionPointPosition(toNode, connection.toSide);
-                        fromX = fromPoint.x;
-                        fromY = fromPoint.y;
-                        toX = toPoint.x;
-                        toY = toPoint.y;
-                    } else {
-                        // Use edge-to-edge calculation for all connections
-                        const edgePoints = this.calculateEdgeToEdgePoints(fromNode, toNode);
-                        fromX = edgePoints.from.x;
-                        fromY = edgePoints.from.y;
-                        toX = edgePoints.to.x;
-                        toY = edgePoints.to.y;
-                    }
-                    
-                    connection.pathElement.setAttribute('d', this.getConnectionPath(fromX, fromY, toX, toY));
-                    
-                    // Reapply arrow markers based on direction
-                    this.updateConnectionDirection(connection);
-                } else {
-                    console.warn('Missing node for connection:', connection.id);
+        try {
+            console.log(`🔄 Updating connection ${connection.id} direction to: ${connection.direction}`);
+            
+            // Find the path element - either from pathElement property or by ID
+            let pathElement = connection.pathElement;
+            if (!pathElement) {
+                pathElement = document.getElementById(`path_${connection.id}`);
+                if (!pathElement) {
+                    console.warn('⚠️ No path element found for connection:', connection.id);
+                    return;
                 }
             }
-        });
+
+            const arrowId = `arrow_${connection.id}`;
+            
+            // Get node references - handle both structures
+            let fromNode = connection.fromNode;
+            let toNode = connection.toNode;
+            
+            if (!fromNode || !toNode) {
+                // Try to get from nodes collection using from/to IDs
+                fromNode = this.nodes.get(connection.from);
+                toNode = this.nodes.get(connection.to);
+            }
+            
+            if (!fromNode || !toNode) {
+                console.warn('⚠️ Missing nodes for connection:', connection.id);
+                return;
+            }
+            
+            // CRITICAL: Recalculate edge-to-edge points to ensure arrows are at element edges
+            let edgePoints = this.calculateEdgeToEdgePoints(fromNode, toNode);
+            
+            // IMPORTANT: If direction is 'from', we need to swap the path direction
+            // so the visual path matches the conceptual direction
+            if (connection.direction === 'from') {
+                // Swap the edge points so path goes from toNode to fromNode
+                const temp = edgePoints.from;
+                edgePoints.from = edgePoints.to;
+                edgePoints.to = temp;
+                console.log(`🔄 SWAPPED path direction for 'from' - now goes from ${toNode.id} to ${fromNode.id}`);
+            }
+            
+            console.log(`🎯 Final edge points for direction '${connection.direction}':`, {
+                from: edgePoints.from,
+                to: edgePoints.to,
+                conceptualDirection: connection.direction
+            });
+            
+            // CREATE UNIQUE MARKER ID to bypass SVG cache
+            const timestamp = Date.now();
+            const uniqueArrowId = `arrow_${connection.id}_${timestamp}`;
+            console.log(`🆔 Creating unique marker ID: ${uniqueArrowId}`);
+            
+            // AGGRESSIVE APPROACH: Remove the old path and create a new one
+            const parentElement = pathElement.parentNode;
+            const wasSelected = pathElement.classList.contains('selected');
+            const pathId = pathElement.id;
+            const pathClass = pathElement.getAttribute('class') || '';
+            const pathStroke = pathElement.getAttribute('stroke') || '#333333';
+            const pathStrokeWidth = pathElement.getAttribute('stroke-width') || '2';
+            const pathFill = pathElement.getAttribute('fill') || 'none';
+            const connectionId = pathElement.getAttribute('data-connection-id');
+            
+            // Remove the old path completely
+            pathElement.remove();
+            console.log(`🗑️ Completely removed old path element for ${connection.id}`);
+            
+            // Create a brand new path element
+            const newPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            newPathElement.setAttribute('id', pathId);
+            newPathElement.setAttribute('class', pathClass);
+            newPathElement.setAttribute('stroke', pathStroke);
+            newPathElement.setAttribute('stroke-width', pathStrokeWidth);
+            newPathElement.setAttribute('fill', pathFill);
+            
+            // CRITICAL: Restore the connection attributes needed for click detection
+            if (connectionId) {
+                newPathElement.setAttribute('data-connection-id', connectionId);
+            }
+            
+            // Ensure proper pointer events for click detection
+            newPathElement.style.pointerEvents = 'stroke';
+            
+            // Set the path data
+            const newPath = this.getConnectionPath(edgePoints.from.x, edgePoints.from.y, edgePoints.to.x, edgePoints.to.y);
+            newPathElement.setAttribute('d', newPath);
+            
+            // CRITICAL: Explicitly clear ALL marker attributes before setting new ones
+            newPathElement.removeAttribute('marker-start');
+            newPathElement.removeAttribute('marker-end');
+            newPathElement.removeAttribute('marker-mid');
+            console.log(`🧹 Cleared all marker attributes from new path element`);
+            
+            // AGGRESSIVE: Remove existing markers to prevent cache issues
+            const existingEndMarker = document.getElementById(`${arrowId}_end`);
+            const existingStartMarker = document.getElementById(`${arrowId}_start`);
+            if (existingEndMarker) {
+                existingEndMarker.remove();
+                console.log(`🗑️ Removed existing end marker: ${arrowId}_end`);
+            }
+            if (existingStartMarker) {
+                existingStartMarker.remove();
+                console.log(`🗑️ Removed existing start marker: ${arrowId}_start`);
+            }
+            
+            // Create new unique markers
+            this.createArrowMarker(uniqueArrowId, true); // Force recreate markers
+            
+            // Apply direction-specific markers to the NEW path element using UNIQUE IDs
+            // Note: After swapping path direction for 'from', we always use marker-end for the arrow
+            if (connection.direction === 'to') {
+                newPathElement.setAttribute('marker-end', `url(#${uniqueArrowId}_end)`);
+                console.log(`✅ NEW PATH: Added end marker for 'to' direction: url(#${uniqueArrowId}_end)`);
+            } else if (connection.direction === 'from') {
+                // Path is now swapped, so we still use marker-end (which is now at the target)
+                newPathElement.setAttribute('marker-end', `url(#${uniqueArrowId}_end)`);
+                console.log(`✅ NEW PATH: Added end marker for 'from' direction (swapped path): url(#${uniqueArrowId}_end)`);
+            } else if (connection.direction === 'both') {
+                newPathElement.setAttribute('marker-end', `url(#${uniqueArrowId}_end)`);
+                newPathElement.setAttribute('marker-start', `url(#${uniqueArrowId}_start)`);
+                console.log(`✅ NEW PATH: Added both markers for 'both' direction: end=${uniqueArrowId}_end, start=${uniqueArrowId}_start`);
+            }
+            
+            // Add the new path to the SVG
+            parentElement.appendChild(newPathElement);
+            
+            // Restore selection state if it was selected
+            if (wasSelected) {
+                newPathElement.classList.add('selected');
+            }
+            
+            // Update the connection object to reference the new path element
+            connection.pathElement = newPathElement;
+            
+            // Update in connections collection
+            if (this.connections.has(connection.id)) {
+                const storedConnection = this.connections.get(connection.id);
+                storedConnection.direction = connection.direction;
+                storedConnection.pathElement = newPathElement;
+                console.log(`🔄 Updated direction and path reference in connections collection for ${connection.id}`);
+            }
+            
+            // Update in activeLines collection if it exists there
+            if (this.activeLines.has(connection.id)) {
+                const storedConnection = this.activeLines.get(connection.id);
+                storedConnection.direction = connection.direction;
+                storedConnection.pathElement = newPathElement; // Update reference
+                console.log(`🔄 Updated direction and path reference in activeLines collection for ${connection.id}`);
+            }
+            
+            console.log(`✅ COMPLETELY RECREATED connection ${connection.id} with direction: ${connection.direction}`);
+            
+            // FORCE browser reflow to ensure immediate visual update
+            newPathElement.getBoundingClientRect();
+            console.log(`🔄 Forced browser reflow for immediate visual update`);
+        } finally {
+            connection._isUpdatingDirection = false;
+        }
+    }    redrawConnections() {
+        // Skip redraw if we're already in the middle of one to prevent infinite loops
+        if (this._isRedrawingConnections) {
+            console.log('⏸️ Skipping redrawConnections - already in progress');
+            return;
+        }
+        
+        this._isRedrawingConnections = true;
+        
+        try {
+            this.connections.forEach(connection => {
+                if (connection.pathElement) {
+                    const fromNode = this.nodes.get(connection.from) || connection.fromNode;
+                    const toNode = this.nodes.get(connection.to) || connection.toNode;
+                    
+                    if (fromNode && toNode) {
+                        let fromX, fromY, toX, toY;
+                        
+                        // Use specific connection points if available
+                        if (connection.fromSide && connection.toSide) {
+                            const fromPoint = this.getConnectionPointPosition(fromNode, connection.fromSide);
+                            const toPoint = this.getConnectionPointPosition(toNode, connection.toSide);
+                            fromX = fromPoint.x;
+                            fromY = fromPoint.y;
+                            toX = toPoint.x;
+                            toY = toPoint.y;
+                        } else {
+                            // Use edge-to-edge calculation for all connections
+                            const edgePoints = this.calculateEdgeToEdgePoints(fromNode, toNode);
+                            fromX = edgePoints.from.x;
+                            fromY = edgePoints.from.y;
+                            toX = edgePoints.to.x;
+                            toY = edgePoints.to.y;
+                        }
+                        
+                        // Only update the path, don't recreate the entire connection unless needed
+                        const newPath = this.getConnectionPath(fromX, fromY, toX, toY);
+                        const currentPath = connection.pathElement.getAttribute('d');
+                        
+                        if (newPath !== currentPath) {
+                            connection.pathElement.setAttribute('d', newPath);
+                        }
+                        
+                        // Only update direction if it actually changed to prevent infinite loops
+                        const currentDirection = connection.direction || 'to';
+                        if (connection._lastDirection !== currentDirection) {
+                            this.updateConnectionDirection(connection);
+                            connection._lastDirection = currentDirection;
+                        }
+                    } else {
+                        console.warn('Missing node for connection:', connection.id);
+                    }
+                }
+            });
+        } finally {
+            this._isRedrawingConnections = false;
+        }
     }
     
     // Element Management
@@ -1256,11 +1910,17 @@ class VisualDiagramEditor {
     }
     
     selectConnection(connection) {
+        console.log('🔗 selectConnection called with:', connection);
+        console.log('🔗 Connection type:', connection.type);
+        
         this.deselectAll();
         if (connection && connection.pathElement) {
             connection.pathElement.classList.add('selected');
             this.selectedElement = connection;
             this.addConnectionHandles(connection);
+            
+            // Show property panel for the connection
+            this.showPropertyPanel(connection);
         }
     }
     
@@ -1275,9 +1935,34 @@ class VisualDiagramEditor {
             el.classList.remove('selected');
         });
         
-        // Remove resize handles
+        // Deselect curved lines
+        this.deselectAllLines();
+        
+        // Remove resize handles safely without affecting element positions
         this.canvas.querySelectorAll('.resize-handle, .connection-handle').forEach(handle => {
-            handle.remove();
+            const parentElement = handle.parentElement;
+            
+            // Store parent's current position before removing handle
+            if (parentElement) {
+                const currentLeft = parentElement.style.left;
+                const currentTop = parentElement.style.top;
+                
+                // Remove the handle
+                handle.remove();
+                
+                // Restore position if it was changed (shouldn't happen, but just in case)
+                if (parentElement.style.left !== currentLeft || parentElement.style.top !== currentTop) {
+                    console.log('🔧 Position changed during handle removal, restoring:', {
+                        before: {left: currentLeft, top: currentTop},
+                        after: {left: parentElement.style.left, top: parentElement.style.top}
+                    });
+                    parentElement.style.left = currentLeft;
+                    parentElement.style.top = currentTop;
+                }
+            } else {
+                // Handle doesn't have a parent (e.g., connection handles in SVG)
+                handle.remove();
+            }
         });
         
         // Hide connection points
@@ -1346,6 +2031,12 @@ class VisualDiagramEditor {
                 element.pathElement.remove();
             }
             this.connections.delete(element.id);
+        } else if (element.type === 'curved-connection') {
+            console.log('🗑️ deleteElement: Handling curved connection deletion:', element.id);
+            // For curved connections, use the dedicated deleteSelectedLine method
+            this.selectedLine = element; // Set the selectedLine to match
+            this.deleteSelectedLine();
+            return; // deleteSelectedLine handles clearing selections and saving
         }
         
         this.selectedElement = null;
@@ -1445,6 +2136,9 @@ class VisualDiagramEditor {
             textSpan.innerHTML = '';
             textSpan.textContent = node.text;
             textSpan.style.pointerEvents = 'none';
+            
+            // Switch back to select tool after finishing text editing
+            this.setActiveTool('select');
         };
         
         const cancelEdit = () => {
@@ -1512,6 +2206,9 @@ class VisualDiagramEditor {
             // Restore original text display
             note.domElement.innerHTML = '';
             note.domElement.textContent = note.text;
+            
+            // Switch back to select tool after finishing text editing
+            this.setActiveTool('select');
         };
         
         const cancelEdit = () => {
@@ -1545,7 +2242,8 @@ class VisualDiagramEditor {
             start: 'Start',
             database: 'Database',
             api: 'API',
-            user: 'User'
+            user: 'User',
+            data: 'Data'
         };
         return defaults[type] || 'Element';
     }
@@ -1557,7 +2255,8 @@ class VisualDiagramEditor {
             start: '#dcfce7',
             database: '#e9d5ff',
             api: '#cffafe',
-            user: '#fed7aa'
+            user: '#fed7aa',
+            data: '#f8d7da'
         };
         return defaults[type] || '#e2e8f0';
     }
@@ -1582,36 +2281,29 @@ class VisualDiagramEditor {
         if (!this.selectedElement) return;
         
         const textInput = document.getElementById('elementText');
-        const widthSlider = document.getElementById('elementWidth');
-        const heightSlider = document.getElementById('elementHeight');
         const colorSelect = document.getElementById('elementColor');
         const directionSelect = document.getElementById('connectionDirection');
         const directionGroup = document.getElementById('connectionDirectionGroup');
         
         // Show/hide connection direction controls
-        if (this.selectedElement.type === 'connection') {
+        if (this.selectedElement.type === 'connection' || this.selectedElement.type === 'curved-connection') {
             // Hide normal element controls
             if (textInput) textInput.parentElement.style.display = 'none';
-            if (widthSlider) widthSlider.parentElement.style.display = 'none';
-            if (heightSlider) heightSlider.parentElement.style.display = 'none';
             if (colorSelect) colorSelect.parentElement.style.display = 'none';
             
             // Show connection controls
             if (directionGroup) directionGroup.style.display = 'block';
             if (directionSelect) directionSelect.value = this.selectedElement.direction || 'to';
+            
+            // Add a label or indicator for curved connections
+            if (this.selectedElement.type === 'curved-connection') {
+                console.log('📊 Property panel updated for curved connection:', this.selectedElement.id);
+            }
         } else {
             // Show normal element controls
             if (textInput) {
                 textInput.parentElement.style.display = 'block';
                 textInput.value = this.selectedElement.text || '';
-            }
-            if (widthSlider) {
-                widthSlider.parentElement.style.display = 'block';
-                widthSlider.value = this.selectedElement.width || 120;
-            }
-            if (heightSlider) {
-                heightSlider.parentElement.style.display = 'block';
-                heightSlider.value = this.selectedElement.height || 60;
             }
             if (colorSelect) {
                 colorSelect.parentElement.style.display = 'block';
@@ -1623,9 +2315,151 @@ class VisualDiagramEditor {
         }
     }
     
+    // Update selected element properties
+    updateSelectedElement(properties) {
+        console.log('🔧 updateSelectedElement called with:', properties);
+        
+        if (!this.selectedElement) {
+            console.warn('⚠️ No selected element to update');
+            return;
+        }
+        
+        const element = this.selectedElement;
+        console.log('🎯 Updating element:', element.id, 'type:', element.type);
+        
+        // Handle different element types
+        if (element.type === 'connection') {
+            console.log('🔗 Handling connection type update');
+            // Update connection properties
+            if (properties.direction && properties.direction !== element.direction) {
+                console.log(`🔄 Updating connection direction from ${element.direction} to ${properties.direction}`);
+                element.direction = properties.direction;
+                this.updateConnectionDirection(element);
+            }
+        } else if (element.type === 'curved-connection') {
+            // Update curved line properties (similar to connection)
+            if (properties.direction && properties.direction !== element.direction) {
+                console.log(`🔄 Updating curved line direction from ${element.direction} to ${properties.direction}`);
+                console.log(`🔍 Element before update:`, element);
+                console.log(`🔍 activeLines has this line:`, this.activeLines.has(element.id));
+                
+                element.direction = properties.direction;
+                
+                // Also update in activeLines collection if it exists there
+                if (this.activeLines.has(element.id)) {
+                    const storedLine = this.activeLines.get(element.id);
+                    storedLine.direction = properties.direction;
+                    console.log(`🔄 Updated direction in activeLines collection for ${element.id}`);
+                }
+                
+                this.updateCurvedLineDirection(element);
+                
+                console.log(`🔍 Element after update:`, element);
+            }
+        } else {
+            // Update node/text element properties
+            if (properties.text !== undefined && element.text !== properties.text) {
+                element.text = properties.text;
+                if (element.domElement) {
+                    const textSpan = element.domElement.querySelector('.element-text');
+                    if (textSpan) textSpan.textContent = properties.text;
+                }
+            }
+            
+            if (properties.width && element.width !== properties.width) {
+                element.width = properties.width;
+                if (element.domElement) {
+                    element.domElement.style.width = properties.width + 'px';
+                }
+            }
+            
+            if (properties.height && element.height !== properties.height) {
+                element.height = properties.height;
+                if (element.domElement) {
+                    element.domElement.style.height = properties.height + 'px';
+                }
+            }
+            
+            if (properties.backgroundColor && element.color !== properties.backgroundColor) {
+                element.color = properties.backgroundColor;
+                if (element.domElement) {
+                    element.domElement.style.backgroundColor = properties.backgroundColor;
+                }
+            }
+            
+            // Redraw connections if element size changed
+            if (properties.width || properties.height) {
+                this.redrawConnections();
+            }
+        }
+        
+        console.log('✅ Element updated successfully');
+    }
+    
+    // Update curved line direction
+    updateCurvedLineDirection(line) {
+        console.log(`🔄 updateCurvedLineDirection called for ${line.id}:`);
+        console.log(`  - Current direction: ${line.direction}`);
+        console.log(`  - Line object:`, line);
+        
+        const path = document.getElementById(line.id);
+        if (!path) {
+            console.warn('⚠️ No path element found for curved line:', line.id);
+            return;
+        }
+        
+        console.log(`  - Path element found: ${path.id}`);
+        console.log(`  - Current marker-start: ${path.getAttribute('marker-start')}`);
+        console.log(`  - Current marker-end: ${path.getAttribute('marker-end')}`);
+        
+        // Remove existing arrow markers
+        path.removeAttribute('marker-start');
+        path.removeAttribute('marker-end');
+        console.log(`  - Removed existing markers`);
+        
+        // Update direction in activeLines collection too
+        if (this.activeLines.has(line.id)) {
+            const storedLine = this.activeLines.get(line.id);
+            storedLine.direction = line.direction;
+            console.log(`  - Updated direction in activeLines collection`);
+        }
+        
+        // Create unique arrow markers for this line (with timestamp to bypass cache)
+        const uniqueArrowId = `curved_arrow_${line.id}_${Date.now()}`;
+        this.createArrowMarker(uniqueArrowId, true); // Force recreate markers
+        
+        // Add new arrow markers based on direction
+        if (line.direction === 'to' || line.direction === 'both') {
+            path.setAttribute('marker-end', `url(#${uniqueArrowId}_end)`);
+            console.log(`✅ Added end marker to curved line: url(#${uniqueArrowId}_end)`);
+        }
+        if (line.direction === 'from' || line.direction === 'both') {
+            path.setAttribute('marker-start', `url(#${uniqueArrowId}_start)`);
+            console.log(`✅ Added start marker to curved line: url(#${uniqueArrowId}_start)`);
+        }
+        
+        // Force DOM update
+        setTimeout(() => {
+            console.log(`🔄 Force refresh markers for ${line.id}`);
+            const currentStart = path.getAttribute('marker-start');
+            const currentEnd = path.getAttribute('marker-end');
+            console.log(`  - After timeout - marker-start: ${currentStart}, marker-end: ${currentEnd}`);
+        }, 10);
+        
+        console.log(`✅ Updated curved line ${line.id} direction to: ${line.direction}`);
+        console.log(`  - Final marker-start: ${path.getAttribute('marker-start')}`);
+        console.log(`  - Final marker-end: ${path.getAttribute('marker-end')}`);
+    }
+    
     // Resize Handles
     addResizeHandles(element) {
         if (element.type !== 'node' && element.type !== 'text') return;
+        
+        console.log('📎 Adding resize handles to:', {
+            element: element.id,
+            currentPos: {x: element.x, y: element.y},
+            domPos: {left: element.domElement.style.left, top: element.domElement.style.top}
+        });
         
         const handles = ['nw', 'ne', 'sw', 'se'];
         handles.forEach(position => {
@@ -1634,6 +2468,36 @@ class VisualDiagramEditor {
             handle.dataset.position = position;
             handle.dataset.elementId = element.id;
             
+            // Enhanced styling for better visibility and usability
+            handle.style.cssText = `
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                background: #3b82f6;
+                border: 2px solid #ffffff;
+                border-radius: 50%;
+                cursor: ${this.getResizeCursor(position)};
+                z-index: 1000;
+                pointer-events: all;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                opacity: 0.9;
+                transition: all 0.15s ease;
+                ${this.getResizeHandlePosition(position)}
+            `;
+            
+            // Hover effects
+            handle.addEventListener('mouseover', () => {
+                handle.style.transform = 'scale(1.2)';
+                handle.style.opacity = '1';
+                handle.style.background = '#2563eb';
+            });
+            
+            handle.addEventListener('mouseout', () => {
+                handle.style.transform = 'scale(1)';
+                handle.style.opacity = '0.9';
+                handle.style.background = '#3b82f6';
+            });
+            
             handle.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
                 this.startResize(element, position, e);
@@ -1641,16 +2505,81 @@ class VisualDiagramEditor {
             
             element.domElement.appendChild(handle);
         });
+        
+        console.log('✅ Resize handles added, final position:', {
+            element: element.id,
+            finalPos: {x: element.x, y: element.y},
+            domPos: {left: element.domElement.style.left, top: element.domElement.style.top}
+        });
+    }
+    
+    getResizeCursor(position) {
+        const cursors = {
+            'nw': 'nw-resize',
+            'ne': 'ne-resize',
+            'sw': 'sw-resize',
+            'se': 'se-resize'
+        };
+        return cursors[position] || 'pointer';
+    }
+    
+    getResizeHandlePosition(position) {
+        const positions = {
+            'nw': 'top: -6px; left: -6px;',
+            'ne': 'top: -6px; right: -6px;',
+            'sw': 'bottom: -6px; left: -6px;',
+            'se': 'bottom: -6px; right: -6px;'
+        };
+        return positions[position] || '';
     }
     
     startResize(element, position, e) {
+        // If already resizing another element, stop it first
+        if (this.isResizing && this.resizeElement && this.resizeElement !== element) {
+            console.log('⚠️ Interrupting previous resize operation on:', this.resizeElement.id);
+            this.isResizing = false;
+            // Remove any existing event listeners
+            document.removeEventListener('mousemove', this.currentHandleResize);
+            document.removeEventListener('mouseup', this.currentStopResize);
+        }
+        
         this.isResizing = true;
         this.resizeElement = element;
         this.resizePosition = position;
         this.resizeStartX = e.clientX;
         this.resizeStartY = e.clientY;
+        
+        // Store original values from both element data and DOM styles
         this.resizeStartWidth = element.width;
         this.resizeStartHeight = element.height;
+        this.resizeStartLeft = element.x;
+        this.resizeStartTop = element.y;
+        
+        // Also get current DOM position as backup
+        const computedStyle = window.getComputedStyle(element.domElement);
+        const domLeft = parseInt(computedStyle.left) || element.x;
+        const domTop = parseInt(computedStyle.top) || element.y;
+        
+        console.log('🎯 Starting resize:', {
+            element: element.id,
+            position,
+            startSize: {width: element.width, height: element.height},
+            startPos: {x: element.x, y: element.y},
+            domPos: {left: domLeft, top: domTop},
+            positionMismatch: domLeft !== element.x || domTop !== element.y
+        });
+        
+        // Use DOM position if there's a mismatch (this might be the source of the problem)
+        if (domLeft !== element.x || domTop !== element.y) {
+            console.warn('⚠️ Position mismatch detected! Using DOM position as source of truth');
+            this.resizeStartLeft = domLeft;
+            this.resizeStartTop = domTop;
+            element.x = domLeft;
+            element.y = domTop;
+        }
+        
+        // Throttle redraw connections to prevent excessive calls
+        let redrawThrottleTimeout = null;
         
         const handleResize = (e) => {
             if (!this.isResizing) return;
@@ -1660,34 +2589,118 @@ class VisualDiagramEditor {
             
             let newWidth = this.resizeStartWidth;
             let newHeight = this.resizeStartHeight;
+            let newX = this.resizeStartLeft;
+            let newY = this.resizeStartTop;
             
-            if (position.includes('e')) newWidth += deltaX;
-            if (position.includes('w')) newWidth -= deltaX;
-            if (position.includes('s')) newHeight += deltaY;
-            if (position.includes('n')) newHeight -= deltaY;
+            // Calculate new dimensions based on resize handle position
+            if (position.includes('e')) {
+                newWidth = this.resizeStartWidth + deltaX;
+            }
+            if (position.includes('w')) {
+                newWidth = this.resizeStartWidth - deltaX;
+                newX = this.resizeStartLeft + deltaX;
+            }
+            if (position.includes('s')) {
+                newHeight = this.resizeStartHeight + deltaY;
+            }
+            if (position.includes('n')) {
+                newHeight = this.resizeStartHeight - deltaY;
+                newY = this.resizeStartTop + deltaY;
+            }
             
-            // Apply constraints
-            newWidth = Math.max(50, Math.min(300, newWidth));
-            newHeight = Math.max(30, Math.min(200, newHeight));
+            // Apply size constraints - much more reasonable limits
+            const minWidth = element.type === 'text' ? 50 : 60;
+            const minHeight = element.type === 'text' ? 20 : 40;
+            const maxWidth = 400;
+            const maxHeight = 300;
             
+            newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
+            newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
+            
+            // For west/north resizes, adjust position if size was constrained
+            if (position.includes('w') && newWidth === minWidth) {
+                newX = this.resizeStartLeft + (this.resizeStartWidth - minWidth);
+            }
+            if (position.includes('n') && newHeight === minHeight) {
+                newY = this.resizeStartTop + (this.resizeStartHeight - minHeight);
+            }
+            
+            // Only snap to grid for position if we're actually moving the element (west/north resize)
+            if (position.includes('w') || position.includes('n')) {
+                newX = Math.round(newX / this.gridSize) * this.gridSize;
+                newY = Math.round(newY / this.gridSize) * this.gridSize;
+            }
+            
+            // Update element properties
             element.width = newWidth;
             element.height = newHeight;
+            element.x = newX;
+            element.y = newY;
             
+            console.log('📏 Resizing:', {
+                element: element.id,
+                oldPos: {x: this.resizeStartLeft, y: this.resizeStartTop},
+                newPos: {x: newX, y: newY},
+                positionChanged: newX !== this.resizeStartLeft || newY !== this.resizeStartTop,
+                delta: {x: newX - this.resizeStartLeft, y: newY - this.resizeStartTop}
+            });
+            
+            // Update DOM element
             element.domElement.style.width = newWidth + 'px';
             element.domElement.style.height = newHeight + 'px';
+            element.domElement.style.left = newX + 'px';
+            element.domElement.style.top = newY + 'px';
             
-            this.redrawConnections();
-            this.updatePropertyPanel();
+            // Throttle connection redrawing to prevent excessive calls
+            if (element.type === 'node' && redrawThrottleTimeout === null) {
+                redrawThrottleTimeout = setTimeout(() => {
+                    this.redrawConnections();
+                    redrawThrottleTimeout = null;
+                }, 16); // ~60fps throttling
+            }
         };
         
         const stopResize = () => {
+            if (!this.isResizing) return;
+            
             this.isResizing = false;
+            
+            console.log('✅ Resize completed:', {
+                element: this.resizeElement.id,
+                finalSize: {width: this.resizeElement.width, height: this.resizeElement.height},
+                finalPos: {x: this.resizeElement.x, y: this.resizeElement.y}
+            });
+            
+            // Final connection redraw to ensure everything is up to date
+            if (element.type === 'node') {
+                this.redrawConnections();
+            }
+            
+            // Clear throttle timeout
+            if (redrawThrottleTimeout) {
+                clearTimeout(redrawThrottleTimeout);
+                redrawThrottleTimeout = null;
+            }
+            
             document.removeEventListener('mousemove', handleResize);
             document.removeEventListener('mouseup', stopResize);
+            
+            // Clean up resize variables and function references
+            this.resizeElement = null;
+            this.resizePosition = null;
+            this.currentHandleResize = null;
+            this.currentStopResize = null;
         };
+        
+        // Store function references for cleanup
+        this.currentHandleResize = handleResize;
+        this.currentStopResize = stopResize;
         
         document.addEventListener('mousemove', handleResize);
         document.addEventListener('mouseup', stopResize);
+        
+        e.preventDefault();
+        e.stopPropagation();
     }
     
     // Connection Handles
@@ -1904,8 +2917,11 @@ class VisualDiagramEditor {
         this.nodes.clear();
         this.connections.clear();
         this.textNotes.clear();
+        this.freeLines.clear(); // Clear free-form lines
         this.selectedElement = null;
         this.nextNodeId = 1;
+        this.nextNoteId = 1;
+        this.nextLineId = 1; // Reset line counter
         this.nextNoteId = 1;
         
         // Clear DOM elements but preserve SVG defs
@@ -1971,6 +2987,7 @@ class VisualDiagramEditor {
             const nodeMetadata = new Map();
             const connectionDirections = new Map();
             const notes = [];
+            const curvedLines = []; // Store curved lines data
             
             // Extract metadata with detailed logging
             console.log('📊 Extracting metadata from', lines.length, 'lines');
@@ -1993,12 +3010,30 @@ class VisualDiagramEditor {
                             notes.push(noteData);
                             console.log('📝 Parsed note metadata:', noteData);
                         }
+                    } else if (metaData.startsWith('CURVED_LINE:')) {
+                        const parts = metaData.split(':');
+                        if (parts.length >= 8) {
+                            const curvedLineData = {
+                                id: parts[1],
+                                startX: parseFloat(parts[2]),
+                                startY: parseFloat(parts[3]),
+                                endX: parseFloat(parts[4]),
+                                endY: parseFloat(parts[5]),
+                                controlX: parseFloat(parts[6]),
+                                controlY: parseFloat(parts[7]),
+                                direction: parts[8] || 'to'
+                            };
+                            curvedLines.push(curvedLineData);
+                            console.log('🎨 Parsed curved line metadata:', curvedLineData);
+                        }
                     } else if (metaData.includes('_direction:')) {
                         // Parse connection direction metadata
                         const [connId, direction] = metaData.split('_direction:').map(s => s.trim());
                         if (connId && direction) {
-                            connectionDirections.set(connId, direction);
-                            console.log('🔗 Parsed connection direction:', connId, direction);
+                            // Remove "connection_" prefix if present to match lookup format
+                            const cleanConnId = connId.startsWith('connection_') ? connId.substring('connection_'.length) : connId;
+                            connectionDirections.set(cleanConnId, direction);
+                            console.log('🔗 Parsed connection direction:', cleanConnId, direction);
                         }
                     } else {
                         const parts = metaData.split(':');
@@ -2213,8 +3248,31 @@ class VisualDiagramEditor {
             
             this.deselectAll();
             
+            // Recreate curved lines
+            console.log('🎨 Recreating curved lines');
+            for (const curvedLineData of curvedLines) {
+                console.log(`🎨 Recreating curved line: ${curvedLineData.id}`);
+                
+                const line = this.createCurvedLine(
+                    curvedLineData.startX,
+                    curvedLineData.startY,
+                    curvedLineData.endX,
+                    curvedLineData.endY
+                );
+                
+                // Update the line with saved data
+                line.controlX = curvedLineData.controlX;
+                line.controlY = curvedLineData.controlY;
+                line.direction = curvedLineData.direction;
+                
+                // Re-render with correct data
+                this.renderCurvedLine(line);
+                
+                console.log(`✅ Recreated curved line: ${line.id} with direction: ${line.direction}`);
+            }
+            
             console.log('=== LOADING COMPLETE ===');
-            console.log(`Final counts: ${this.nodes.size} nodes, ${this.textNotes.size} notes, ${this.connections.size} connections`);
+            console.log(`Final counts: ${this.nodes.size} nodes, ${this.textNotes.size} notes, ${this.connections.size} connections, ${this.activeLines.size} curved lines`);
             
             // CRITICAL: Recreate all connections and markers after loading to ensure arrows appear
             if (this.connections.size > 0) {
@@ -2282,6 +3340,36 @@ class VisualDiagramEditor {
         const domElement = element.domElement;
         console.log(`🔒 BRUTAL LOCK: ${element.id} at (${element.x}, ${element.y})`);
         
+        // DEBUG: Check if element is actually in DOM
+        const inDOM = document.contains(domElement);
+        const parentElement = domElement.parentElement;
+        const computedBefore = window.getComputedStyle(domElement);
+        console.log(`🔍 DOM STATUS:`, {
+            inDOM,
+            parentElement: parentElement?.tagName || 'none',
+            parentId: parentElement?.id || 'none',
+            parentClass: parentElement?.className || 'none',
+            currentLeft: computedBefore.left,
+            currentTop: computedBefore.top,
+            display: computedBefore.display,
+            position: computedBefore.position,
+            elementInContainer: this.container?.contains(domElement) || 'container not found',
+            containerExists: !!this.container,
+            containerInDOM: this.container ? document.body.contains(this.container) : 'no container'
+        });
+        
+        // CRITICAL FIX: If element is detached from DOM, reattach it
+        if (!parentElement || !inDOM) {
+            console.log('🚨 DETACHED ELEMENT DETECTED - REATTACHING');
+            if (this.container && document.body.contains(this.container)) {
+                this.container.appendChild(domElement);
+                console.log('✅ Element reattached to container');
+            } else {
+                console.log('❌ Container not available for reattachment');
+                return; // Don't try to position a detached element
+            }
+        }
+        
         // 1. Set CSS custom properties for the nuclear CSS rules
         domElement.style.setProperty('--locked-left', element.x + 'px');
         domElement.style.setProperty('--locked-top', element.y + 'px');
@@ -2334,6 +3422,127 @@ class VisualDiagramEditor {
         
         // 7. Additional aggressive style enforcement
         this.enforceStyleProperties(domElement, element);
+        
+        // 8. NUCLEAR OPTION: If computed styles don't match visual position, use transform
+        const afterStyles = window.getComputedStyle(domElement);
+        const clientRect = domElement.getBoundingClientRect();
+        const containerRect = this.container.getBoundingClientRect();
+        
+        // Calculate where the element actually is relative to container
+        const actualX = clientRect.left - containerRect.left;
+        const actualY = clientRect.top - containerRect.top;
+        const expectedX = element.x;
+        const expectedY = element.y;
+        
+        // If there's a significant difference, use transform to force correct position
+        const deltaX = expectedX - actualX;
+        const deltaY = expectedY - actualY;
+        
+        console.log(`🎯 POSITION ANALYSIS:`, {
+            expected: `(${expectedX}, ${expectedY})`,
+            actual: `(${actualX}, ${actualY})`,
+            delta: `(${deltaX}, ${deltaY})`,
+            threshold: 'abs > 1px'
+        });
+        
+        if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+            console.log(`🚨 POSITION MISMATCH DETECTED - Using transform override`);
+            console.log(`   Expected: (${expectedX}, ${expectedY})`);
+            console.log(`   Actual: (${actualX}, ${actualY})`);
+            console.log(`   Delta: (${deltaX}, ${deltaY})`);
+            
+            // For decision elements, combine rotation with translation
+            let transformValue;
+            if (element.elementType === 'decision') {
+                transformValue = `rotate(45deg) translate(${deltaX}px, ${deltaY}px)`;
+                console.log(`✅ Applied decision transform: ${transformValue}`);
+            } else {
+                transformValue = `translate(${deltaX}px, ${deltaY}px)`;
+                console.log(`✅ Applied transform: ${transformValue}`);
+            }
+            
+            // Use transform to force correct visual position
+            domElement.style.setProperty('transform', transformValue, 'important');
+            domElement.style.setProperty('will-change', 'transform', 'important');
+            
+            // Force immediate update
+            domElement.offsetHeight;
+        } else {
+            // For decision elements, preserve the rotation while removing position transform
+            if (element.elementType === 'decision') {
+                if (domElement.style.transform && domElement.style.transform.includes('translate')) {
+                    // Keep rotation, remove only translate
+                    domElement.style.setProperty('transform', 'rotate(45deg)', 'important');
+                    console.log(`✅ Preserved decision rotation, removed position transform`);
+                } else if (!domElement.style.transform || domElement.style.transform === 'none') {
+                    // Ensure decision elements have rotation
+                    domElement.style.setProperty('transform', 'rotate(45deg)', 'important');
+                    console.log(`✅ Applied decision rotation`);
+                }
+            } else {
+                // Remove transform for non-decision elements if position is correct
+                if (domElement.style.transform && domElement.style.transform !== 'none') {
+                    domElement.style.removeProperty('transform');
+                    domElement.style.removeProperty('will-change');
+                    console.log(`✅ Removed transform - position is correct`);
+                }
+            }
+        }
+        
+        // DEBUG: Verify the styles were actually applied
+        const computedAfter = window.getComputedStyle(domElement);
+        
+        // Check for conflicting CSS rules
+        const allStyleSheets = Array.from(document.styleSheets);
+        let conflictingRules = [];
+        
+        try {
+            allStyleSheets.forEach(sheet => {
+                try {
+                    Array.from(sheet.cssRules || sheet.rules || []).forEach(rule => {
+                        if (rule.selectorText && domElement.matches && domElement.matches(rule.selectorText)) {
+                            const ruleStyle = rule.style;
+                            if (ruleStyle.left || ruleStyle.top || ruleStyle.position) {
+                                conflictingRules.push({
+                                    selector: rule.selectorText,
+                                    left: ruleStyle.left,
+                                    top: ruleStyle.top,
+                                    position: ruleStyle.position,
+                                    important: {
+                                        left: ruleStyle.getPropertyPriority('left'),
+                                        top: ruleStyle.getPropertyPriority('top'),
+                                        position: ruleStyle.getPropertyPriority('position')
+                                    }
+                                });
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Cross-origin or other access issues
+                }
+            });
+        } catch (e) {
+            console.log('🚫 Could not analyze stylesheets:', e.message);
+        }
+        
+        console.log(`🔒 AFTER LOCK:`, {
+            elementId: element.id,
+            styleLeft: domElement.style.left,
+            styleTop: domElement.style.top,
+            computedLeft: computedAfter.left,
+            computedTop: computedAfter.top,
+            position: computedAfter.position,
+            display: computedAfter.display,
+            transform: computedAfter.transform,
+            offsetParent: domElement.offsetParent?.tagName,
+            clientRect: domElement.getBoundingClientRect(),
+            stylePriorities: {
+                leftPriority: domElement.style.getPropertyPriority('left'),
+                topPriority: domElement.style.getPropertyPriority('top'),
+                positionPriority: domElement.style.getPropertyPriority('position')
+            },
+            conflictingRules: conflictingRules.length > 0 ? conflictingRules : 'none'
+        });
         
         console.log(`🔒 LOCKED: ${element.id} - DOM left=${domElement.style.left}, top=${domElement.style.top}`);
     }
@@ -2517,14 +3726,18 @@ class VisualDiagramEditor {
                 
                 if (computedLeft !== node.x || computedTop !== node.y) {
                     console.warn(`  FORCING CORRECTION!`);
-                    // Force style update
+                    // Force style update (don't override background-color to allow CSS classes)
+                    const defaultColor = this.getDefaultColor(node.elementType);
+                    const backgroundStyle = (node.color && node.color !== defaultColor) ? 
+                        `background-color: ${node.color} !important;` : '';
+                    
                     element.style.cssText = `
                         position: absolute !important;
                         left: ${node.x}px !important;
                         top: ${node.y}px !important;
                         width: ${node.width}px !important;
                         height: ${node.height}px !important;
-                        background-color: ${node.color} !important;
+                        ${backgroundStyle}
                         z-index: 10 !important;
                         pointer-events: all !important;
                         cursor: move !important;
@@ -2835,6 +4048,9 @@ class VisualDiagramEditor {
                     case 'user':
                         mermaidCode += `    ${id.replace('node_', '')}[${cleanText}]\n`;
                         break;
+                    case 'data':
+                        mermaidCode += `    ${id.replace('node_', '')}[${cleanText}]\n`;
+                        break;
                     default:
                         mermaidCode += `    ${id.replace('node_', '')}[${cleanText}]\n`;
                 }
@@ -2896,6 +4112,19 @@ class VisualDiagramEditor {
                 const domY = parseInt(note.domElement.style.top) || note.y;
                 const escapedText = note.text.replace(/\n/g, '\\n').replace(/:/g, '\\:');
                 metadataComments += `%% NOTE:${id}:${domX}:${domY}:${note.width}:${note.height}:${escapedText}\n`;
+            });
+            
+            console.log('🔄 SAVE DEBUG: Processing curved lines (activeLines)...');
+            console.log('🔄 SAVE DEBUG: ActiveLines count:', this.activeLines.size);
+            
+            // Add curved lines metadata
+            this.activeLines.forEach((line, id) => {
+                console.log(`🔄 SAVE DEBUG: Processing curved line ${id}:`, line);
+                
+                // Save curved line data as metadata comment
+                metadataComments += `%% CURVED_LINE:${id}:${line.startX}:${line.startY}:${line.endX}:${line.endY}:${line.controlX}:${line.controlY}:${line.direction || 'to'}\n`;
+                
+                console.log(`✅ SAVE DEBUG: Added curved line metadata for ${id}`);
             });
             
             const fullCode = mermaidCode + '\n' + metadataComments;
@@ -2960,14 +4189,18 @@ class VisualDiagramEditor {
                 element.dataset.type = nodeData.type;
                 element.textContent = nodeData.text;
                 
-                // Apply ultra-forced positioning
+                // Apply ultra-forced positioning (don't override background-color to allow CSS classes)
+                const defaultColor = this.getDefaultColor(nodeData.type);
+                const backgroundStyle = (nodeData.color && nodeData.color !== defaultColor) ? 
+                    `background-color: ${nodeData.color} !important;` : '';
+                
                 element.style.cssText = `
                     position: absolute !important;
                     left: ${position.x}px !important;
                     top: ${position.y}px !important;
                     width: ${position.width}px !important;
                     height: ${position.height}px !important;
-                    background-color: ${nodeData.color} !important;
+                    ${backgroundStyle}
                     transform: none !important;
                     transition: none !important;
                     animation: none !important;
@@ -4578,6 +5811,238 @@ class VisualDiagramEditor {
         } else {
             console.log('⚠️ FORCE RECREATE: No connections found to recreate');
         }
+    }
+
+    // Line Tool Methods
+    handleLineToolMouseDown(e, x, y) {
+        if (this.isDrawingLine) {
+            // If already drawing, finish the current line (priority over everything else)
+            console.log('🖊️ Finishing line drawing on click');
+            this.finishLineDrawing(x, y);
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Only check for existing elements when NOT drawing
+        const clickedElement = this.getElementAt(x, y);
+        if (clickedElement) {
+            // Clicked on an element - select it instead of drawing line
+            console.log('🎯 Clicked on element, switching to select tool');
+            this.selectElement(clickedElement);
+            this.setActiveTool('select'); // Switch back to select tool
+            return;
+        }
+        
+        // Check if we clicked on an existing curved line
+        if (e.target.tagName === 'path' && e.target.id.startsWith('line_')) {
+            // Clicked on a curved line - don't start drawing
+            console.log('🎯 Clicked on existing curved line');
+            return;
+        }
+        
+        // Deselect any currently selected elements before starting new line
+        this.deselectAll();
+        
+        // Start drawing a new line
+        console.log('🖊️ Starting new line drawing');
+        this.startLineDrawing(x, y);
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    startLineDrawing(x, y) {
+        console.log('🖊️ Starting curved line drawing at:', x, y);
+        
+        this.isDrawingLine = true;
+        
+        // Create a new curved line object
+        const lineId = `line_${this.nextLineId++}`;
+        const line = {
+            id: lineId,
+            type: 'curved_line',
+            startX: x,
+            startY: y,
+            endX: x,
+            endY: y,
+            controlX: x, // Will be updated during drawing
+            controlY: y,
+            selected: false,
+            direction: 'to' // Default direction
+        };
+        
+        // Store current line
+        this.currentLine = line;
+        
+        console.log('✅ Curved line drawing started:', lineId);
+    }
+
+    finishLineDrawing(x, y) {
+        if (!this.currentLine) {
+            console.log('❌ finishLineDrawing called but no currentLine exists');
+            return;
+        }
+        
+        console.log('🖊️ Finishing curved line drawing at:', x, y);
+        console.log('📍 Current line before finish:', this.currentLine);
+        
+        // Update final position
+        this.currentLine.endX = x;
+        this.currentLine.endY = y;
+        
+        // Finalize control point
+        const midX = (this.currentLine.startX + x) / 2;
+        const midY = (this.currentLine.startY + y) / 2;
+        
+        const dx = x - this.currentLine.startX;
+        const dy = y - this.currentLine.startY;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        
+        if (length > 0) {
+            const perpX = -dy / length * 50; // Final curve amount
+            const perpY = dx / length * 50;
+            
+            this.currentLine.controlX = midX + perpX;
+            this.currentLine.controlY = midY + perpY;
+        }
+        
+        // Add to active lines collection
+        this.activeLines.set(this.currentLine.id, this.currentLine);
+        
+        // Render final curved line
+        this.renderCurvedLine(this.currentLine);
+        
+        // Clear drawing state
+        const finishedLine = this.currentLine;
+        this.isDrawingLine = false;
+        this.currentLine = null;
+        
+        // Auto-switch back to select tool after finishing line drawing (with small delay)
+        setTimeout(() => {
+            console.log('🔄 Before tool switch - current tool:', this.activeTool);
+            this.setActiveTool('select');
+            console.log('🔄 After tool switch - current tool:', this.activeTool);
+            console.log('🔄 Automatically switched to select tool after finishing line');
+        }, 100); // Small delay to ensure UI state is consistent
+        
+        // Track the finished line to prevent immediate deselection
+        this.justFinishedLine = finishedLine;
+        
+        // Auto-select the newly created line (with a slight delay to avoid immediate deselection)
+        setTimeout(() => {
+            console.log('🎯 Auto-selecting newly created line (delayed):', finishedLine.id);
+            this.selectLine(finishedLine);
+            
+            // Clear the "just finished" flag after a short delay
+            setTimeout(() => {
+                this.justFinishedLine = null;
+            }, 100);
+        }, 10);
+        
+        console.log('✅ Curved line drawing finished:', finishedLine.id);
+    }
+
+    createLineElement(line) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('class', 'free-line');
+        path.setAttribute('data-line-id', line.id);
+        path.setAttribute('stroke', '#6b7280');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke-linecap', 'round');
+        path.style.pointerEvents = 'stroke';
+        path.style.cursor = 'pointer';
+        
+        // Add click handler for selection
+        path.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.selectElement(line);
+        });
+        
+        this.svg.appendChild(path);
+        line.pathElement = path;
+        
+        // Initial path (just a point)
+        this.updateLineElement(line);
+    }
+
+    updateLineElement(line) {
+        if (!line.pathElement) return;
+        
+        const pathData = `M ${line.startX} ${line.startY} L ${line.endX} ${line.endY}`;
+        line.pathElement.setAttribute('d', pathData);
+    }
+
+    checkLineAttachment(line) {
+        // Check if line endpoints are near any elements
+        const attachmentRadius = 15; // pixels
+        
+        // Check start point
+        const startElement = this.getElementNear(line.startX, line.startY, attachmentRadius);
+        if (startElement && startElement.type === 'node') {
+            line.startAttachment = startElement.id;
+            console.log('📎 Line attached to start element:', startElement.id);
+        }
+        
+        // Check end point  
+        const endElement = this.getElementNear(line.endX, line.endY, attachmentRadius);
+        if (endElement && endElement.type === 'node') {
+            line.endAttachment = endElement.id;
+            console.log('📎 Line attached to end element:', endElement.id);
+        }
+    }
+
+    getElementNear(x, y, radius) {
+        for (const [id, element] of this.nodes) {
+            const centerX = element.x + element.width / 2;
+            const centerY = element.y + element.height / 2;
+            const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+            
+            if (distance <= radius) {
+                return element;
+            }
+        }
+        return null;
+    }
+
+    // Update handleMouseMove to handle line drawing
+    updateMouseMoveForLineDrawing() {
+        const originalHandleMouseMove = this.handleMouseMove.bind(this);
+        
+        this.handleMouseMove = (e) => {
+            if (this.isDrawingLine && this.currentLine) {
+                const rect = this.canvas.getBoundingClientRect();
+                const scrollLeft = this.container.scrollLeft || 0;
+                const scrollTop = this.container.scrollTop || 0;
+                
+                const x = (e.clientX - rect.left + scrollLeft) / this.zoomLevel;
+                const y = (e.clientY - rect.top + scrollTop) / this.zoomLevel;
+                
+                // Update current line end position
+                this.currentLine.endX = x;
+                this.currentLine.endY = y;
+                
+                // Recalculate control point for smooth curve
+                const midX = (this.currentLine.startX + x) / 2;
+                const midY = (this.currentLine.startY + y) / 2;
+                
+                const dx = x - this.currentLine.startX;
+                const dy = y - this.currentLine.startY;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                
+                if (length > 0) {
+                    const perpX = -dy / length * 30; // Smaller curve during drawing
+                    const perpY = dx / length * 30;
+                    
+                    this.currentLine.controlX = midX + perpX;
+                    this.currentLine.controlY = midY + perpY;
+                }
+                
+                this.renderCurvedLine(this.currentLine);
+            } else {
+                originalHandleMouseMove(e);
+            }
+        };
     }
 }
 
