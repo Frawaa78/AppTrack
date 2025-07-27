@@ -1065,10 +1065,10 @@ if (empty($statuses)) {
         </button>
         <button type="button" 
                 class="header-action-btn" 
-                onclick="openTasks()" 
-                title="View and manage tasks">
-          <i class="fa-light fa-list-check" data-fallback="fa-solid fa-list-check,fas fa-tasks,bi bi-check2-square"></i>
-          Tasks
+                onclick="openFlow()" 
+                title="Open Flow Editor - Create visual flow diagrams">
+          <i class="fa-light fa-project-diagram" data-fallback="fa-solid fa-project-diagram,fas fa-project-diagram,bi bi-diagram-3"></i>
+          Flow
         </button>
         <button type="button" 
                 class="integration-architecture-btn" 
@@ -2535,10 +2535,14 @@ function openAIInsight() {
     alert('AI Insight functionality will be implemented soon.');
 }
 
-function openTasks() {
-    console.log('Tasks button clicked');
-    // TODO: Implement Tasks functionality
-    alert('Tasks functionality will be implemented soon.');
+function openFlow() {
+    const appId = <?php echo $id; ?>;
+    if (appId > 0) {
+        const flowUrl = `flow_editor.php?app_id=${appId}`;
+        window.open(flowUrl, '_blank');
+    } else {
+        alert('Please save the application first before creating flow diagrams.');
+    }
 }
 </script>
 <script src="../assets/js/components/activity-tracker.js"></script>

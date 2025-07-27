@@ -1,0 +1,464 @@
+/**
+ * Custom Drawflow CSS for AppTrack
+ * Styles for the Drawflow diagram editor
+ */
+
+/* Main drawflow container */
+.drawflow-container {
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f8f9fa;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Drawflow canvas styling */
+.drawflow {
+    width: 100%;
+    height: 100%;
+    background: #f8f9fa;
+    background-image: 
+        linear-gradient(rgba(0,0,0,.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    position: relative;
+    /* Fix for drag and drop coordinate issues */
+    transform: none !important;
+    zoom: 1 !important;
+}
+
+/* Ensure drawflow wrapper doesn't interfere with coordinates */
+.drawflow .drawflow-node {
+    /* Remove any transforms that could interfere with drag calculations */
+    transform: none !important;
+}
+
+/* Fix for drag calculation issues */
+.drawflow svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+/* Base node styling */
+.drawflow-node {
+    background: white;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-width: 150px;
+    max-width: 250px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: all 0.3s ease;
+}
+
+.drawflow-node:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+.drawflow-node.selected {
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+}
+
+/* Node header */
+.drawflow-node .node-header {
+    background: #007bff;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.drawflow-node .node-header i {
+    font-size: 16px;
+    width: 16px;
+    text-align: center;
+}
+
+/* Node content */
+.drawflow-node .node-content {
+    padding: 12px;
+}
+
+.drawflow-node .node-content input {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 13px;
+    background: white;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.drawflow-node .node-content input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Specific node types */
+.drawflow-node.database-node {
+    border-color: #17a2b8;
+}
+
+.drawflow-node.database-node .node-header {
+    background: #17a2b8;
+}
+
+.drawflow-node.api-node {
+    border-color: #28a745;
+}
+
+.drawflow-node.api-node .node-header {
+    background: #28a745;
+}
+
+.drawflow-node.frontend-node {
+    border-color: #ffc107;
+}
+
+.drawflow-node.frontend-node .node-header {
+    background: #ffc107;
+    color: #212529;
+}
+
+.drawflow-node.service-node {
+    border-color: #6f42c1;
+}
+
+.drawflow-node.service-node .node-header {
+    background: #6f42c1;
+}
+
+/* Connection points (inputs/outputs) */
+.drawflow-node .input,
+.drawflow-node .output {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #007bff;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    cursor: crosshair;
+    transition: all 0.2s ease;
+}
+
+.drawflow-node .input:hover,
+.drawflow-node .output:hover {
+    width: 16px;
+    height: 16px;
+    border-width: 3px;
+    margin: -2px;
+}
+
+.drawflow-node .input {
+    left: -6px;
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.drawflow-node .output {
+    right: -6px;
+    background: #dc3545;
+    border-color: #dc3545;
+}
+
+/* Connection lines */
+.connection {
+    stroke: #007bff;
+    stroke-width: 2px;
+    fill: none;
+    pointer-events: stroke;
+    cursor: pointer;
+}
+
+.connection:hover {
+    stroke: #0056b3;
+    stroke-width: 3px;
+}
+
+.connection.selected {
+    stroke: #28a745;
+    stroke-width: 3px;
+    stroke-dasharray: 5,5;
+    animation: dash-animation 1s linear infinite;
+}
+
+@keyframes dash-animation {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
+
+/* Toolbar styling */
+.drawflow-toolbar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 2px;
+    padding: 4px;
+    z-index: 1000;
+}
+
+.drawflow-toolbar button {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #495057;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.drawflow-toolbar button:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+.drawflow-toolbar button:active {
+    background: #e9ecef;
+}
+
+.drawflow-toolbar button i {
+    font-size: 14px;
+}
+
+/* Component palette */
+.component-palette {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 8px;
+    z-index: 1000;
+    max-width: 200px;
+}
+
+.component-palette h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #495057;
+    font-weight: 600;
+}
+
+.palette-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    margin: 2px 0;
+    border-radius: 4px;
+    cursor: grab;
+    font-size: 13px;
+    color: #495057;
+    transition: background-color 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.palette-item:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+}
+
+.palette-item:active {
+    cursor: grabbing;
+}
+
+.palette-item i {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.palette-item.database i { color: #17a2b8; }
+.palette-item.api i { color: #28a745; }
+.palette-item.frontend i { color: #ffc107; }
+.palette-item.service i { color: #6f42c1; }
+
+/* Zoom controls */
+.zoom-controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    z-index: 1000;
+}
+
+.zoom-controls button {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #495057;
+    transition: all 0.2s ease;
+    margin: 1px 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-controls button:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+    color: #007bff;
+}
+
+/* Save status indicator */
+.save-status {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Context menu */
+.drawflow-context-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 4px 0;
+    min-width: 150px;
+    z-index: 2000;
+    font-size: 13px;
+}
+
+.context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #495057;
+    transition: background-color 0.2s ease;
+}
+
+.context-menu-item:hover {
+    background: #f8f9fa;
+}
+
+.context-menu-item i {
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: #dee2e6;
+    margin: 4px 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .drawflow-container {
+        height: 400px;
+    }
+    
+    .component-palette {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-bottom: 10px;
+        max-width: none;
+    }
+    
+    .drawflow-toolbar {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-bottom: 10px;
+        justify-content: center;
+    }
+    
+    .zoom-controls {
+        position: relative;
+        bottom: auto;
+        right: auto;
+        flex-direction: row;
+        justify-content: center;
+        margin-top: 10px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .drawflow-container {
+        background: #2d3748;
+        border-color: #4a5568;
+    }
+    
+    .drawflow {
+        background: #2d3748;
+        background-image: 
+            linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px);
+    }
+    
+    .drawflow-node {
+        background: #1a202c;
+        color: #e2e8f0;
+    }
+    
+    .drawflow-toolbar,
+    .component-palette,
+    .zoom-controls,
+    .drawflow-context-menu {
+        background: #1a202c;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .drawflow-toolbar button,
+    .zoom-controls button {
+        background: #1a202c;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .drawflow-toolbar button:hover,
+    .zoom-controls button:hover {
+        background: #2d3748;
+    }
+}

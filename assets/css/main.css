@@ -8,6 +8,7 @@
 @import url('./components/user-dropdown.css');
 @import url('./components/visual-diagram-editor.css');
 @import url('./components/kanban-board.css');
+@import url('./components/drawflow-theme.css');
 
 /* Base styles and typography */
 body { 
