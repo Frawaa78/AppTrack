@@ -2,7 +2,7 @@
 
 ## Status Nå vs. Forbedret Versjon
 
-### Nåværende AI Insights (v3.2.0)
+### Nåværende AI Insights (v3.3.2)
 ✅ **Hva som fungerer godt:**
 - Samler data fra work notes, audit history, og applikasjonsdata
 - Genererer summary, timeline, risk assessment, relationship og trend analysis

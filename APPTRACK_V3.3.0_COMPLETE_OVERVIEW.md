@@ -1,8 +1,8 @@
-# AppTrack v3.3.0 - Komplett Oversikt av Nye Funksjoner
+# AppTrack v3.3.2 - Komplett Oversikt - Produksjonsoptimalisering
 
-## 🚀 **Hovedleveranser - Juli 2025**
+## 🚀 **Hovedleveranser - Januar 2025**
 
-Denne major release introduserer to store forbedringer som transformerer AppTrack fra et enkelt applikasjonssporingssystem til en omfattende business intelligence-plattform for IT-porteføljestyring.
+Denne produksjonsoptimialiserings-release transformerer AppTrack til en deployment-klar enterprise-plattform med omfattende opprydding og dokumentasjonsoppdateringer bygget på de solide funksjonene fra v3.3.0.
 
 ---
 

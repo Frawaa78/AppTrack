@@ -34,7 +34,7 @@ $application_id = isset($_GET['app_id']) ? intval($_GET['app_id']) : null;
 
 if (!$application_id) {
     // Redirect with more helpful error
-    header('Location: /public/dashboard.php?error=Flow editor requires an application ID. Please select an application first.');
+    header('Location: /public/dashboard.php?error=DataMap editor requires an application ID. Please select an application first.');
     exit;
 }
 
@@ -60,10 +60,16 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flow Editor - <?php echo htmlspecialchars($application['name']); ?> | AppTrack</title>
+    <title>DataMap - <?php echo htmlspecialchars($application['name']); ?> | AppTrack</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon/favicon-16x16.png">
+    <link rel="manifest" href="../assets/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
     <!-- FontAwesome Pro -->
     <script src="https://kit.fontawesome.com/d67c79608d.js" crossorigin="anonymous"></script>
     <!-- Bootstrap Icons -->
@@ -228,7 +234,7 @@ try {
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 14px;
+            font-size: 12.6px;
         }
         
         .node-item:hover {
@@ -449,25 +455,49 @@ try {
             <div class="sidebar-section">
                 <div class="sidebar-header">Add Elements</div>
                 <div class="sidebar-content">
-                    <div class="node-item" onclick="addNode('process')">
-                        <span class="node-icon"><i class="fas fa-cog"></i></span>
-                        <span>Process</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('database')">
-                        <span class="node-icon"><i class="fas fa-database"></i></span>
-                        <span>Database</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('api')">
-                        <span class="node-icon"><i class="fas fa-plug"></i></span>
-                        <span>API</span>
+                    <div class="node-item" onclick="addNode('application')">
+                        <span class="node-icon"><i class="fa-solid fa-window-flip"></i></span>
+                        <span>Application</span>
                     </div>
                     <div class="node-item" onclick="addNode('service')">
-                        <span class="node-icon"><i class="fas fa-server"></i></span>
+                        <span class="node-icon"><i class="fa-solid fa-gears"></i></span>
                         <span>Service</span>
                     </div>
                     <div class="node-item" onclick="addNode('decision')">
-                        <span class="node-icon"><i class="fas fa-question-circle"></i></span>
+                        <span class="node-icon"><i class="fa-solid fa-code-branch"></i></span>
                         <span>Decision</span>
+                    </div>
+                    <div class="node-item" onclick="addNode('data_pipeline')">
+                        <span class="node-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></span>
+                        <span>Data Pipeline</span>
+                    </div>
+                    <div class="node-item" onclick="addNode('data_product')">
+                        <span class="node-icon"><i class="fa-solid fa-cubes"></i></span>
+                        <span>Data Product</span>
+                    </div>
+                    <div class="node-item" onclick="addNode('api_interface')">
+                        <span class="node-icon"><i class="fa-solid fa-plug"></i></span>
+                        <span>API / Interface</span>
+                    </div>
+                    <div class="node-item" onclick="addNode('database_data_store')">
+                        <span class="node-icon"><i class="fa-solid fa-database"></i></span>
+                        <span>Database / Data Store</span>
+                    </div>
+                    <div class="node-item" onclick="addNode('external_system')">
+                        <span class="node-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                        <span>External System</span>
+                    </div>
+                    <div class="node-item" onclick="addNode('user_role')">
+                        <span class="node-icon"><i class="fa-solid fa-user-group"></i></span>
+                        <span>User / Role</span>
+                    </div>
+                    <div class="node-item" onclick="addNode('security_control_point')">
+                        <span class="node-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                        <span>Security / Control Point</span>
+                    </div>
+                    <div class="node-item" onclick="addNode('visualization')">
+                        <span class="node-icon"><i class="fa-solid fa-monitor-waveform"></i></span>
+                        <span>Visualization</span>
                     </div>
                 </div>
             </div>
@@ -479,16 +509,14 @@ try {
             <div class="app-header">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h1 class="app-title" style="margin: 0;">
-                        🔄 Flow Editor: <?php echo htmlspecialchars($application['name']); ?>
+                        DataMap: <?php echo htmlspecialchars($application['name']); ?>
                         <span class="status-badge <?php echo strtolower($application['status']); ?>">
                             <?php echo htmlspecialchars($application['status']); ?>
                         </span>
                     </h1>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <button onclick="goBack()" style="padding: 8px 16px; border: 1px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; color: #6c757d;">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                        <button onclick="saveDiagram()" style="padding: 8px 16px; border: 1px solid #4EA5D9; background: #4EA5D9; color: white; border-radius: 6px; cursor: pointer;">
+                        <a href="<?php echo 'app_form.php?id=' . $application_id; ?>" class="btn btn-secondary">Cancel</a>
+                        <button onclick="saveDiagram()" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save
                         </button>
                     </div>
@@ -516,6 +544,9 @@ try {
                         </button>
                         <button onclick="exportDiagram()" title="Export Diagram">
                             <i class="fas fa-download"></i>
+                        </button>
+                        <button onclick="updateAllConnectionPositions()" title="Fix Connection Lines" style="color: #28a745;">
+                            <i class="fas fa-wrench"></i>
                         </button>
                     </div>
                 </div>
@@ -549,7 +580,7 @@ try {
         
         // Initialize
         window.addEventListener('DOMContentLoaded', function() {
-            log('🔄 Initializing Flow Editor...');
+            log('🔄 Initializing DataMap Editor...');
             
             const container = document.getElementById('drawflow');
             editor = new Drawflow(container);
@@ -557,7 +588,7 @@ try {
             editor.curvature = 0.5;
             editor.start();
             
-            log('✅ Flow Editor initialized');
+            log('✅ DataMap Editor initialized');
             loadDiagram();
             
             // Set up auto-save on changes
@@ -566,73 +597,66 @@ try {
             editor.on('nodeMoved', () => autoSave());
             editor.on('connectionCreated', () => autoSave());
             editor.on('connectionRemoved', () => autoSave());
+            
+            // Fix connection positions on window resize
+            window.addEventListener('resize', function() {
+                setTimeout(() => {
+                    updateAllConnectionPositions();
+                }, 100);
+            });
         });
+        
+        // Function to update all connection positions - useful after layout changes
+        function updateAllConnectionPositions() {
+            if (!editor || !editor.drawflow || !editor.drawflow.drawflow || !editor.drawflow.drawflow.Home) {
+                return;
+            }
+            
+            const nodes = editor.drawflow.drawflow.Home.data || {};
+            Object.keys(nodes).forEach(nodeId => {
+                editor.updateConnectionNodes('node-' + nodeId);
+            });
+            
+            log('🔧 All connection positions updated');
+        }
         
         // Node templates with different configurations
         function getNodeTemplate(type, counter) {
             const templates = {
-                process: {
+                application: {
                     html: `
                         <div style="padding: 8px;">
-                            <div class="node-title" style="font-weight: bold; margin-bottom: 4px; cursor: text;" 
-                                 contenteditable="true" 
-                                 onblur="updateNodeText(this)"
-                                 onkeydown="handleTextEdit(event)"><i class="fas fa-cog" style="color: #007bff;"></i>Process ${counter}</div>
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-window-flip" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">Application ${counter}</div>
+                            </div>
                             <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
                                       onblur="updateNodeText(this)"
                                       onkeydown="handleTextEdit(event)"
-                                      rows="1">Business Logic</textarea>
+                                      rows="1">Software application or system component</textarea>
                         </div>
                     `,
                     inputs: 1,
                     outputs: 1,
-                    class: 'process-node'
-                },
-                database: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div class="node-title" style="font-weight: bold; margin-bottom: 4px; cursor: text;" 
-                                 contenteditable="true" 
-                                 onblur="updateNodeText(this)"
-                                 onkeydown="handleTextEdit(event)"><i class="fas fa-database" style="color: #28a745;"></i>Database ${counter}</div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Data Storage</textarea>
-                        </div>
-                    `,
-                    inputs: 2,
-                    outputs: 1,
-                    class: 'database-node'
-                },
-                api: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div class="node-title" style="font-weight: bold; margin-bottom: 4px; cursor: text;" 
-                                 contenteditable="true" 
-                                 onblur="updateNodeText(this)"
-                                 onkeydown="handleTextEdit(event)"><i class="fas fa-plug" style="color: #ffc107;"></i>API ${counter}</div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Interface</textarea>
-                        </div>
-                    `,
-                    inputs: 1,
-                    outputs: 2,
-                    class: 'api-node'
+                    class: 'application-node'
                 },
                 service: {
                     html: `
                         <div style="padding: 8px;">
-                            <div class="node-title" style="font-weight: bold; margin-bottom: 4px; cursor: text;" 
-                                 contenteditable="true" 
-                                 onblur="updateNodeText(this)"
-                                 onkeydown="handleTextEdit(event)"><i class="fas fa-server" style="color: #6c757d;"></i>Service ${counter}</div>
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-gears" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">Service ${counter}</div>
+                            </div>
                             <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
                                       onblur="updateNodeText(this)"
                                       onkeydown="handleTextEdit(event)"
-                                      rows="1">External Service</textarea>
+                                      rows="1">Microservice or business service</textarea>
                         </div>
                     `,
                     inputs: 1,
@@ -642,23 +666,186 @@ try {
                 decision: {
                     html: `
                         <div style="padding: 8px;">
-                            <div class="node-title" style="font-weight: bold; margin-bottom: 4px; cursor: text;" 
-                                 contenteditable="true" 
-                                 onblur="updateNodeText(this)"
-                                 onkeydown="handleTextEdit(event)"><i class="fas fa-question-circle" style="color: #dc3545;"></i>Decision ${counter}</div>
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-code-branch" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">Decision ${counter}</div>
+                            </div>
                             <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
                                       onblur="updateNodeText(this)"
                                       onkeydown="handleTextEdit(event)"
-                                      rows="1">Logic Gate</textarea>
+                                      rows="1">Business rule or decision point</textarea>
                         </div>
                     `,
                     inputs: 1,
                     outputs: 2,
                     class: 'decision-node'
+                },
+                data_pipeline: {
+                    html: `
+                        <div style="padding: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-arrow-right-arrow-left" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">Data Pipeline ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      rows="1">Data processing and transformation workflow</textarea>
+                        </div>
+                    `,
+                    inputs: 2,
+                    outputs: 2,
+                    class: 'data-pipeline-node'
+                },
+                data_product: {
+                    html: `
+                        <div style="padding: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-cubes" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">Data Product ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      rows="1">Consumable data asset or product</textarea>
+                        </div>
+                    `,
+                    inputs: 1,
+                    outputs: 3,
+                    class: 'data-product-node'
+                },
+                api_interface: {
+                    html: `
+                        <div style="padding: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-plug" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">API/Interface ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      rows="1">API endpoint or system interface</textarea>
+                        </div>
+                    `,
+                    inputs: 2,
+                    outputs: 1,
+                    class: 'api-interface-node'
+                },
+                database_data_store: {
+                    html: `
+                        <div style="padding: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-database" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">Database/Data Store ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      rows="1">Database or data storage system</textarea>
+                        </div>
+                    `,
+                    inputs: 2,
+                    outputs: 1,
+                    class: 'database-data-store-node'
+                },
+                external_system: {
+                    html: `
+                        <div style="padding: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-cloud-arrow-up" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">External System ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      rows="1">Third-party or external system</textarea>
+                        </div>
+                    `,
+                    inputs: 1,
+                    outputs: 1,
+                    class: 'external-system-node'
+                },
+                user_role: {
+                    html: `
+                        <div style="padding: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-user-group" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">User/Role ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      rows="1">User persona or role in the system</textarea>
+                        </div>
+                    `,
+                    inputs: 0,
+                    outputs: 2,
+                    class: 'user-role-node'
+                },
+                security_control_point: {
+                    html: `
+                        <div style="padding: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-shield-halved" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">Security/Control Point ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      rows="1">Security measure or control point</textarea>
+                        </div>
+                    `,
+                    inputs: 1,
+                    outputs: 1,
+                    class: 'security-control-point-node'
+                },
+                visualization: {
+                    html: `
+                        <div style="padding: 8px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fa-solid fa-monitor-waveform" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">Visualization ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      rows="1">Dashboard, report, or data visualization</textarea>
+                        </div>
+                    `,
+                    inputs: 1,
+                    outputs: 0,
+                    class: 'visualization-node'
                 }
             };
             
-            return templates[type] || templates.process;
+            return templates[type] || templates.application;
         }
         
         // Add node with enhanced types
@@ -704,11 +891,17 @@ try {
         // Get default description for node types
         function getDefaultDescription(type) {
             const descriptions = {
-                process: 'Business Logic',
-                database: 'Data Storage',
-                api: 'Interface',
-                service: 'External Service',
-                decision: 'Logic Gate'
+                application: 'Software application or system component',
+                service: 'Microservice or business service',
+                decision: 'Business rule or decision point',
+                data_pipeline: 'Data processing and transformation workflow',
+                data_product: 'Consumable data asset or product',
+                api_interface: 'API endpoint or system interface',
+                database_data_store: 'Database or data storage system',
+                external_system: 'Third-party or external system',
+                user_role: 'User persona or role in the system',
+                security_control_point: 'Security measure or control point',
+                visualization: 'Dashboard, report, or data visualization'
             };
             return descriptions[type] || 'Description';
         }
@@ -789,6 +982,14 @@ try {
                         setTimeout(() => {
                             initializeTextareas();
                             restoreNodeTexts();
+                            
+                            // FIX: Update connection positions after import
+                            // This fixes the issue where connection lines don't align properly with input/output circles
+                            Object.keys(diagramData.drawflow.Home.data || {}).forEach(nodeId => {
+                                editor.updateConnectionNodes('node-' + nodeId);
+                            });
+                            
+                            log('🔧 Connection positions updated for all nodes');
                         }, 100);
                         
                         log(`📂 Loaded diagram with ${nodeCount} nodes`);
@@ -824,9 +1025,9 @@ try {
             const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `flow-diagram-app${applicationId}-${new Date().toISOString().slice(0,10)}.json`;
+            link.download = `datamap-app${applicationId}-${new Date().toISOString().slice(0,10)}.json`;
             link.click();
-            log('📥 Diagram exported');
+            log('📥 DataMap exported');
         }
         
         // Zoom functions
@@ -908,19 +1109,9 @@ try {
             
             console.log('updateNodeText called with:', element, 'text:', text);
             
-            // For titles, remove the icon from the text if it exists
+            // For titles, the text is already clean since icon is separate
             if (element.classList.contains('node-title')) {
-                // Extract just the text part (remove icon)
-                const icon = element.querySelector('i');
-                if (icon) {
-                    // Clone the element to avoid modifying the original
-                    const tempElement = element.cloneNode(true);
-                    const tempIcon = tempElement.querySelector('i');
-                    if (tempIcon) {
-                        tempIcon.remove();
-                    }
-                    text = tempElement.textContent.trim();
-                }
+                text = element.textContent.trim();
                 console.log('Title text extracted:', text);
             }
             
@@ -1033,20 +1224,11 @@ try {
                 if (nodeElement && nodeData.data) {
                     console.log(`Restoring text for node ${nodeId}:`, nodeData.data);
                     
-                    // Update title if saved
+                    // Update title if saved - icon is now separate so just update text content
                     if (nodeData.data.title) {
                         const titleElement = nodeElement.querySelector('.node-title');
                         if (titleElement) {
-                            // Keep the icon and add the saved title text
-                            const icon = titleElement.querySelector('i');
-                            if (icon) {
-                                // Clear content and rebuild with icon + saved title
-                                titleElement.innerHTML = '';
-                                titleElement.appendChild(icon);
-                                titleElement.appendChild(document.createTextNode(nodeData.data.title));
-                            } else {
-                                titleElement.textContent = nodeData.data.title;
-                            }
+                            titleElement.textContent = nodeData.data.title;
                             console.log(`✓ Title restored: ${nodeData.data.title}`);
                         }
                     }
@@ -1068,13 +1250,6 @@ try {
             });
             
             log('🔄 Node texts restored from saved data');
-        }
-        
-        // Go back function
-        function goBack() {
-            if (confirm('Are you sure you want to leave? Any unsaved changes will be lost.')) {
-                window.history.back();
-            }
         }
     </script>
 </body>

@@ -1,4 +1,4 @@
-# AppTrack Database Documentation
+# AppTrack Database Documentation v3.3.2
 
 This document provides a comprehensive overview of the AppTrack database structure, including all tables, relationships, and AI integration capabilities.
 
@@ -78,8 +78,6 @@ Primary entity storing all application lifecycle information with complete hando
 | business_need           | varchar(350)   | Business justification               | NULL             |
 | created_at              | timestamp      | Record creation timestamp            | DEFAULT CURRENT  |
 | updated_at              | timestamp      | Last modification timestamp          | ON UPDATE        |
-| integration_diagram     | text           | Mermaid diagram code for integration | NULL, COMMENT    |
-| integration_notes       | text           | Notes about integration architecture | NULL, COMMENT    |
 | handover_document_id    | int(11)        | FK to handover_documents table       | NULL, MUL        |
 
 **Key Features:**

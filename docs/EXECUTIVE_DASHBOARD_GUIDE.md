@@ -1,4 +1,4 @@
-# Executive Dashboard Implementation Guide - v3.3.0
+# Executive Dashboard Implementation Guide - v3.3.2
 
 ## 📊 Overview
 

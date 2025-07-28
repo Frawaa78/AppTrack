@@ -246,43 +246,7 @@ if (empty($statuses)) {
   <link rel="stylesheet" href="../assets/css/components/user-dropdown.css">
   <link rel="stylesheet" href="../assets/css/components/activity-tracker.css">
   <style>
-    /* Integration Architecture Button Styling */
-    .integration-architecture-btn {
-        background-color: #FCFCFC;
-        border: 1px solid #F0F1F2;
-        color: #212529;
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-    }
-    
-    .integration-architecture-btn:hover {
-        background-color: #F8F9FA;
-        border-color: #DEE2E6;
-        color: #212529;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-    
-    .integration-architecture-btn:focus {
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
-        background-color: #F8F9FA;
-        border-color: #86B7FE;
-        color: #212529;
-    }
-    
-    .integration-architecture-btn i {
-        font-size: 16px;
-        min-width: 16px;
-        text-align: center;
-    }
+
     
     /* Shared styling for header action buttons */
     .header-action-btn {
@@ -367,52 +331,6 @@ if (empty($statuses)) {
         font-weight: 300;
     }
 
-    /* Integration Architecture Modal Styles */
-    #integrationDiagramModal .modal-dialog {
-        max-width: 95vw;
-        height: 90vh;
-        margin: 2.5vh auto;
-    }
-    
-    #integrationDiagramModal .modal-content {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    #integrationDiagramModal .modal-header {
-        flex-shrink: 0;
-        border-bottom: 2px solid #e2e8f0;
-        padding: 1rem 1.5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-    
-    #integrationDiagramModal .modal-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    #integrationDiagramModal .btn-close {
-        filter: brightness(0) invert(1);
-        opacity: 0.8;
-    }
-    
-    #integrationDiagramModal .btn-close:hover {
-        opacity: 1;
-    }
-    
-    #integrationDiagramModal .modal-body {
-        flex: 1;
-        padding: 0;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
-    
     /* Toolbar Styles */
     .editor-toolbar {
         background: #f8fafc;
@@ -735,58 +653,6 @@ if (empty($statuses)) {
         box-shadow: 0 2px 4px rgba(102, 126, 234, 0.25);
     }
 
-    /* Integration Architecture Modal Styles */
-    #integrationDiagramModal .modal-dialog {
-        width: 95vw;
-        max-width: 95vw;
-        height: 90vh;
-        max-height: 90vh;
-        margin: 2.5vh auto;
-    }
-
-    #integrationDiagramModal .modal-content {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    #integrationDiagramModal .modal-body {
-        flex: 1;
-        padding: 0;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        box-sizing: border-box;
-        min-height: 0;
-    }
-
-    #integrationDiagramModal .modal-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-bottom: none;
-        padding: 1rem 1.5rem;
-        flex-shrink: 0;
-    }
-
-    #integrationDiagramModal .modal-title {
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    #integrationDiagramModal .btn-close-white {
-        filter: brightness(0) invert(1);
-        opacity: 0.8;
-    }
-
-    #integrationDiagramModal .btn-close-white:hover {
-        opacity: 1;
-    }
-
     .modal-header-controls {
         display: flex;
         align-items: center;
@@ -1044,7 +910,14 @@ if (empty($statuses)) {
 <div class="container">
   <form method="post" autocomplete="off" id="applicationForm">
     <div class="header-with-buttons">
-      <div>
+      <div class="d-flex align-items-center">
+        <?php if ($id > 0): ?>
+        <a href="app_view.php?id=<?php echo $id; ?>" 
+           class="header-action-btn me-3" 
+           title="Go back to application view">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <?php endif; ?>
         <h5 class="mb-0"><?php echo $id > 0 ? 'Edit Application' : 'Create New Application'; ?></h5>
       </div>
       <div class="header-buttons">
@@ -1065,18 +938,12 @@ if (empty($statuses)) {
         </button>
         <button type="button" 
                 class="header-action-btn" 
-                onclick="openFlow()" 
-                title="Open Flow Editor - Create visual flow diagrams">
+                onclick="openDataMap()" 
+                title="Open DataMap Editor - Create visual data flow diagrams">
           <i class="fa-light fa-project-diagram" data-fallback="fa-solid fa-project-diagram,fas fa-project-diagram,bi bi-diagram-3"></i>
-          Flow
+          DataMap
         </button>
-        <button type="button" 
-                class="integration-architecture-btn" 
-                onclick="openIntegrationDiagram()" 
-                title="Open Integration Architecture Editor - Create visual diagrams">
-          <i class="fa-light fa-sitemap" data-fallback="fa-solid fa-sitemap,fas fa-project-diagram,fas fa-network-wired,bi bi-diagram-3"></i>
-          Integration Architecture
-        </button>
+
         <?php endif; ?>
         <a href="<?php echo $id > 0 ? 'app_view.php?id=' . $id : 'dashboard.php'; ?>" class="btn btn-secondary">Cancel</a>
         <button type="submit" form="applicationForm" class="btn btn-primary"><?php echo $id > 0 ? 'Update' : 'Create'; ?></button>
@@ -1380,204 +1247,7 @@ if (empty($statuses)) {
   <?php endif; ?>
 </div>
 
-<!-- Integration Architecture Modal -->
-<div class="modal fade" id="integrationDiagramModal" tabindex="-1" aria-labelledby="integrationDiagramModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="integrationDiagramModalLabel">
-          <i class="fa-light fa-sitemap"></i> Integration Architecture Editor - <?php echo htmlspecialchars($app['short_description']); ?>
-        </h5>
-        <div class="modal-header-controls">
-          <!-- Template Dropdown -->
-          <?php if (in_array($_SESSION['user_role'] ?? 'viewer', ['admin', 'editor'])): ?>
-          <div class="dropdown me-3">
-            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="templateDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-collection"></i> Templates
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="templateDropdown">
-              <li><a class="dropdown-item" href="#" onclick="loadVisualTemplate('basic')">
-                <i class="bi bi-diagram-2"></i> Basic Integration
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="loadVisualTemplate('pipeline')">
-                <i class="bi bi-arrow-right-circle"></i> Data Pipeline
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="loadVisualTemplate('api')">
-                <i class="bi bi-cloud"></i> API Integration
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="loadVisualTemplate('microservices')">
-                <i class="bi bi-grid-3x3"></i> Microservices
-              </a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#" onclick="clearCanvas()">
-                <i class="bi bi-trash"></i> Clear Canvas
-              </a></li>
-            </ul>
-          </div>
-          
-          <!-- Tools Dropdown -->
-          <div class="dropdown me-3">
-            <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="toolsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-tools"></i> Tools
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="toolsDropdown">
-              <li><a class="dropdown-item" href="#" onclick="setTool('select')">
-                <i class="bi bi-cursor"></i> Select Tool
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="setTool('connect')">
-                <i class="bi bi-arrow-left-right"></i> Connect Tool
-              </a></li>
-              <li><a class="dropdown-item" href="#" onclick="setTool('text')">
-                <i class="bi bi-textarea-t"></i> Text Note Tool
-              </a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#" onclick="autoLayout()">
-                <i class="bi bi-distribute-vertical"></i> Auto Layout
-              </a></li>
-            </ul>
-          </div>
-          
 
-          <?php endif; ?>
-          
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-      </div>
-      <div class="modal-body p-0">
-        <!-- Editor Toolbar -->
-        <div class="editor-toolbar">
-          <div class="toolbar-section">
-            <button class="btn btn-sm btn-outline-secondary" id="selectTool" onclick="setActiveTool('select')" title="Select Tool">
-              <i class="bi bi-cursor"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" id="connectTool" onclick="setActiveTool('connect')" title="Connect Tool">
-              <i class="bi bi-arrow-left-right"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" id="textTool" onclick="setActiveTool('text')" title="Add Text Note">
-              <i class="bi bi-textarea-t"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" id="lineTool" onclick="setActiveTool('line')" title="Draw Free Line">
-              <i class="bi bi-pencil"></i>
-            </button>
-          </div>
-          
-          <div class="toolbar-section">
-            <button class="btn btn-sm btn-outline-secondary" onclick="zoomIn()" title="Zoom In">
-              <i class="bi bi-zoom-in"></i>
-            </button>
-            <span class="zoom-level" id="zoomLevel">100%</span>
-            <button class="btn btn-sm btn-outline-secondary" onclick="zoomOut()" title="Zoom Out">
-              <i class="bi bi-zoom-out"></i>
-            </button>
-          </div>
-          
-          <div class="toolbar-section">
-            <button class="btn btn-sm btn-success" onclick="saveIntegrationData(event)" title="Save Diagram">
-              <i class="bi bi-floppy"></i> Save
-            </button>
-          </div>
-        </div>
-        
-        <!-- Main Editor Canvas -->
-        <div class="editor-main-container">
-          <!-- Element Palette -->
-          <div class="element-palette">
-            <div class="palette-header">
-              <h6><i class="bi bi-shapes"></i> Elements</h6>
-            </div>
-            <div class="palette-grid">
-              <!-- Row 1: Circle and Diamond -->
-              <div class="palette-element" draggable="true" data-element-type="start" 
-                   title="Circle - Start, end or intermediate point">
-                <div class="element-icon circle-icon"><i class="fa-light fa-circle"></i></div>
-                <span class="element-label">Start/End</span>
-              </div>
-              <div class="palette-element" draggable="true" data-element-type="decision" 
-                   title="Diamond - Decision, choice or branching">
-                <div class="element-icon diamond-icon"><i class="fa-light fa-diamond"></i></div>
-                <span class="element-label">Decision</span>
-              </div>
-              
-              <!-- Row 2: Rounded Rectangle and Sharp Rectangle -->
-              <div class="palette-element" draggable="true" data-element-type="process" 
-                   title="Rounded rectangle - Activity or action">
-                <div class="element-icon rounded-rect-icon"><i class="fa-light fa-rectangle"></i></div>
-                <span class="element-label">Activity</span>
-              </div>
-              <div class="palette-element" draggable="true" data-element-type="data" 
-                   title="Sharp rectangle - Data object or entity">
-                <div class="element-icon sharp-rect-icon"><i class="fa-sharp fa-light fa-square"></i></div>
-                <span class="element-label">Data</span>
-              </div>
-              
-              <!-- Row 3: Line and Text -->
-              <div class="palette-element" draggable="true" data-element-type="connect" 
-                   title="Line - Draw free-form lines on canvas">
-                <div class="element-icon line-icon"><i class="fa-light fa-wave-sine"></i></div>
-                <span class="element-label">Line</span>
-              </div>
-              <div class="palette-element" draggable="true" data-element-type="text" 
-                   title="Text - Add text notes">
-                <div class="element-icon text-icon"><i class="fa-light fa-text"></i></div>
-                <span class="element-label">Text</span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Canvas Container -->
-          <div class="editor-container">
-            <div id="visual-diagram-editor" class="visual-editor-canvas"></div>
-          </div>
-        </div>
-        
-        <!-- Property Panel (appears when element is selected) -->
-        <div id="property-panel" class="property-panel" style="display: none;">
-          <div class="property-panel-header">
-            <h6 style="margin: 0;"><i class="bi bi-gear"></i> Properties</h6>
-          </div>
-          <div class="property-panel-content">
-            <div class="property-group">
-              <label>Text:</label>
-              <input type="text" id="elementText" class="form-control form-control-sm" onchange="updateSelectedElement()">
-            </div>
-            <div class="property-group">
-              <label>Width:</label>
-              <input type="range" id="elementWidth" min="80" max="300" step="10" class="form-range" onchange="updateSelectedElement()">
-            </div>
-            <div class="property-group">
-              <label>Height:</label>
-              <input type="range" id="elementHeight" min="40" max="200" step="10" class="form-range" onchange="updateSelectedElement()">
-            </div>
-            <div class="property-group">
-              <label>Background:</label>
-              <select id="elementColor" class="form-select form-select-sm" onchange="updateSelectedElement()">
-                <option value="#e2e8f0">Light Gray</option>
-                <option value="#dbeafe">Light Blue</option>
-                <option value="#dcfce7">Light Green</option>
-                <option value="#fef3c7">Light Yellow</option>
-                <option value="#fecaca">Light Red</option>
-                <option value="#e9d5ff">Light Purple</option>
-              </select>
-            </div>
-            <div class="property-group" id="connectionDirectionGroup" style="display: none;">
-              <label>Arrow Direction:</label>
-              <select id="connectionDirection" class="form-select form-select-sm" onchange="updateSelectedElement()">
-                <option value="to">➡️ One Way (To)</option>
-              <option value="from">⬅️ One Way (From)</option>
-              <option value="both">↔️ Both Ways</option>
-            </select>
-          </div>
-          <div class="property-group">
-            <button class="btn btn-sm btn-danger w-100" onclick="deleteSelectedElement()">
-              <i class="bi bi-trash"></i> Delete Element
-            </button>
-          </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
 // Set current app ID for integration diagram
@@ -1612,12 +1282,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 <?php endif; ?>
 
-// Integration Diagram functionality
-let mermaidLoaded = false;
-let visualEditor = null;
 
-// Open Integration Diagram Modal
-window.openIntegrationDiagram = function() {
     console.log('🚀 openIntegrationDiagram called!');
     console.log('Opening Integration Architecture Modal...');
     
@@ -1822,7 +1487,7 @@ async function initializeIntegrationDiagram() {
         }
         
         console.log('🌐 INIT DIAGRAM: Fetching diagram data from server...');
-        const response = await fetch(`api/get_integration_diagram.php?id=${window.currentAppId}`);
+        const response = await fetch(`api/get_application_data.php?id=${window.currentAppId}`);
         const data = await response.json();
         
         console.log('📡 INIT DIAGRAM: Server response:', data);
@@ -2433,7 +2098,7 @@ async function saveIntegrationData(event) {
             notes: ''
         });
         
-        const response = await fetch('api/save_integration_diagram.php', {
+        const response = await fetch('api/save_application_data.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2518,30 +2183,28 @@ async function saveIntegrationData(event) {
         }
         
         // Apply fallback to all header action button icons
-        document.querySelectorAll('.header-action-btn i, .integration-architecture-btn i').forEach(setupIconFallback);
+        document.querySelectorAll('.header-action-btn i').forEach(setupIconFallback);
     });
 </script>
 <script>
 // Header action button functions
 function openUserStories() {
     console.log('User Stories button clicked');
-    // TODO: Implement User Stories functionality
-    alert('User Stories functionality will be implemented soon.');
+    window.location.href = 'user_stories.php?application_id=<?php echo $id; ?>';
 }
 
-function openAIInsight() {
+function openAIInsight() {  
     console.log('AI Insight button clicked');
-    // TODO: Implement AI Insight functionality
-    alert('AI Insight functionality will be implemented soon.');
+    window.location.href = 'ai_insights.php?application_id=<?php echo $id; ?>';
 }
 
-function openFlow() {
+function openDataMap() {
     const appId = <?php echo $id; ?>;
     if (appId > 0) {
-        const flowUrl = `flow_editor.php?app_id=${appId}`;
-        window.open(flowUrl, '_blank');
+        const datamapUrl = `datamap.php?app_id=${appId}`;
+        window.location.href = datamapUrl;
     } else {
-        alert('Please save the application first before creating flow diagrams.');
+        alert('Please save the application first before creating data maps.');
     }
 }
 </script>

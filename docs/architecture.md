@@ -1,31 +1,27 @@
-# AppTrack Technical Architecture v3.3.0
+# AppTrack Technical Architecture v3.3.2
 
 ## System Overview
 
-AppTrack is a production-ready web application built with a modern, scalable architecture that integrates AI-powered analysis capabilities with traditional application lifecycle management. Version 3.3.0 introduces comprehensive User Stories management with Agile methodology support and Jira integration capabilities.
+AppTrack is a production-ready web application built with a modern, scalable architecture that integrates AI-powered analysis capabilities with traditional application lifecycle management. Version 3.3.2 represents a production optimization release with comprehensive file cleanup and documentation updates following the comprehensive User Stories management and AI integration features.
 
 ## Architecture Stack
 
 ### Backend
 - **Language**: PHP 8+
-- **Database**: MySQL 8.0 with InnoDB engine (27 tables)
+- **Database**: MySQL 8.0 with InnoDB engine (25 tables)
 - **AI Integration**: OpenAI GPT-3.5-turbo API
 - **Authentication**: Session-based with BCrypt password hashing
-- **API Design**: RESTful endpoints with JSON responses (28 active endpoints)
+- **API Design**: RESTful endpoints with JSON responses (31 active endpoints)
+- **File Structure**: 93 production PHP files in streamlined architecture
 
 ### Frontend
 - **Framework**: Bootstrap 5.3 for responsive design
-- **JavaScript**: Vanilla ES6+ with modular components
+- **JavaScript**: Vanilla ES6+ with modular components (5 core JS components)
+- **CSS Architecture**: Modular component-based styling (12 CSS components)
 - **UI Components**: Choices.js for enhanced multi-select functionality
-- **Kanban System**: Interactive drag-and-drop kanban board with audit logging
-- **Icons**: Bootstrap Icons with FontAwesome Pro integration
+- **Visual Editor**: DrawFlow integration for diagram creation with connection fixes
+- **Icons**: FontAwesome Pro with Bootstrap Icons fallback system
 - **Modal System**: Bootstrap modals for AI analysis and integration diagrams
-
-### Infrastructure
-- **Web Server**: Apache/Nginx compatible
-- **File Storage**: Database BLOB storage for attachments + file system for User Stories
-- **Caching**: Application-level caching for AI analysis results
-- **Logging**: Comprehensive audit trail, AI usage tracking, and User Stories activity logging
 
 ## Core System Components
 

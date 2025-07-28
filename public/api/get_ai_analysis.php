@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $application_id = $_GET['application_id'] ?? null;
     $analysis_id = $_GET['analysis_id'] ?? null;
+    $analysis_type = $_GET['analysis_type'] ?? null;
     $limit = min(($_GET['limit'] ?? 10), 50); // Max 50 results
     
     if (!$application_id && !$analysis_id) {
@@ -46,7 +47,13 @@ try {
         ]);
     } else {
         // Get recent analyses for application
-        $results = $aiService->getRecentAnalysis($application_id, $limit);
+        if ($analysis_type) {
+            // Get specific analysis type
+            $results = $aiService->getAnalysisByType($application_id, $analysis_type, $limit);
+        } else {
+            // Get all recent analyses
+            $results = $aiService->getRecentAnalysis($application_id, $limit);
+        }
         
         echo json_encode([
             'success' => true,

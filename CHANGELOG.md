@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
+## [3.3.2] - 2025-07-28 - Production Cleanup & Documentation Refresh
+
+### Changed
+- **Production Codebase Optimization**
+  - Comprehensive cleanup removing all test, debug, and development artifacts
+  - Updated documentation to reflect cleaned file structure and current architecture
+  - Enhanced file structure documentation with accurate module counts and statistics
+  - Synchronized all documentation versions to v3.3.2
+
+### Removed
+- **Test & Debug Files (19 files total)**
+  - **DrawFlow Test Files (6)**: `drawflow_database_test.php`, `drawflow_drag_fix_test.php`, `drawflow_minimal_test.php`, `drawflow_test.php`, `drawflow_test_simple.php`, `drawflow_test_working.php`
+  - **Debug Files (1)**: `debug_ai_analysis.php`
+  - **Test Files (6)**: `simple_api_test.php`, `test_ai_prompts.php`, `test_api_clean.php`, `test_css_cleanup.php`, `test_datamap_integration.php`, `public/test_minimal.php`
+  - **Test API Files (2)**: `load_drawflow_diagram_test.php`, `save_drawflow_diagram_test.php`
+  - **Executed SQL Migrations (4)**: `add_narrative_summary_prompt.sql`, `datamap_sql_update.sql`, `update_ai_prompts_with_datamap.sql`, `update_ai_prompts_with_user_stories.sql`
+  
+- **Documentation Cleanup**
+  - **Example SQL Files (4)**: `docs/check-users.sql`, `docs/database-updates.sql`, `docs/lenel-s2-sample-data.sql`, `docs/sample-activity-data.sql`
+  - **Deprecated Files (3)**: `public/flow_editor.php` (replaced by `datamap.php`), `test_flow_editor.sh`, `test-curved-lines.html`
+
+### Fixed
+- **File Structure Documentation**
+  - Updated README.md with accurate file counts: 93 PHP files, 31 API endpoints, 15 CSS modules, 10 JavaScript modules
+  - Enhanced architecture documentation reflecting production-clean state
+  - Corrected module counts in technical architecture documentation
+  - Updated database documentation to maintain 25-table accuracy
+
+### Security
+- **Production Hardening**
+  - Removed all debug endpoints and testing interfaces from production codebase
+  - Eliminated development artifacts that could expose system internals
+  - Maintained only production-relevant files for secure deployment
+
+---
+
 ## [3.3.1] - 2025-07-24 - Documentation Update & File Cleanup
 
 ### Changed

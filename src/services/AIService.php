@@ -244,7 +244,7 @@ class AIService {
             error_log("AIService buildPrompt - No work notes found. Data structure: " . json_encode($context_data['work_notes']));
         }
 
-        // Process User Stories data
+        // Process User Stories data with business needs focus
         $user_stories_summary = '';
         $user_stories_data = $context_data['user_stories'] ?? [];
         
@@ -253,35 +253,38 @@ class AIService {
             $summary = $user_stories_data['summary'] ?? [];
             
             $total_stories = count($stories);
-            $user_stories_summary .= "Total user stories found: {$total_stories}\n";
+            $user_stories_summary .= "Business Requirements Analysis from User Stories ({$total_stories} total):\n\n";
             
-            // Add completion insights
+            // Add completion insights with better context
             if (!empty($summary['completion_insights'])) {
                 $insights = $summary['completion_insights'];
-                $user_stories_summary .= "Story completion: {$insights['completion_rate']}% done, {$insights['in_progress_rate']}% in progress, {$insights['backlog_rate']}% in backlog\n";
+                $completed = $insights['completion_rate'] ?? 0;
+                $in_progress = $insights['in_progress_rate'] ?? 0;
+                $backlog = $insights['backlog_rate'] ?? 0;
+                $user_stories_summary .= "Development Progress: {$completed}% completed, {$in_progress}% in progress, {$backlog}% in backlog\n";
             }
             
-            // Add priority breakdown
+            // Add priority breakdown for planning context
             if (!empty($summary['by_priority'])) {
                 $priorities = [];
                 foreach ($summary['by_priority'] as $priority => $count) {
-                    $priorities[] = "{$priority}: {$count}";
+                    $priorities[] = "{$count} {$priority} priority";
                 }
-                $user_stories_summary .= "Priority breakdown: " . implode(', ', $priorities) . "\n";
+                $user_stories_summary .= "Requirements Priority Distribution: " . implode(', ', $priorities) . "\n";
             }
             
-            // Add business value themes
+            // Add business value themes for context
             if (!empty($summary['business_value_themes'])) {
                 $themes = [];
                 foreach ($summary['business_value_themes'] as $theme => $count) {
-                    $themes[] = "{$theme}: {$count}";
+                    $themes[] = "{$theme} ({$count})";
                 }
-                $user_stories_summary .= "Business value themes: " . implode(', ', $themes) . "\n\n";
+                $user_stories_summary .= "Business Value Areas: " . implode(', ', $themes) . "\n\n";
             }
             
-            // Add detailed stories (top 10)
-            $user_stories_summary .= "Key User Stories:\n";
-            foreach (array_slice($stories, 0, 10) as $story) {
+            // Add business needs and planned solutions
+            $user_stories_summary .= "Key Business Needs and Planned Solutions:\n";
+            foreach (array_slice($stories, 0, 8) as $story) {
                 $title = $story['title'] ?? 'Untitled';
                 $status = $story['status'] ?? 'unknown';
                 $priority = $story['priority'] ?? 'unknown';
@@ -289,25 +292,131 @@ class AIService {
                 $want_to = $story['want_to'] ?? '';
                 $so_that = $story['so_that'] ?? '';
                 
-                $user_stories_summary .= "- [{$status}/{$priority}] {$title}\n";
-                $user_stories_summary .= "  As a {$role}, I want to {$want_to}, so that {$so_that}\n";
+                if (!empty($role) && !empty($want_to) && !empty($so_that)) {
+                    $user_stories_summary .= "- [{$status}] Business Need: As a {$role}, I want to {$want_to}, so that {$so_that}\n";
+                } else {
+                    $user_stories_summary .= "- [{$status}] {$title}\n";
+                }
             }
         } else {
-            $user_stories_summary = "No user stories found for this application.";
+            $user_stories_summary = "No user stories or business requirements documentation found for this application.";
+        }
+        
+        // Process DataMap diagram data with enhanced DrawFlow parsing
+        $datamap_summary = '';
+        $datamap_data = $context_data['datamap_diagram'] ?? [];
+        
+        if (!empty($datamap_data['has_diagram']) && $datamap_data['has_diagram']) {
+            $analysis = $datamap_data['analysis'];
+            $datamap_summary .= "DataMap Integration Architecture Analysis:\n";
+            $datamap_summary .= "This application uses DrawFlow (https://github.com/jerosoler/Drawflow) to visualize integration architecture with {$analysis['node_count']} components.\n\n";
+            
+            // Extract actual system names and descriptions from raw DrawFlow data
+            $systems_info = [];
+            if (!empty($datamap_data['raw_data']['drawflow']['Home']['data'])) {
+                $datamap_summary .= "Integration Components and Data Flow:\n";
+                foreach ($datamap_data['raw_data']['drawflow']['Home']['data'] as $node_id => $node) {
+                    $node_data = $node['data'] ?? [];
+                    $system_title = $node_data['title'] ?? 'Unknown System';
+                    $system_description = $node_data['description'] ?? 'No description';
+                    $system_type = $node_data['type'] ?? 'unknown';
+                    
+                    // Store for connection analysis
+                    $systems_info[$node_id] = [
+                        'title' => $system_title,
+                        'type' => $system_type,
+                        'description' => $system_description
+                    ];
+                    
+                    $datamap_summary .= "- {$system_title} ({$system_type}): {$system_description}\n";
+                }
+                $datamap_summary .= "\n";
+                
+                // Analyze data flow connections using actual system names
+                $datamap_summary .= "Data Flow Architecture:\n";
+                foreach ($datamap_data['raw_data']['drawflow']['Home']['data'] as $node_id => $node) {
+                    $source_system = $systems_info[$node_id]['title'] ?? 'Unknown';
+                    $outputs = $node['outputs'] ?? [];
+                    
+                    foreach ($outputs as $output_key => $output_data) {
+                        $connections = $output_data['connections'] ?? [];
+                        foreach ($connections as $connection) {
+                            $target_node_id = $connection['node'] ?? null;
+                            if ($target_node_id && isset($systems_info[$target_node_id])) {
+                                $target_system = $systems_info[$target_node_id]['title'];
+                                $target_type = $systems_info[$target_node_id]['type'];
+                                $datamap_summary .= "- Data flows from {$source_system} → {$target_system} ({$target_type})\n";
+                            }
+                        }
+                    }
+                }
+                $datamap_summary .= "\n";
+                
+                // Group systems by type with actual names
+                $systems_by_type = [];
+                foreach ($systems_info as $system) {
+                    $type = $system['type'];
+                    if (!isset($systems_by_type[$type])) {
+                        $systems_by_type[$type] = [];
+                    }
+                    $systems_by_type[$type][] = $system['title'];
+                }
+                
+                foreach ($systems_by_type as $type => $system_names) {
+                    $count = count($system_names);
+                    $names_list = implode(', ', $system_names);
+                    $datamap_summary .= ucfirst(str_replace('_', ' ', $type)) . " ({$count}): {$names_list}\n";
+                }
+            }
+            
+            // Connection summary for integration complexity
+            $connection_count = count($analysis['connections']);
+            $datamap_summary .= "\nIntegration Complexity: {$connection_count} connections between systems\n";
+            
+            // Additional notes for business context
+            if (!empty($datamap_data['notes'])) {
+                $datamap_summary .= "Architecture Notes: {$datamap_data['notes']}\n";
+            }
+            
+        } else {
+            $datamap_summary = "No DataMap integration diagram found. This application may not have defined integration architecture yet or operates independently.";
         }
         
         $replacements = [
             '{application_data}' => json_encode($context_data['application'], JSON_PRETTY_PRINT),
             '{work_notes}' => $work_notes_summary,
             '{user_stories}' => $user_stories_summary,
+            '{datamap_diagram}' => $datamap_summary,
             '{work_notes_raw}' => json_encode($context_data['work_notes'], JSON_PRETTY_PRINT),
             '{user_stories_raw}' => json_encode($context_data['user_stories'], JSON_PRETTY_PRINT),
+            '{datamap_raw}' => json_encode($context_data['datamap_diagram'], JSON_PRETTY_PRINT),
             '{relationships}' => json_encode($context_data['relationships'], JSON_PRETTY_PRINT),
             '{audit_history}' => json_encode($context_data['audit_history'], JSON_PRETTY_PRINT),
             '{attachments}' => json_encode($context_data['attachments'], JSON_PRETTY_PRINT)
         ];
         
-        return str_replace(array_keys($replacements), array_values($replacements), $template);
+        // Add specific guidance for application data interpretation
+        $processed_template = $template;
+        $processed_template .= "\n\n**DATA INTERPRETATION GUIDANCE:**\n";
+        $processed_template .= "- 'assigned_to' field indicates data maintenance responsibility, NOT project participation - exclude from project team mentions\n";
+        $processed_template .= "- 'handover_status' is always a percentage (0-100) representing completion of handover process\n";
+        $processed_template .= "- Focus on 'project_manager' and 'product_owner' for actual project leadership roles\n";
+        $processed_template .= "- All specific system names from DataMap diagram should be mentioned by name in integration discussions\n";
+        $processed_template .= "- User Stories represent actual business needs and planned solutions - integrate this context into business requirements discussion\n";
+        
+        // Add debug information for DrawFlow data if available
+        if (!empty($datamap_data['has_diagram']) && !empty($datamap_data['raw_data']['drawflow']['Home']['data'])) {
+            $processed_template .= "\n**DRAWFLOW DATA AVAILABLE - SYSTEM NAMES TO USE:**\n";
+            foreach ($datamap_data['raw_data']['drawflow']['Home']['data'] as $node_id => $node) {
+                $node_data = $node['data'] ?? [];
+                $title = $node_data['title'] ?? 'Unknown';
+                $description = $node_data['description'] ?? '';
+                $type = $node_data['type'] ?? 'unknown';
+                $processed_template .= "- {$title} ({$type}): {$description}\n";
+            }
+        }
+        
+        return str_replace(array_keys($replacements), array_values($replacements), $processed_template);
     }
     
     /**
@@ -509,6 +618,33 @@ class AIService {
         
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$application_id, $limit]);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Parse analysis_result JSON for each result
+        foreach ($results as &$result) {
+            if ($result['analysis_result']) {
+                $result['analysis_result'] = json_decode($result['analysis_result'], true);
+            }
+        }
+        
+        return $results;
+    }
+    
+    /**
+     * Get recent analysis by type
+     */
+    public function getAnalysisByType($application_id, $analysis_type, $limit = 5) {
+        $sql = "
+            SELECT id, analysis_type, analysis_result, created_at, processing_time_ms, 
+                   JSON_EXTRACT(analysis_result, '$.type') as result_type
+            FROM ai_analysis 
+            WHERE application_id = ? AND analysis_type = ?
+            ORDER BY created_at DESC 
+            LIMIT ?
+        ";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$application_id, $analysis_type, $limit]);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Parse analysis_result JSON for each result

@@ -40,6 +40,7 @@ class DataAggregator {
             'relationships' => $this->getRelationshipData($application_id),
             'audit_history' => $this->getAuditHistory($application_id),
             'attachments' => $this->getAttachmentSummary($application_id),
+            'datamap_diagram' => $this->getDataMapDiagram($application_id),
             'context_timestamp' => date('Y-m-d H:i:s')
         ];
     }
@@ -712,6 +713,220 @@ class DataAggregator {
                 ]
             ];
         }
+    }
+
+    /**
+     * Get DataMap diagram analysis
+     */
+    public function getDataMapDiagram($application_id) {
+        try {
+            $sql = "SELECT drawflow_diagram, drawflow_notes FROM applications WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$application_id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$result || !$result['drawflow_diagram']) {
+                return [
+                    'has_diagram' => false,
+                    'analysis' => 'No DataMap diagram found for this application.'
+                ];
+            }
+            
+            $diagram_data = json_decode($result['drawflow_diagram'], true);
+            
+            if (!$diagram_data || !isset($diagram_data['drawflow']['Home']['data'])) {
+                return [
+                    'has_diagram' => false,
+                    'analysis' => 'DataMap diagram exists but contains no flow data.'
+                ];
+            }
+            
+            $nodes = $diagram_data['drawflow']['Home']['data'];
+            $analysis = $this->analyzeDataFlowDiagram($nodes);
+            
+            return [
+                'has_diagram' => true,
+                'raw_data' => $diagram_data,
+                'notes' => $result['drawflow_notes'],
+                'analysis' => $analysis
+            ];
+            
+        } catch (Exception $e) {
+            error_log("DataAggregator getDataMapDiagram error: " . $e->getMessage());
+            return [
+                'has_diagram' => false,
+                'analysis' => 'Error retrieving DataMap diagram: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Analyze the structure and flow of the DataMap diagram
+     */
+    private function analyzeDataFlowDiagram($nodes) {
+        $analysis = [
+            'node_count' => count($nodes),
+            'node_types' => [],
+            'connections' => [],
+            'data_sources' => [],
+            'data_destinations' => [],
+            'transformations' => [],
+            'flow_patterns' => []
+        ];
+        
+        foreach ($nodes as $nodeId => $nodeData) {
+            // Extract node information using enhanced parsing
+            $nodeClass = $nodeData['class'] ?? 'unknown';
+            $inputs = $nodeData['inputs'] ?? [];
+            $outputs = $nodeData['outputs'] ?? [];
+            
+            // Count node types
+            $analysis['node_types'][$nodeClass] = ($analysis['node_types'][$nodeClass] ?? 0) + 1;
+            
+            // Parse node content for meaningful information using enhanced method
+            $nodeInfo = $this->parseNodeContentEnhanced($nodeData);
+            
+            // Categorize nodes based on their role
+            if (empty($inputs) && !empty($outputs)) {
+                $analysis['data_sources'][] = [
+                    'id' => $nodeId,
+                    'type' => $nodeClass,
+                    'info' => $nodeInfo,
+                    'output_count' => count($outputs)
+                ];
+            } elseif (!empty($inputs) && empty($outputs)) {
+                $analysis['data_destinations'][] = [
+                    'id' => $nodeId,
+                    'type' => $nodeClass,
+                    'info' => $nodeInfo,
+                    'input_count' => count($inputs)
+                ];
+            } elseif (!empty($inputs) && !empty($outputs)) {
+                $analysis['transformations'][] = [
+                    'id' => $nodeId,
+                    'type' => $nodeClass,
+                    'info' => $nodeInfo,
+                    'input_count' => count($inputs),
+                    'output_count' => count($outputs)
+                ];
+            }
+            
+            // Track connections
+            foreach ($outputs as $outputKey => $output) {
+                if (isset($output['connections'])) {
+                    foreach ($output['connections'] as $connection) {
+                        $analysis['connections'][] = [
+                            'from' => $nodeId,
+                            'to' => $connection['node'],
+                            'from_output' => $outputKey,
+                            'to_input' => $connection['output']
+                        ];
+                    }
+                }
+            }
+        }
+        
+        // Analyze flow patterns
+        $analysis['flow_patterns'] = $this->identifyFlowPatterns($analysis);
+        
+        return $analysis;
+    }
+
+    /**
+     * Parse node HTML content to extract meaningful information
+     */
+    private function parseNodeContent($html, $nodeClass) {
+        // Remove HTML tags and extract text content
+        $text = strip_tags($html);
+        $text = trim(preg_replace('/\s+/', ' ', $text));
+        
+        // Try to extract structured information based on node type
+        $info = [
+            'display_text' => $text,
+            'extracted_data' => []
+        ];
+        
+        // Look for common patterns in node content
+        if (preg_match('/Database:\s*(.+?)(?:\n|$)/i', $text, $matches)) {
+            $info['extracted_data']['database'] = trim($matches[1]);
+        }
+        
+        if (preg_match('/Table:\s*(.+?)(?:\n|$)/i', $text, $matches)) {
+            $info['extracted_data']['table'] = trim($matches[1]);
+        }
+        
+        if (preg_match('/API:\s*(.+?)(?:\n|$)/i', $text, $matches)) {
+            $info['extracted_data']['api'] = trim($matches[1]);
+        }
+        
+        if (preg_match('/System:\s*(.+?)(?:\n|$)/i', $text, $matches)) {
+            $info['extracted_data']['system'] = trim($matches[1]);
+        }
+        
+        return $info;
+    }
+
+    /**
+     * Enhanced node content parsing that also extracts structured data from node data field
+     */
+    private function parseNodeContentEnhanced($nodeData) {
+        $html = $nodeData['html'] ?? '';
+        $nodeClass = $nodeData['class'] ?? 'unknown';
+        $structuredData = $nodeData['data'] ?? [];
+        
+        // Start with basic HTML parsing
+        $info = $this->parseNodeContent($html, $nodeClass);
+        
+        // Override with structured data if available (more reliable)
+        if (!empty($structuredData['title'])) {
+            $info['title'] = $structuredData['title'];
+        }
+        
+        if (!empty($structuredData['description'])) {
+            $info['description'] = $structuredData['description'];
+        }
+        
+        if (!empty($structuredData['type'])) {
+            $info['type'] = $structuredData['type'];
+        }
+        
+        return $info;
+    }
+
+    /**
+     * Identify common flow patterns in the diagram
+     */
+    private function identifyFlowPatterns($analysis) {
+        $patterns = [];
+        
+        // Simple linear flow
+        if (count($analysis['data_sources']) == 1 && count($analysis['data_destinations']) == 1) {
+            $patterns[] = 'Simple linear data flow from single source to single destination';
+        }
+        
+        // Fan-out pattern
+        if (count($analysis['data_sources']) == 1 && count($analysis['data_destinations']) > 1) {
+            $patterns[] = 'Fan-out pattern: single source distributing to multiple destinations';
+        }
+        
+        // Fan-in pattern
+        if (count($analysis['data_sources']) > 1 && count($analysis['data_destinations']) == 1) {
+            $patterns[] = 'Fan-in pattern: multiple sources consolidating to single destination';
+        }
+        
+        // Complex transformation
+        if (count($analysis['transformations']) > 2) {
+            $patterns[] = 'Complex transformation pipeline with multiple processing steps';
+        }
+        
+        // Hub and spoke
+        $transformationNodes = count($analysis['transformations']);
+        $totalConnections = count($analysis['connections']);
+        if ($transformationNodes > 0 && $totalConnections > $transformationNodes * 2) {
+            $patterns[] = 'Hub and spoke pattern with central processing nodes';
+        }
+        
+        return $patterns;
     }
 }
 ?>
