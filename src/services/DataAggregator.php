@@ -742,7 +742,11 @@ class DataAggregator {
             }
             
             $nodes = $diagram_data['drawflow']['Home']['data'];
+            $comment_connections = $diagram_data['commentConnections'] ?? [];
             $analysis = $this->analyzeDataFlowDiagram($nodes);
+            
+            // Add comment connections analysis
+            $analysis['comment_connections'] = $this->analyzeCommentConnections($comment_connections, $nodes);
             
             return [
                 'has_diagram' => true,
@@ -771,7 +775,8 @@ class DataAggregator {
             'data_sources' => [],
             'data_destinations' => [],
             'transformations' => [],
-            'flow_patterns' => []
+            'flow_patterns' => [],
+            'comments' => []
         ];
         
         foreach ($nodes as $nodeId => $nodeData) {
@@ -785,6 +790,18 @@ class DataAggregator {
             
             // Parse node content for meaningful information using enhanced method
             $nodeInfo = $this->parseNodeContentEnhanced($nodeData);
+            
+            // Check if this is a comment node
+            if (strpos($nodeClass, 'comment-node') !== false) {
+                $analysis['comments'][] = [
+                    'id' => $nodeId,
+                    'text' => $nodeInfo['title'] ?? $nodeInfo['display_text'] ?? 'Empty comment',
+                    'type' => 'comment',
+                    'context' => $this->determineCommentContext($nodeInfo['title'] ?? $nodeInfo['display_text'] ?? '')
+                ];
+                // Skip further processing for comment nodes
+                continue;
+            }
             
             // Categorize nodes based on their role
             if (empty($inputs) && !empty($outputs)) {
@@ -927,6 +944,78 @@ class DataAggregator {
         }
         
         return $patterns;
+    }
+
+    /**
+     * Determine the context/category of a comment based on its text content
+     */
+    private function determineCommentContext($commentText) {
+        $text = strtolower($commentText);
+        
+        // Technical/Architecture context
+        if (preg_match('/\b(api|database|server|integration|architecture|technical|system|performance|security)\b/', $text)) {
+            return 'technical';
+        }
+        
+        // Business context
+        if (preg_match('/\b(business|requirement|user|customer|process|workflow|goal|objective)\b/', $text)) {
+            return 'business';
+        }
+        
+        // Risk/Issue context  
+        if (preg_match('/\b(risk|issue|problem|concern|warning|critical|error|fix|bug)\b/', $text)) {
+            return 'risk';
+        }
+        
+        // Implementation/Development context
+        if (preg_match('/\b(todo|implement|develop|build|create|deploy|migration|update|upgrade)\b/', $text)) {
+            return 'implementation';
+        }
+        
+        // Documentation context
+        if (preg_match('/\b(note|documentation|info|information|explain|description)\b/', $text)) {
+            return 'documentation';
+        }
+        
+        return 'general';
+    }
+
+    /**
+     * Analyze comment connections to understand which comments relate to which systems
+     */
+    private function analyzeCommentConnections($comment_connections, $nodes) {
+        $connections_analysis = [];
+        
+        foreach ($comment_connections as $comment_node_id => $connections) {
+            $comment_data = $nodes[$comment_node_id] ?? null;
+            if (!$comment_data) continue;
+            
+            $comment_info = $this->parseNodeContentEnhanced($comment_data);
+            $comment_text = $comment_info['title'] ?? $comment_info['display_text'] ?? 'Empty comment';
+            
+            $connected_systems = [];
+            foreach ($connections as $connection) {
+                $target_node_id = $connection['targetId'] ?? null;
+                if ($target_node_id && isset($nodes[$target_node_id])) {
+                    $target_info = $this->parseNodeContentEnhanced($nodes[$target_node_id]);
+                    $connected_systems[] = [
+                        'node_id' => $target_node_id,
+                        'system_name' => $target_info['title'] ?? $target_info['display_text'] ?? 'Unknown System',
+                        'system_type' => $nodes[$target_node_id]['class'] ?? 'unknown'
+                    ];
+                }
+            }
+            
+            $connections_analysis[] = [
+                'comment_id' => $comment_node_id,
+                'comment_text' => $comment_text,
+                'comment_context' => $this->determineCommentContext($comment_text),
+                'connected_systems' => $connected_systems,
+                'connection_count' => count($connected_systems)
+            ];
+        }
+        
+        return $connections_analysis;
     }
 }
 ?>

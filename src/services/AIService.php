@@ -373,6 +373,35 @@ class AIService {
             $connection_count = count($analysis['connections']);
             $datamap_summary .= "\nIntegration Complexity: {$connection_count} connections between systems\n";
             
+            // Add comment analysis - NEW FEATURE
+            if (!empty($analysis['comments']) || !empty($analysis['comment_connections'])) {
+                $datamap_summary .= "\nArchitecture Comments and Context:\n";
+                
+                // Include standalone comments
+                if (!empty($analysis['comments'])) {
+                    foreach ($analysis['comments'] as $comment) {
+                        $context_label = ucfirst($comment['context']);
+                        $datamap_summary .= "- [{$context_label}] {$comment['text']}\n";
+                    }
+                }
+                
+                // Include comments connected to specific systems
+                if (!empty($analysis['comment_connections'])) {
+                    foreach ($analysis['comment_connections'] as $conn) {
+                        $context_label = ucfirst($conn['comment_context']);
+                        $connected_systems = array_column($conn['connected_systems'], 'system_name');
+                        $systems_list = implode(', ', $connected_systems);
+                        
+                        if (!empty($systems_list)) {
+                            $datamap_summary .= "- [{$context_label}] \"{$conn['comment_text']}\" → Connected to: {$systems_list}\n";
+                        } else {
+                            $datamap_summary .= "- [{$context_label}] {$conn['comment_text']}\n";
+                        }
+                    }
+                }
+                $datamap_summary .= "\n";
+            }
+            
             // Additional notes for business context
             if (!empty($datamap_data['notes'])) {
                 $datamap_summary .= "Architecture Notes: {$datamap_data['notes']}\n";
@@ -403,16 +432,50 @@ class AIService {
         $processed_template .= "- Focus on 'project_manager' and 'product_owner' for actual project leadership roles\n";
         $processed_template .= "- All specific system names from DataMap diagram should be mentioned by name in integration discussions\n";
         $processed_template .= "- User Stories represent actual business needs and planned solutions - integrate this context into business requirements discussion\n";
+        $processed_template .= "- DataMap Comments provide critical architectural context - categorized as technical, business, risk, implementation, or documentation notes\n";
+        $processed_template .= "- Comments connected to specific systems indicate important considerations for those integrations\n";
+        $processed_template .= "- Risk-category comments from DataMap should be highlighted as potential project concerns\n";
+        $processed_template .= "- Implementation-category comments indicate planned work or development tasks\n";
         
         // Add debug information for DrawFlow data if available
         if (!empty($datamap_data['has_diagram']) && !empty($datamap_data['raw_data']['drawflow']['Home']['data'])) {
             $processed_template .= "\n**DRAWFLOW DATA AVAILABLE - SYSTEM NAMES TO USE:**\n";
             foreach ($datamap_data['raw_data']['drawflow']['Home']['data'] as $node_id => $node) {
                 $node_data = $node['data'] ?? [];
+                $node_class = $node['class'] ?? '';
                 $title = $node_data['title'] ?? 'Unknown';
                 $description = $node_data['description'] ?? '';
                 $type = $node_data['type'] ?? 'unknown';
+                
+                // Skip comment nodes in system list (they're handled separately)
+                if (strpos($node_class, 'comment-node') !== false) {
+                    continue;
+                }
+                
                 $processed_template .= "- {$title} ({$type}): {$description}\n";
+            }
+            
+            // Add comment context if available
+            if (!empty($datamap_data['analysis']['comments']) || !empty($datamap_data['analysis']['comment_connections'])) {
+                $processed_template .= "\n**ARCHITECTURE COMMENTS TO CONSIDER:**\n";
+                
+                // Standalone comments
+                if (!empty($datamap_data['analysis']['comments'])) {
+                    foreach ($datamap_data['analysis']['comments'] as $comment) {
+                        $context = ucfirst($comment['context']);
+                        $processed_template .= "- [{$context}] {$comment['text']}\n";
+                    }
+                }
+                
+                // Connected comments
+                if (!empty($datamap_data['analysis']['comment_connections'])) {
+                    foreach ($datamap_data['analysis']['comment_connections'] as $conn) {
+                        $context = ucfirst($conn['comment_context']);
+                        $systems = array_column($conn['connected_systems'], 'system_name');
+                        $systems_text = !empty($systems) ? ' (relates to: ' . implode(', ', $systems) . ')' : '';
+                        $processed_template .= "- [{$context}] {$conn['comment_text']}{$systems_text}\n";
+                    }
+                }
             }
         }
         

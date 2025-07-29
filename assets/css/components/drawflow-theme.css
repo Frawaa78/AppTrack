@@ -1,7 +1,7 @@
 :root {
-  --dfBackgroundColor: rgba(255, 255, 255, 1);
+  --dfBackgroundColor: transparent;
   --dfBackgroundSize: 20px;
-  --dfBackgroundImage: linear-gradient(to right, rgba(249, 249, 249, 1) 1px, transparent 1px), linear-gradient(to bottom, rgba(249, 249, 249, 1) 1px, transparent 1px);
+  --dfBackgroundImage: none;
 
   --dfNodeType: flex;
   --dfNodeTypeFloat: none;
@@ -10,10 +10,10 @@
   --dfNodeBorderSize: 1px;
   --dfNodeBorderColor: rgba(222, 222, 222, 1);
   --dfNodeBorderRadius: 4px;
-  --dfNodeMinHeight: 30px;
-  --dfNodeMinWidth: 120px;
-  --dfNodePaddingTop: 15px;
-  --dfNodePaddingBottom: 15px;
+  --dfNodeMinHeight: 25px;
+  --dfNodeMinWidth: 100px;
+  --dfNodePaddingTop: 12px;
+  --dfNodePaddingBottom: 12px;
   --dfNodeBoxShadowHL: 0px;
   --dfNodeBoxShadowVL: 3px;
   --dfNodeBoxShadowBR: 15px;
@@ -100,9 +100,65 @@
 }
 
 #drawflow {
-  background: var(--dfBackgroundColor);
+  background: transparent !important; /* Remove background so comment connections show through */
   background-size: var(--dfBackgroundSize) var(--dfBackgroundSize);
-  background-image: var(--dfBackgroundImage);
+  background-image: none !important; /* Remove grid pattern */
+  position: relative; /* Ensure proper stacking context */
+}
+
+/* Additional rule to override inline styles */
+div#drawflow {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Force background transparency for Drawflow library */
+.drawflow {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Node drag handle styling */
+.node-drag-handle {
+  transition: background-color 0.2s ease;
+  user-select: none; /* Prevent text selection on drag handle */
+}
+
+.node-drag-handle:hover {
+  background: rgba(0,0,0,0.1) !important;
+}
+
+.node-drag-handle:hover i {
+  color: #666 !important;
+}
+
+/* Ensure text elements allow selection and editing */
+.drawflow .drawflow-node .node-title,
+.drawflow .drawflow-node .node-description {
+  user-select: text !important;
+  cursor: text !important;
+}
+
+.drawflow .drawflow-node .node-title:focus,
+.drawflow .drawflow-node .node-description:focus {
+  cursor: text !important;
+}
+
+/* Title editing styles */
+.drawflow .drawflow-node .node-title {
+  font-size: 11.7px; /* 10% smaller than default 13px */
+  transition: all 0.2s ease;
+  border-radius: 2px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
+.drawflow .drawflow-node .node-title:focus {
+  background: white !important;
+  border: 1px solid #ccc !important;
+  box-shadow: 0 0 3px rgba(0, 123, 255, 0.25);
+  outline: none !important;
 }
 
 .drawflow .drawflow-node {
@@ -175,10 +231,21 @@
 .drawflow .connection .main-path {
   stroke-width: var(--dfLineWidth);
   stroke: var(--dfLineColor);
+  cursor: pointer; /* Make it clear that connections are interactive */
 }
 
 .drawflow .connection .main-path:hover {
   stroke: var(--dfLineHoverColor);
+  stroke-width: calc(var(--dfLineWidth) + 1px); /* Make line slightly thicker on hover */
+}
+
+.drawflow .connection {
+  cursor: pointer; /* Make entire connection area clickable */
+}
+
+.drawflow .connection:hover .main-path {
+  stroke: var(--dfLineHoverColor);
+  stroke-width: calc(var(--dfLineWidth) + 1px);
 }
 
 .drawflow .connection .main-path.selected {
@@ -197,12 +264,29 @@
   fill: var(--dfRerouteHoverBackgroundColor);
 }
 
+/* Comment connection styling - using same structure as regular connections */
+.drawflow .comment-connection {
+  /* No z-index needed - use natural stacking order like regular connections */
+}
+
+.drawflow .comment-connection .comment-path {
+  stroke: #F6EC55 !important; /* Light cream yellow color */
+  stroke-width: 1px !important; 
+  stroke-dasharray: 8,4 !important; /* Dashed line pattern */
+  fill: none !important;
+  opacity: 0.9 !important;
+  cursor: pointer;
+  pointer-events: stroke;
+}
+
+.drawflow .comment-connection .comment-path:hover {
+  stroke: #F0E032 !important; /* Slightly darker on hover */
+  opacity: 1 !important;
+  stroke-width: 2px !important;
+}
+
 .drawflow-delete {
-  display: var(--dfDeleteDisplay);
-  color: var(--dfDeleteColor);
-  background: var(--dfDeleteBackgroundColor);
-  border: var(--dfDeleteBorderSize) solid var(--dfDeleteBorderColor);
-  border-radius: var(--dfDeleteBorderRadius);
+  display: none !important; /* Hide the default delete button - we'll use context menu instead */
 }
 
 .parent-node .drawflow-delete {
@@ -214,4 +298,165 @@
   background: var(--dfDeleteHoverBackgroundColor);
   border: var(--dfDeleteHoverBorderSize) solid var(--dfDeleteHoverBorderColor);
   border-radius: var(--dfDeleteHoverBorderRadius);
+}
+
+/* Special styling for Comment nodes */
+.drawflow .drawflow-node.comment-node {
+  background: rgba(254, 251, 218, 1);
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 4px;
+  min-height: 50px;
+  min-width: 135px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  -webkit-box-shadow: 0px 1px 6px 0px rgba(143, 143, 143, 1);
+  box-shadow: 0px 1px 6px 0px rgba(143, 143, 143, 1);
+}
+
+.drawflow .drawflow-node.comment-node:hover {
+  background: rgba(252, 247, 178, 1);
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 4px;
+  -webkit-box-shadow: 0px 1px 6px 0px rgba(143, 143, 143, 1);
+  box-shadow: 0px 1px 6px 0px rgba(143, 143, 143, 1);
+}
+
+.drawflow .drawflow-node.comment-node.selected {
+  background: rgba(252, 247, 178, 1);
+  border: 1px solid rgba(174, 168, 85, 1);
+  border-radius: 4px;
+  -webkit-box-shadow: 0px 1px 6px 0px rgba(143, 143, 143, 1);
+  box-shadow: 0px 1px 6px 0px rgba(143, 143, 143, 1);
+}
+
+.drawflow .drawflow-node.comment-node .input {
+  left: -27px;
+  background: #ffffff;
+  border: 1px solid #000000;
+  border-radius: 50px;
+  height: 20px;
+  width: 20px;
+}
+
+.drawflow .drawflow-node.comment-node .input:hover {
+  background: #ffffff;
+  border: 2px solid #000000;
+  border-radius: 50px;
+}
+
+.drawflow .drawflow-node.comment-node .output {
+  right: -3px;
+  background: #ffffff;
+  border: 1px solid #000000;
+  border-radius: 50px;
+  height: 20px;
+  width: 20px;
+}
+
+.drawflow .drawflow-node.comment-node .output:hover {
+  background: #ffffff;
+  border: 2px solid #000000;
+  border-radius: 50px;
+}
+
+/* Comment node title styling */
+.drawflow .drawflow-node.comment-node .node-title {
+  font-size: 11.7px; /* 10% smaller */
+}
+
+.drawflow .drawflow-node.comment-node .node-title:focus {
+  background: white !important;
+  border: 1px solid #ccc !important;
+  box-shadow: 0 0 3px rgba(0, 123, 255, 0.25);
+  outline: none !important;
+}
+
+/* Custom Context Menu */
+.custom-context-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  min-width: 150px;
+  padding: 4px 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+}
+
+.context-menu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.context-menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+.context-menu-item.danger {
+  color: #dc3545;
+}
+
+.context-menu-item.danger:hover {
+  background-color: #fff5f5;
+}
+
+.context-menu-item i {
+  margin-right: 8px;
+  width: 16px;
+  text-align: center;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 4px 0;
+}
+
+/* Submenu styling */
+.custom-context-submenu {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10001; /* Higher than main menu */
+  min-width: 180px;
+  padding: 4px 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+}
+
+.context-menu-item.has-submenu {
+  position: relative;
+}
+
+.context-menu-item.has-submenu .submenu-arrow {
+  position: absolute;
+  right: 8px;
+  margin-left: auto;
+  opacity: 0.6;
+  font-size: 12px;
+}
+
+.context-menu-item.connected {
+  background-color: #fff3cd;
+  border-left: 3px solid #ffc107;
+}
+
+.context-menu-item.connected:hover {
+  background-color: #ffeaa7;
+}
+
+.context-menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.context-menu-item.disabled:hover {
+  background-color: transparent;
 }

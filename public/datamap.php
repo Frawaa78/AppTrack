@@ -346,7 +346,6 @@ try {
         #drawflow {
             width: 100%;
             height: 100%;
-            background: white;
             position: relative;
         }
         
@@ -454,50 +453,10 @@ try {
             <!-- Node Elements -->
             <div class="sidebar-section">
                 <div class="sidebar-header">Add Elements</div>
-                <div class="sidebar-content">
-                    <div class="node-item" onclick="addNode('application')">
-                        <span class="node-icon"><i class="fa-solid fa-window-flip"></i></span>
-                        <span>Application</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('service')">
-                        <span class="node-icon"><i class="fa-solid fa-gears"></i></span>
-                        <span>Service</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('decision')">
-                        <span class="node-icon"><i class="fa-solid fa-code-branch"></i></span>
-                        <span>Decision</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('data_pipeline')">
-                        <span class="node-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></span>
-                        <span>Data Pipeline</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('data_product')">
-                        <span class="node-icon"><i class="fa-solid fa-cubes"></i></span>
-                        <span>Data Product</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('api_interface')">
-                        <span class="node-icon"><i class="fa-solid fa-plug"></i></span>
-                        <span>API / Interface</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('database_data_store')">
-                        <span class="node-icon"><i class="fa-solid fa-database"></i></span>
-                        <span>Database / Data Store</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('external_system')">
-                        <span class="node-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
-                        <span>External System</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('user_role')">
-                        <span class="node-icon"><i class="fa-solid fa-user-group"></i></span>
-                        <span>User / Role</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('security_control_point')">
-                        <span class="node-icon"><i class="fa-solid fa-shield-halved"></i></span>
-                        <span>Security / Control Point</span>
-                    </div>
-                    <div class="node-item" onclick="addNode('visualization')">
-                        <span class="node-icon"><i class="fa-solid fa-monitor-waveform"></i></span>
-                        <span>Visualization</span>
+                <div class="sidebar-content" id="nodeTemplates">
+                    <!-- Node templates will be loaded dynamically -->
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <i class="fas fa-spinner fa-spin"></i> Loading elements...
                     </div>
                 </div>
             </div>
@@ -588,13 +547,34 @@ try {
             editor.curvature = 0.5;
             editor.start();
             
+            // Force transparent background to override inline CSS
+            setTimeout(() => {
+                const drawflowContainer = document.getElementById('drawflow');
+                if (drawflowContainer) {
+                    drawflowContainer.style.background = 'transparent';
+                    drawflowContainer.style.backgroundColor = 'transparent';
+                    log('🎨 Forced drawflow background to transparent');
+                }
+            }, 100);
+            
             log('✅ DataMap Editor initialized');
+            loadNodeTemplates();
             loadDiagram();
             
             // Set up auto-save on changes
-            editor.on('nodeCreated', () => autoSave());
+            editor.on('nodeCreated', (id) => {
+                autoSave();
+                // Set up drag handle for the newly created node
+                setTimeout(() => setupDragHandles(), 50);
+            });
             editor.on('nodeRemoved', () => autoSave());
-            editor.on('nodeMoved', () => autoSave());
+            editor.on('nodeMoved', () => {
+                // Update comment connections when nodes are moved
+                setTimeout(() => {
+                    updateCommentConnections();
+                }, 50);
+                autoSave();
+            });
             editor.on('connectionCreated', () => autoSave());
             editor.on('connectionRemoved', () => autoSave());
             
@@ -602,9 +582,967 @@ try {
             window.addEventListener('resize', function() {
                 setTimeout(() => {
                     updateAllConnectionPositions();
+                    updateCommentConnections(); // Also update comment connections
                 }, 100);
             });
+            
+            // Set up real-time comment connection updates during node dragging
+            const observer = new MutationObserver((mutations) => {
+                let needsUpdate = false;
+                mutations.forEach(mutation => {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                        const target = mutation.target;
+                        // Check if this is a drawflow node being moved
+                        if (target.classList.contains('drawflow-node') || target.closest('.drawflow-node')) {
+                            needsUpdate = true;
+                        }
+                    }
+                });
+                
+                if (needsUpdate) {
+                    // Use requestAnimationFrame for optimal performance and smoothness
+                    if (window.commentConnectionAnimationFrame) {
+                        cancelAnimationFrame(window.commentConnectionAnimationFrame);
+                    }
+                    window.commentConnectionAnimationFrame = requestAnimationFrame(() => {
+                        updateCommentConnections();
+                    });
+                }
+            });
+            
+            // Start observing the drawflow container for changes
+            const drawflowContainer = document.querySelector('.drawflow');
+            if (drawflowContainer) {
+                observer.observe(drawflowContainer, {
+                    attributes: true,
+                    subtree: true,
+                    attributeFilter: ['style']
+                });
+            }
+            
+            // Set up context menu for nodes
+            setupContextMenu();
+            
+            // Set up drag handles for nodes
+            setupDragHandles();
         });
+        
+        // Set up context menu functionality
+        function setupContextMenu() {
+            // Hide any existing context menu on document click
+            document.addEventListener('click', hideContextMenu);
+            
+            // Disable default browser context menu on drawflow nodes and connections
+            document.addEventListener('contextmenu', function(e) {
+                // Check if right-clicking on a node
+                if (e.target.closest('.drawflow-node')) {
+                    e.preventDefault();
+                    showContextMenu(e, e.target.closest('.drawflow-node'));
+                }
+                // Check if right-clicking on a connection line
+                else if (e.target.closest('.connection')) {
+                    e.preventDefault();
+                    showConnectionContextMenu(e, e.target.closest('.connection'));
+                }
+            });
+        }
+        
+        // Set up drag handles functionality
+        function setupDragHandles() {
+            // Get all nodes with drag handles
+            const dragHandles = document.querySelectorAll('.node-drag-handle');
+            
+            dragHandles.forEach(handle => {
+                // Skip if already has event listener
+                if (handle.hasAttribute('data-drag-initialized')) {
+                    return;
+                }
+                
+                const nodeElement = handle.closest('.drawflow-node');
+                if (!nodeElement) return;
+                
+                // Find interactive elements that should not trigger dragging
+                const titleElement = nodeElement.querySelector('.node-title');
+                const descriptionElement = nodeElement.querySelector('.node-description');
+                const inputElements = nodeElement.querySelectorAll('.input');
+                const outputElements = nodeElement.querySelectorAll('.output');
+                
+                // Add specific handlers for text elements to ensure they work properly
+                if (titleElement) {
+                    titleElement.addEventListener('mousedown', function(e) {
+                        e.stopImmediatePropagation();
+                    });
+                    titleElement.addEventListener('click', function(e) {
+                        e.stopImmediatePropagation();
+                    });
+                }
+                
+                if (descriptionElement) {
+                    descriptionElement.addEventListener('mousedown', function(e) {
+                        e.stopImmediatePropagation();
+                    });
+                    descriptionElement.addEventListener('click', function(e) {
+                        e.stopImmediatePropagation();
+                    });
+                }
+                
+                // Ensure input/output circles still work for connections
+                inputElements.forEach(element => {
+                    element.addEventListener('mousedown', function(e) {
+                        e.stopImmediatePropagation();
+                    });
+                });
+                
+                outputElements.forEach(element => {
+                    element.addEventListener('mousedown', function(e) {
+                        e.stopImmediatePropagation();
+                    });
+                });
+                
+                // Override Drawflow's default mousedown behavior
+                nodeElement.addEventListener('mousedown', function(e) {
+                    // Only allow dragging if clicking on the drag handle
+                    if (e.target.closest('.node-drag-handle')) {
+                        // This is a valid drag - let Drawflow handle it normally
+                        return true;
+                    } else {
+                        // This is not a drag handle - prevent Drawflow from starting drag
+                        e.stopImmediatePropagation();
+                        return false;
+                    }
+                }, true);
+                
+                // Mark as initialized
+                handle.setAttribute('data-drag-initialized', 'true');
+            });
+        }
+        
+        // Show custom context menu
+        function showContextMenu(event, nodeElement) {
+            hideContextMenu(); // Hide any existing menu
+            
+            const nodeId = nodeElement.id.replace('node-', '');
+            const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+            const isCommentNode = nodeData && nodeData.class && nodeData.class.includes('comment-node');
+            
+            const menu = document.createElement('div');
+            menu.className = 'custom-context-menu';
+            menu.id = 'contextMenu';
+            
+            // Menu items based on node type
+            let menuItems = [];
+            
+            if (isCommentNode) {
+                menuItems = [
+                    { icon: 'fas fa-edit', text: 'Edit Comment', action: () => editNodeText(nodeElement) },
+                    { icon: 'fas fa-link', text: 'Connect to', action: null, submenu: () => getConnectSubmenu(nodeId) },
+                    { divider: true },
+                    { icon: 'fas fa-trash', text: 'Delete', action: () => deleteNode(nodeId), danger: true }
+                ];
+            } else {
+                menuItems = [
+                    { icon: 'fas fa-edit', text: 'Edit Node', action: () => editNodeText(nodeElement) },
+                    { divider: true },
+                    { icon: 'fas fa-trash', text: 'Delete', action: () => deleteNode(nodeId), danger: true }
+                ];
+            }
+            
+            // Build menu HTML
+            menuItems.forEach(item => {
+                if (item.divider) {
+                    const divider = document.createElement('div');
+                    divider.className = 'context-menu-divider';
+                    menu.appendChild(divider);
+                } else {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = `context-menu-item ${item.danger ? 'danger' : ''}${item.submenu ? ' has-submenu' : ''}`;
+                    
+                    let iconHtml = `<i class="${item.icon}"></i>${item.text}`;
+                    if (item.submenu) {
+                        iconHtml += '<i class="fas fa-chevron-right submenu-arrow"></i>';
+                    }
+                    menuItem.innerHTML = iconHtml;
+                    
+                    if (item.submenu) {
+                        // Handle submenu on hover
+                        let submenuTimeout;
+                        menuItem.onmouseenter = () => {
+                            clearTimeout(submenuTimeout);
+                            showSubmenu(menuItem, item.submenu(), event);
+                        };
+                        menuItem.onmouseleave = () => {
+                            submenuTimeout = setTimeout(() => {
+                                const submenu = document.getElementById('contextSubmenu');
+                                if (submenu && !submenu.matches(':hover')) {
+                                    hideSubmenu();
+                                }
+                            }, 300); // Small delay to allow moving to submenu
+                        };
+                    } else if (item.action) {
+                        menuItem.onclick = () => {
+                            item.action();
+                            hideContextMenu();
+                        };
+                    }
+                    
+                    menu.appendChild(menuItem);
+                }
+            });
+            
+            // Position and show menu
+            document.body.appendChild(menu);
+            
+            // Adjust position to stay within viewport
+            const rect = menu.getBoundingClientRect();
+            let x = event.pageX;
+            let y = event.pageY;
+            
+            if (x + rect.width > window.innerWidth) {
+                x = window.innerWidth - rect.width - 10;
+            }
+            if (y + rect.height > window.innerHeight) {
+                y = window.innerHeight - rect.height - 10;
+            }
+            
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            
+            log('📋 Context menu shown for node ' + nodeId);
+        }
+        
+        // Show context menu for connection lines
+        function showConnectionContextMenu(event, connectionElement) {
+            hideContextMenu(); // Hide any existing menu
+            
+            const menu = document.createElement('div');
+            menu.className = 'custom-context-menu';
+            menu.id = 'contextMenu';
+            
+            // Menu items for connections
+            const menuItems = [
+                { icon: 'fas fa-trash', text: 'Delete Connection', action: () => deleteConnection(connectionElement), danger: true }
+            ];
+            
+            // Build menu HTML
+            menuItems.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = `context-menu-item ${item.danger ? 'danger' : ''}`;
+                menuItem.innerHTML = `<i class="${item.icon}"></i>${item.text}`;
+                menuItem.onclick = () => {
+                    item.action();
+                    hideContextMenu();
+                };
+                menu.appendChild(menuItem);
+            });
+            
+            // Position and show menu
+            document.body.appendChild(menu);
+            
+            // Adjust position to stay within viewport
+            const rect = menu.getBoundingClientRect();
+            let x = event.pageX;
+            let y = event.pageY;
+            
+            if (x + rect.width > window.innerWidth) {
+                x = window.innerWidth - rect.width - 10;
+            }
+            if (y + rect.height > window.innerHeight) {
+                y = window.innerHeight - rect.height - 10;
+            }
+            
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            
+            log('📋 Context menu shown for connection');
+        }
+        
+        // Generate submenu items for connecting comment to other nodes
+        function getConnectSubmenu(commentNodeId) {
+            if (!editor || !editor.drawflow || !editor.drawflow.drawflow || !editor.drawflow.drawflow.Home) {
+                return [];
+            }
+            
+            const nodes = editor.drawflow.drawflow.Home.data || {};
+            const submenuItems = [];
+            
+            Object.keys(nodes).forEach(nodeId => {
+                if (nodeId !== commentNodeId) { // Don't include the comment node itself
+                    const node = nodes[nodeId];
+                    
+                    // Skip other comment nodes - only allow connections to regular nodes
+                    const isCommentNode = node && node.class && node.class.includes('comment-node');
+                    if (isCommentNode) {
+                        return; // Skip this node
+                    }
+                    
+                    const nodeElement = document.getElementById(`node-${nodeId}`);
+                    let nodeTitle = 'Untitled Node';
+                    
+                    // Get the actual title from the node data or DOM
+                    if (node.data && node.data.title) {
+                        nodeTitle = node.data.title;
+                    } else if (nodeElement) {
+                        const titleElement = nodeElement.querySelector('.node-title');
+                        if (titleElement) {
+                            nodeTitle = titleElement.textContent.trim();
+                        }
+                    }
+                    
+                    // Check if already connected
+                    const isConnected = isCommentConnectedToNode(commentNodeId, nodeId);
+                    
+                    submenuItems.push({
+                        icon: isConnected ? 'fas fa-unlink' : 'fas fa-link',
+                        text: isConnected ? `Disconnect from ${nodeTitle}` : `Connect to ${nodeTitle}`,
+                        action: () => toggleCommentConnection(commentNodeId, nodeId),
+                        connected: isConnected
+                    });
+                }
+            });
+            
+            if (submenuItems.length === 0) {
+                submenuItems.push({
+                    icon: 'fas fa-info-circle',
+                    text: 'No nodes available',
+                    action: null,
+                    disabled: true
+                });
+            }
+            
+            return submenuItems;
+        }
+        
+        // Check if comment is already connected to a specific node
+        function isCommentConnectedToNode(commentNodeId, targetNodeId) {
+            // Check custom comment connections first
+            if (window.commentConnections && window.commentConnections[commentNodeId]) {
+                const connection = window.commentConnections[commentNodeId].find(conn => conn.targetId === targetNodeId);
+                if (connection) {
+                    return true;
+                }
+            }
+            
+            // Fallback to check standard Drawflow connections (for backward compatibility)
+            if (!editor || !editor.drawflow || !editor.drawflow.drawflow || !editor.drawflow.drawflow.Home) {
+                return false;
+            }
+            
+            const commentNode = editor.drawflow.drawflow.Home.data[commentNodeId];
+            if (!commentNode || !commentNode.outputs) return false;
+            
+            // Check all outputs of the comment node
+            for (const outputKey in commentNode.outputs) {
+                const output = commentNode.outputs[outputKey];
+                if (output.connections) {
+                    for (const connection of output.connections) {
+                        if (connection.node === targetNodeId) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        // Update all comment connection visuals
+        function updateCommentConnections() {
+            console.log('🔄 updateCommentConnections called');
+            
+            if (!window.commentConnections) {
+                console.log('⚠️ No commentConnections found');
+                return;
+            }
+            
+            console.log('📊 Current commentConnections:', window.commentConnections);
+            
+            // Remove existing comment connection elements
+            const existingConnections = document.querySelectorAll('.comment-connection');
+            console.log('🗑️ Removing', existingConnections.length, 'existing connections');
+            existingConnections.forEach(el => el.remove());
+            
+            // Clean up connections for nodes that no longer exist
+            cleanupInvalidConnections();
+            
+            // Redraw all comment connections
+            Object.keys(window.commentConnections).forEach(commentNodeId => {
+                const connections = window.commentConnections[commentNodeId];
+                console.log(`🎨 Drawing ${connections.length} connections for comment ${commentNodeId}:`, connections);
+                
+                connections.forEach(conn => {
+                    console.log(`🖌️ Drawing connection: ${commentNodeId} -> ${conn.targetId} (${conn.connectionId})`);
+                    drawCommentConnection(commentNodeId, conn.targetId, conn.connectionId);
+                });
+            });
+            
+            console.log('✅ updateCommentConnections completed');
+        }
+        
+        // Clean up connections for nodes that no longer exist in DOM
+        function cleanupInvalidConnections() {
+            if (!window.commentConnections) return;
+            
+            let hasChanges = false;
+            
+            Object.keys(window.commentConnections).forEach(commentNodeId => {
+                // Check if comment node still exists
+                const commentElement = document.getElementById(`node-${commentNodeId}`);
+                if (!commentElement) {
+                    console.log('🧹 Removing connections for deleted comment node:', commentNodeId);
+                    delete window.commentConnections[commentNodeId];
+                    hasChanges = true;
+                    return;
+                }
+                
+                // Check if target nodes still exist
+                const validConnections = window.commentConnections[commentNodeId].filter(conn => {
+                    const targetElement = document.getElementById(`node-${conn.targetId}`);
+                    if (!targetElement) {
+                        console.log('🧹 Removing connection to deleted target node:', conn.targetId);
+                        hasChanges = true;
+                        return false;
+                    }
+                    return true;
+                });
+                
+                window.commentConnections[commentNodeId] = validConnections;
+                
+                // Remove empty connection groups
+                if (validConnections.length === 0) {
+                    delete window.commentConnections[commentNodeId];
+                    hasChanges = true;
+                }
+            });
+            
+            if (hasChanges) {
+                console.log('🧹 Cleaned up invalid connections. Updated data:', window.commentConnections);
+            }
+        }
+        
+        // Draw a single comment connection line
+        function drawCommentConnection(commentNodeId, targetNodeId, connectionId) {
+            console.log('🎨 Drawing comment connection:', commentNodeId, '->', targetNodeId, 'ID:', connectionId);
+            
+            const commentElement = document.getElementById(`node-${commentNodeId}`);
+            const targetElement = document.getElementById(`node-${targetNodeId}`);
+            
+            if (!commentElement) {
+                console.log('⚠️ Comment element not found (skipping):', `node-${commentNodeId}`);
+                return;
+            }
+            
+            if (!targetElement) {
+                console.log('⚠️ Target element not found (skipping):', `node-${targetNodeId}`);
+                return;
+            }
+            
+            console.log('✅ Both elements found');
+            
+            // Get the drawflow container - use the same parent as regular connections
+            const drawflowContainer = document.querySelector('.drawflow');
+            if (!drawflowContainer) {
+                console.error('❌ Drawflow container not found');
+                return;
+            }
+            
+            console.log('✅ Drawflow container found');
+            
+            // Calculate positions (center of each node)
+            const commentRect = commentElement.getBoundingClientRect();
+            const targetRect = targetElement.getBoundingClientRect();
+            const containerRect = drawflowContainer.getBoundingClientRect();
+            
+            console.log('📐 Comment rect:', commentRect);
+            console.log('📐 Target rect:', targetRect);
+            console.log('📐 Container rect:', containerRect);
+            
+            // Calculate relative positions within the drawflow container
+            const commentCenter = {
+                x: commentRect.left + commentRect.width / 2 - containerRect.left,
+                y: commentRect.top + commentRect.height / 2 - containerRect.top
+            };
+            
+            const targetCenter = {
+                x: targetRect.left + targetRect.width / 2 - containerRect.left,
+                y: targetRect.top + targetRect.height / 2 - containerRect.top
+            };
+            
+            console.log('📍 Comment center:', commentCenter);
+            console.log('📍 Target center:', targetCenter);
+            
+            // Create SVG element similar to how Drawflow creates connections
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.classList.add('comment-connection'); // Use Drawflow-style class structure
+            svg.setAttribute('id', connectionId);
+            
+            // Position SVG to cover the entire drawflow area like regular connections
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.pointerEvents = 'none';
+            svg.style.overflow = 'visible';
+            // No z-index - let it follow natural stacking order like regular connections
+            
+            console.log('✅ SVG element created');
+            
+            // Create the path element with Drawflow-style classes
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.classList.add('comment-path'); // Similar to main-path for regular connections
+            
+            // Create a smooth curve from comment center to target center
+            const pathData = `M ${commentCenter.x} ${commentCenter.y} Q ${(commentCenter.x + targetCenter.x) / 2} ${commentCenter.y - 50} ${targetCenter.x} ${targetCenter.y}`;
+            path.setAttribute('d', pathData);
+            
+            console.log('📏 Path data:', pathData);
+            
+            // Add context menu capability to the path
+            path.style.pointerEvents = 'stroke';
+            path.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showCommentConnectionContextMenu(e, commentNodeId, targetNodeId);
+            });
+            
+            svg.appendChild(path);
+            drawflowContainer.appendChild(svg);
+            
+            console.log('✅ SVG and path added to DOM');
+            console.log('🎨 Comment connection drawn successfully!');
+        }
+        
+        // Show context menu for comment connections
+        function showCommentConnectionContextMenu(event, commentNodeId, targetNodeId) {
+            hideContextMenu(); // Hide any existing menu
+            
+            const menu = document.createElement('div');
+            menu.className = 'custom-context-menu';
+            menu.id = 'contextMenu';
+            
+            // Get node titles for the menu
+            const commentNode = editor.drawflow.drawflow.Home.data[commentNodeId];
+            const targetNode = editor.drawflow.drawflow.Home.data[targetNodeId];
+            
+            let commentTitle = 'Comment';
+            let targetTitle = 'Node';
+            
+            if (commentNode && commentNode.data && commentNode.data.title) {
+                commentTitle = commentNode.data.title;
+            }
+            if (targetNode && targetNode.data && targetNode.data.title) {
+                targetTitle = targetNode.data.title;
+            }
+            
+            // Menu items for comment connections
+            const menuItems = [
+                { 
+                    icon: 'fas fa-unlink', 
+                    text: `Disconnect "${commentTitle}" from "${targetTitle}"`, 
+                    action: () => {
+                        removeCommentConnection(commentNodeId, targetNodeId);
+                        autoSave();
+                    }, 
+                    danger: true 
+                }
+            ];
+            
+            // Build menu HTML
+            menuItems.forEach(item => {
+                const menuItem = document.createElement('div');
+                menuItem.className = `context-menu-item ${item.danger ? 'danger' : ''}`;
+                menuItem.innerHTML = `<i class="${item.icon}"></i>${item.text}`;
+                menuItem.onclick = () => {
+                    item.action();
+                    hideContextMenu();
+                };
+                menu.appendChild(menuItem);
+            });
+            
+            // Position and show menu
+            document.body.appendChild(menu);
+            
+            // Adjust position to stay within viewport
+            const rect = menu.getBoundingClientRect();
+            let x = event.pageX;
+            let y = event.pageY;
+            
+            if (x + rect.width > window.innerWidth) {
+                x = window.innerWidth - rect.width - 10;
+            }
+            if (y + rect.height > window.innerHeight) {
+                y = window.innerHeight - rect.height - 10;
+            }
+            
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            
+            log('📋 Comment connection context menu shown');
+        }
+        
+        // Toggle connection between comment and target node
+        function toggleCommentConnection(commentNodeId, targetNodeId) {
+            try {
+                const isConnected = isCommentConnectedToNode(commentNodeId, targetNodeId);
+                
+                if (isConnected) {
+                    // Disconnect
+                    disconnectNodes(commentNodeId, targetNodeId);
+                    log(`💬 Disconnected comment ${commentNodeId} from node ${targetNodeId}`);
+                } else {
+                    // Connect
+                    connectNodes(commentNodeId, targetNodeId);
+                    log(`💬 Connected comment ${commentNodeId} to node ${targetNodeId}`);
+                }
+                
+                autoSave();
+            } catch (error) {
+                log('❌ Error toggling comment connection: ' + error.message);
+            }
+        }
+        
+        // Connect two nodes programmatically
+        function connectNodes(fromNodeId, toNodeId) {
+            // Check if it's a comment connection (from comment to any node)
+            const fromNode = editor.drawflow.drawflow.Home.data[fromNodeId];
+            const isCommentConnection = fromNode && fromNode.class && fromNode.class.includes('comment-node');
+            
+            if (isCommentConnection) {
+                // Create custom comment connection
+                createCommentConnection(fromNodeId, toNodeId);
+            } else {
+                // Use standard Drawflow connection for regular nodes
+                createStandardConnection(fromNodeId, toNodeId);
+            }
+        }
+        
+        // Create standard Drawflow connection
+        function createStandardConnection(fromNodeId, toNodeId) {
+            const fromNode = editor.drawflow.drawflow.Home.data[fromNodeId];
+            const toNode = editor.drawflow.drawflow.Home.data[toNodeId];
+            
+            if (!fromNode || !toNode) {
+                throw new Error('Source or target node not found');
+            }
+            
+            // Find first available output on source node and first available input on target node
+            let outputKey = null;
+            let inputKey = null;
+            
+            // Get first output from source node
+            if (fromNode.outputs) {
+                outputKey = Object.keys(fromNode.outputs)[0];
+            }
+            
+            // Get first input from target node
+            if (toNode.inputs) {
+                inputKey = Object.keys(toNode.inputs)[0];
+            }
+            
+            if (outputKey && inputKey) {
+                // Use Drawflow's connection method
+                editor.addConnection(fromNodeId, toNodeId, outputKey, inputKey);
+                
+                // Update connection positions
+                setTimeout(() => {
+                    editor.updateConnectionNodes(`node-${fromNodeId}`);
+                    editor.updateConnectionNodes(`node-${toNodeId}`);
+                }, 100);
+            }
+        }
+        
+        // Create custom comment connection (center-to-center, dashed yellow line)
+        function createCommentConnection(commentNodeId, targetNodeId) {
+            console.log('🔗 Creating comment connection:', commentNodeId, '->', targetNodeId);
+            
+            const commentElement = document.getElementById(`node-${commentNodeId}`);
+            const targetElement = document.getElementById(`node-${targetNodeId}`);
+            
+            if (!commentElement || !targetElement) {
+                console.error('❌ Comment or target element not found:', 
+                    'comment:', !!commentElement, 'target:', !!targetElement);
+                throw new Error('Comment or target element not found');
+            }
+            
+            console.log('✅ Both elements found for connection');
+            
+            // Store connection in our custom data structure
+            if (!window.commentConnections) {
+                window.commentConnections = {};
+                console.log('📦 Initialized commentConnections');
+            }
+            
+            if (!window.commentConnections[commentNodeId]) {
+                window.commentConnections[commentNodeId] = [];
+                console.log('📦 Initialized connections array for comment:', commentNodeId);
+            }
+            
+            // Check if connection already exists
+            const existingConnection = window.commentConnections[commentNodeId].find(conn => conn.targetId === targetNodeId);
+            if (existingConnection) {
+                console.log('⚠️ Comment connection already exists');
+                log('💬 Comment connection already exists');
+                return;
+            }
+            
+            // Add to our connection data
+            const connectionId = `comment-conn-${commentNodeId}-${targetNodeId}`;
+            window.commentConnections[commentNodeId].push({
+                targetId: targetNodeId,
+                connectionId: connectionId
+            });
+            
+            console.log('💾 Connection data stored:', window.commentConnections[commentNodeId]);
+            
+            // Create the visual connection
+            console.log('🎨 Calling updateCommentConnections...');
+            updateCommentConnections();
+            
+            log(`💬 Created comment connection from ${commentNodeId} to ${targetNodeId}`);
+        }
+        
+        // Disconnect two nodes programmatically
+        function disconnectNodes(fromNodeId, toNodeId) {
+            // Check if it's a comment connection
+            const fromNode = editor.drawflow.drawflow.Home.data[fromNodeId];
+            const isCommentConnection = fromNode && fromNode.class && fromNode.class.includes('comment-node');
+            
+            if (isCommentConnection) {
+                // Remove custom comment connection
+                removeCommentConnection(fromNodeId, toNodeId);
+            } else {
+                // Remove standard Drawflow connection
+                removeStandardConnection(fromNodeId, toNodeId);
+            }
+        }
+        
+        // Remove standard Drawflow connection
+        function removeStandardConnection(fromNodeId, toNodeId) {
+            const fromNode = editor.drawflow.drawflow.Home.data[fromNodeId];
+            if (!fromNode || !fromNode.outputs) return;
+            
+            // Find and remove the connection
+            for (const outputKey in fromNode.outputs) {
+                const output = fromNode.outputs[outputKey];
+                if (output.connections) {
+                    for (let i = output.connections.length - 1; i >= 0; i--) {
+                        const connection = output.connections[i];
+                        if (connection.node === toNodeId) {
+                            // Remove connection using Drawflow's method
+                            editor.removeSingleConnection(fromNodeId, toNodeId, outputKey, connection.output);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Remove custom comment connection
+        function removeCommentConnection(commentNodeId, targetNodeId) {
+            if (!window.commentConnections || !window.commentConnections[commentNodeId]) {
+                return;
+            }
+            
+            // Remove from our connection data
+            window.commentConnections[commentNodeId] = window.commentConnections[commentNodeId].filter(
+                conn => conn.targetId !== targetNodeId
+            );
+            
+            // Remove visual connection
+            const connectionId = `comment-conn-${commentNodeId}-${targetNodeId}`;
+            const connectionElement = document.getElementById(connectionId);
+            if (connectionElement) {
+                connectionElement.remove();
+            }
+            
+            log(`💬 Removed comment connection from ${commentNodeId} to ${targetNodeId}`);
+        }
+        
+        // Show submenu
+        function showSubmenu(parentItem, submenuItems, originalEvent) {
+            hideSubmenu(); // Hide any existing submenu
+            
+            const submenu = document.createElement('div');
+            submenu.className = 'custom-context-submenu';
+            submenu.id = 'contextSubmenu';
+            
+            submenuItems.forEach(item => {
+                const submenuItem = document.createElement('div');
+                submenuItem.className = `context-menu-item ${item.connected ? 'connected' : ''} ${item.disabled ? 'disabled' : ''}`;
+                submenuItem.innerHTML = `<i class="${item.icon}"></i>${item.text}`;
+                
+                if (!item.disabled && item.action) {
+                    submenuItem.onclick = () => {
+                        item.action();
+                        hideContextMenu();
+                    };
+                }
+                
+                submenu.appendChild(submenuItem);
+            });
+            
+            // Position submenu next to parent item
+            document.body.appendChild(submenu);
+            
+            const parentRect = parentItem.getBoundingClientRect();
+            const submenuRect = submenu.getBoundingClientRect();
+            
+            let x = parentRect.right + 2;
+            let y = parentRect.top;
+            
+            // Adjust if submenu goes off screen
+            if (x + submenuRect.width > window.innerWidth) {
+                x = parentRect.left - submenuRect.width - 2;
+            }
+            if (y + submenuRect.height > window.innerHeight) {
+                y = window.innerHeight - submenuRect.height - 10;
+            }
+            
+            submenu.style.left = x + 'px';
+            submenu.style.top = y + 'px';
+            
+            // Handle mouse leave from submenu - check if moving to parent menu
+            submenu.onmouseenter = () => {
+                // Cancel any pending hide timeout when entering submenu
+                clearTimeout(window.submenuHideTimeout);
+            };
+            
+            submenu.onmouseleave = () => {
+                // Small delay before hiding to allow movement between menu items
+                window.submenuHideTimeout = setTimeout(() => {
+                    const mainMenu = document.getElementById('contextMenu');
+                    const parentMenuItem = parentItem;
+                    
+                    // Only hide if not hovering over parent menu item
+                    if (!parentMenuItem.matches(':hover') && !mainMenu.matches(':hover')) {
+                        hideSubmenu();
+                    }
+                }, 200);
+            };
+            
+            log('📋 Submenu shown with ' + submenuItems.length + ' items');
+        }
+        
+        // Hide submenu
+        function hideSubmenu() {
+            const existingSubmenu = document.getElementById('contextSubmenu');
+            if (existingSubmenu) {
+                existingSubmenu.remove();
+            }
+        }
+        
+        // Hide context menu
+        function hideContextMenu() {
+            const existingMenu = document.getElementById('contextMenu');
+            if (existingMenu) {
+                existingMenu.remove();
+            }
+            hideSubmenu(); // Also hide any open submenu
+        }
+        
+        // Context menu actions
+        function editNodeText(nodeElement) {
+            const titleElement = nodeElement.querySelector('.node-title');
+            if (titleElement) {
+                titleElement.focus();
+                // Select all text for easy editing
+                if (titleElement.contentEditable === 'true') {
+                    const range = document.createRange();
+                    range.selectNodeContents(titleElement);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            }
+            log('✏️ Edit mode activated for node');
+        }
+        
+        function deleteNode(nodeId) {
+            if (confirm('Are you sure you want to delete this node? This action cannot be undone.')) {
+                // Clean up comment connections involving this node
+                cleanupCommentConnectionsForNode(nodeId);
+                
+                editor.removeNodeId('node-' + nodeId);
+                autoSave();
+                log('🗑️ Node ' + nodeId + ' deleted');
+            }
+        }
+        
+        // Clean up comment connections when a node is deleted
+        function cleanupCommentConnectionsForNode(nodeId) {
+            if (!window.commentConnections) return;
+            
+            // Remove connections where this node is the comment (source)
+            if (window.commentConnections[nodeId]) {
+                delete window.commentConnections[nodeId];
+            }
+            
+            // Remove connections where this node is the target
+            Object.keys(window.commentConnections).forEach(commentNodeId => {
+                window.commentConnections[commentNodeId] = window.commentConnections[commentNodeId].filter(
+                    conn => conn.targetId !== nodeId
+                );
+            });
+            
+            // Update visual connections
+            updateCommentConnections();
+            
+            log(`💬 Cleaned up comment connections for node ${nodeId}`);
+        }
+        
+        function deleteConnection(connectionElement) {
+            if (confirm('Are you sure you want to delete this connection? This action cannot be undone.')) {
+                try {
+                    // Find the connection data by examining the DOM structure
+                    // Drawflow connections have a specific structure we can identify
+                    const connectionId = connectionElement.classList[1]; // Usually connection_1, connection_2, etc.
+                    
+                    if (connectionId) {
+                        // Remove the connection element from DOM
+                        connectionElement.remove();
+                        
+                        // Also clean up the connection data from editor's internal data structure
+                        // This is a bit complex because we need to find which nodes were connected
+                        updateConnectionDataAfterDelete();
+                        
+                        autoSave();
+                        log('🔗 Connection deleted');
+                    } else {
+                        log('❌ Could not identify connection to delete');
+                    }
+                } catch (error) {
+                    log('❌ Error deleting connection: ' + error.message);
+                }
+            }
+        }
+        
+        // Clean up connection data after manual deletion
+        function updateConnectionDataAfterDelete() {
+            // This function ensures the editor's internal state matches the DOM
+            // by rebuilding the connection data from visible connections
+            if (!editor || !editor.drawflow || !editor.drawflow.drawflow || !editor.drawflow.drawflow.Home) {
+                return;
+            }
+            
+            const nodes = editor.drawflow.drawflow.Home.data || {};
+            
+            // Clear all existing connections in data
+            Object.keys(nodes).forEach(nodeId => {
+                const node = nodes[nodeId];
+                if (node.outputs) {
+                    Object.keys(node.outputs).forEach(outputKey => {
+                        node.outputs[outputKey].connections = [];
+                    });
+                }
+            });
+            
+            // Rebuild connections based on what's actually visible in DOM
+            const visibleConnections = document.querySelectorAll('.connection');
+            visibleConnections.forEach(conn => {
+                // This is a simplified approach - in a more complex scenario,
+                // you might need more sophisticated connection tracking
+                log('🔧 Rebuilding connection data from DOM');
+            });
+        }
         
         // Function to update all connection positions - useful after layout changes
         function updateAllConnectionPositions() {
@@ -620,232 +1558,103 @@ try {
             log('🔧 All connection positions updated');
         }
         
-        // Node templates with different configurations
+        // Node templates with different configurations (now using database data)
         function getNodeTemplate(type, counter) {
-            const templates = {
-                application: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-window-flip" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">Application ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Software application or system component</textarea>
-                        </div>
-                    `,
-                    inputs: 1,
-                    outputs: 1,
-                    class: 'application-node'
-                },
-                service: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-gears" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">Service ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Microservice or business service</textarea>
-                        </div>
-                    `,
-                    inputs: 1,
-                    outputs: 1,
-                    class: 'service-node'
-                },
-                decision: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-code-branch" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">Decision ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Business rule or decision point</textarea>
-                        </div>
-                    `,
-                    inputs: 1,
-                    outputs: 2,
-                    class: 'decision-node'
-                },
-                data_pipeline: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-arrow-right-arrow-left" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">Data Pipeline ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Data processing and transformation workflow</textarea>
-                        </div>
-                    `,
-                    inputs: 2,
-                    outputs: 2,
-                    class: 'data-pipeline-node'
-                },
-                data_product: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-cubes" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">Data Product ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Consumable data asset or product</textarea>
-                        </div>
-                    `,
-                    inputs: 1,
-                    outputs: 3,
-                    class: 'data-product-node'
-                },
-                api_interface: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-plug" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">API/Interface ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">API endpoint or system interface</textarea>
-                        </div>
-                    `,
-                    inputs: 2,
-                    outputs: 1,
-                    class: 'api-interface-node'
-                },
-                database_data_store: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-database" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">Database/Data Store ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Database or data storage system</textarea>
-                        </div>
-                    `,
-                    inputs: 2,
-                    outputs: 1,
-                    class: 'database-data-store-node'
-                },
-                external_system: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-cloud-arrow-up" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">External System ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Third-party or external system</textarea>
-                        </div>
-                    `,
-                    inputs: 1,
-                    outputs: 1,
-                    class: 'external-system-node'
-                },
-                user_role: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-user-group" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">User/Role ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">User persona or role in the system</textarea>
-                        </div>
-                    `,
-                    inputs: 0,
-                    outputs: 2,
-                    class: 'user-role-node'
-                },
-                security_control_point: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-shield-halved" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">Security/Control Point ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Security measure or control point</textarea>
-                        </div>
-                    `,
-                    inputs: 1,
-                    outputs: 1,
-                    class: 'security-control-point-node'
-                },
-                visualization: {
-                    html: `
-                        <div style="padding: 8px;">
-                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
-                                <i class="fa-solid fa-monitor-waveform" style="color: #444444; margin-right: 6px; font-size: 14px;"></i>
-                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
-                                     contenteditable="true" 
-                                     onblur="updateNodeText(this)"
-                                     onkeydown="handleTextEdit(event)">Visualization ${counter}</div>
-                            </div>
-                            <textarea class="node-description" style="font-size: 11px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 15px;" 
-                                      onblur="updateNodeText(this)"
-                                      onkeydown="handleTextEdit(event)"
-                                      rows="1">Dashboard, report, or data visualization</textarea>
-                        </div>
-                    `,
-                    inputs: 1,
-                    outputs: 0,
-                    class: 'visualization-node'
-                }
-            };
+            // Use database template if available, otherwise fallback to hardcoded
+            const dbTemplate = window.nodeTemplates ? window.nodeTemplates[type] : null;
             
-            return templates[type] || templates.application;
+            if (dbTemplate) {
+                return {
+                    html: `
+                        <div class="node-drag-handle" style="display: flex; justify-content: center; align-items: center; height: 10px; cursor: move; background: rgba(0,0,0,0.05); margin: -7px -7px 3px -7px; border-radius: 4px 4px 0 0;">
+                            <i class="fa-solid fa-grip" style="font-size: 8px; color: #999; pointer-events: none;"></i>
+                        </div>
+                        <div style="padding: 0 7px 7px 7px;">
+                            <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                                <i class="${dbTemplate.icon_class}" style="color: #444444; margin-right: 5px; font-size: 13px;"></i>
+                                <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                     contenteditable="true" 
+                                     onblur="updateNodeText(this)"
+                                     onkeydown="handleTextEdit(event)">${dbTemplate.display_name} ${counter}</div>
+                            </div>
+                            <textarea class="node-description" style="font-size: 10px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 18px; line-height: 1.3;" 
+                                      onblur="updateNodeText(this)"
+                                      onkeydown="handleTextEdit(event)"
+                                      oninput="autoResizeTextarea(this)"
+                                      rows="1">${dbTemplate.description}</textarea>
+                        </div>
+                    `,
+                    inputs: dbTemplate.default_inputs,
+                    outputs: dbTemplate.default_outputs,
+                    class: dbTemplate.css_class
+                };
+            }
+            
+            // Fallback for unknown types
+            return {
+                html: `
+                    <div class="node-drag-handle" style="display: flex; justify-content: center; align-items: center; height: 10px; cursor: move; background: rgba(0,0,0,0.05); margin: -7px -7px 3px -7px; border-radius: 4px 4px 0 0;">
+                        <i class="fa-solid fa-grip" style="font-size: 8px; color: #999; pointer-events: none;"></i>
+                    </div>
+                    <div style="padding: 0 7px 7px 7px;">
+                        <div style="display: flex; align-items: center; margin-bottom: 3px;">
+                            <i class="fa-solid fa-question" style="color: #444444; margin-right: 5px; font-size: 13px;"></i>
+                            <div class="node-title" style="font-weight: bold; cursor: text; flex: 1;" 
+                                 contenteditable="true" 
+                                 onblur="updateNodeText(this)"
+                                 onkeydown="handleTextEdit(event)">Unknown ${counter}</div>
+                        </div>
+                        <textarea class="node-description" style="font-size: 10px; color: #666; cursor: text; border: none; background: transparent; resize: none; width: 100%; outline: none; min-height: 18px; line-height: 1.3;" 
+                                  onblur="updateNodeText(this)"
+                                  onkeydown="handleTextEdit(event)"
+                                  oninput="autoResizeTextarea(this)"
+                                  rows="1">Unknown node type</textarea>
+                    </div>
+                `,
+                inputs: 1,
+                outputs: 1,
+                class: 'unknown-node'
+            };
+        }
+        
+        // Load node templates from database
+        async function loadNodeTemplates() {
+            try {
+                log('🔄 Loading node templates...');
+                
+                const response = await fetch('/public/api/get_node_templates.php');
+                const result = await response.json();
+                
+                if (result.success && result.templates) {
+                    const container = document.getElementById('nodeTemplates');
+                    container.innerHTML = '';
+                    
+                    result.templates.forEach(template => {
+                        const nodeItem = document.createElement('div');
+                        nodeItem.className = 'node-item';
+                        nodeItem.onclick = () => addNode(template.type);
+                        nodeItem.innerHTML = `
+                            <span class="node-icon"><i class="${template.icon_class}"></i></span>
+                            <span>${template.display_name}</span>
+                        `;
+                        container.appendChild(nodeItem);
+                    });
+                    
+                    // Store templates globally for use in addNode function
+                    window.nodeTemplates = {};
+                    result.templates.forEach(template => {
+                        window.nodeTemplates[template.type] = template;
+                    });
+                    
+                    log(`✅ Loaded ${result.templates.length} node templates`);
+                } else {
+                    throw new Error(result.message || 'Failed to load templates');
+                }
+            } catch (error) {
+                log('❌ Error loading node templates: ' + error.message);
+                const container = document.getElementById('nodeTemplates');
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #dc3545;">Error loading elements</div>';
+            }
         }
         
         // Add node with enhanced types
@@ -931,6 +1740,11 @@ try {
                 
                 const data = editor.export();
                 
+                // Add comment connections to the data
+                if (window.commentConnections) {
+                    data.commentConnections = window.commentConnections;
+                }
+                
                 const response = await fetch('/public/api/save_drawflow_diagram.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -960,6 +1774,13 @@ try {
             }
         }
         
+        // Restore comment connections from saved data
+        function restoreCommentConnections() {
+            // This will be called during diagram loading to restore comment connections
+            // The actual restoration happens in loadDiagram when we import the data
+            log('🔄 Comment connections restoration initialized');
+        }
+        
         // Load diagram
         async function loadDiagram() {
             try {
@@ -975,6 +1796,14 @@ try {
                         editor.import(diagramData);
                         const nodeCount = Object.keys(diagramData.drawflow.Home.data || {}).length;
                         
+                        // Restore comment connections from saved data
+                        if (diagramData.commentConnections) {
+                            window.commentConnections = diagramData.commentConnections;
+                            log(`💬 Loaded ${Object.keys(diagramData.commentConnections).length} comment connection groups`);
+                        } else {
+                            window.commentConnections = {};
+                        }
+                        
                         // Update node counter based on loaded nodes
                         nodeCounter = nodeCount + 1;
                         
@@ -983,11 +1812,17 @@ try {
                             initializeTextareas();
                             restoreNodeTexts();
                             
+                            // Restore comment connections from saved data
+                            restoreCommentConnections();
+                            
                             // FIX: Update connection positions after import
                             // This fixes the issue where connection lines don't align properly with input/output circles
                             Object.keys(diagramData.drawflow.Home.data || {}).forEach(nodeId => {
                                 editor.updateConnectionNodes('node-' + nodeId);
                             });
+                            
+                            // Update comment connections after everything is loaded
+                            updateCommentConnections();
                             
                             log('🔧 Connection positions updated for all nodes');
                         }, 100);
@@ -1012,6 +1847,11 @@ try {
             if (confirm('Are you sure you want to clear the entire diagram? This action cannot be undone.')) {
                 editor.clear();
                 nodeCounter = 1;
+                
+                // Clear comment connections
+                window.commentConnections = {};
+                document.querySelectorAll('.comment-connection').forEach(el => el.remove());
+                
                 log('🗑️ Diagram cleared');
                 autoSave();
             }
@@ -1090,16 +1930,29 @@ try {
                 return;
             }
             
-            // For descriptions (textarea elements), allow Enter key and handle auto-resize
+            // For descriptions (textarea elements), handle auto-resize on all input
             if (element.classList.contains('node-description') && element.tagName === 'TEXTAREA') {
-                if (event.key === 'Enter') {
-                    // Auto-resize textarea based on content
-                    setTimeout(() => {
-                        element.style.height = 'auto';
-                        element.style.height = Math.max(15, element.scrollHeight) + 'px';
-                    }, 0);
-                    return; // Allow the Enter key to work normally
-                }
+                // Auto-resize textarea based on content for any key input
+                setTimeout(() => {
+                    autoResizeTextarea(element);
+                }, 0);
+            }
+        }
+        
+        // Auto-resize textarea based on content
+        function autoResizeTextarea(textarea) {
+            // Reset height to auto to get the natural height
+            textarea.style.height = 'auto';
+            // Set height based on scroll height with minimum height
+            const newHeight = Math.max(20, textarea.scrollHeight);
+            textarea.style.height = newHeight + 'px';
+            
+            // Also resize the parent node to accommodate the new textarea size
+            const nodeElement = textarea.closest('.drawflow-node');
+            if (nodeElement) {
+                // Force the node to recalculate its size
+                nodeElement.style.height = 'auto';
+                nodeElement.style.minHeight = 'auto';
             }
         }
         
@@ -1201,10 +2054,20 @@ try {
             textareas.forEach(textarea => {
                 if (textarea.tagName === 'TEXTAREA') {
                     // Auto-resize based on content
-                    textarea.style.height = 'auto';
-                    textarea.style.height = Math.max(15, textarea.scrollHeight) + 'px';
+                    autoResizeTextarea(textarea);
+                    
+                    // Add input event listener for dynamic resizing
+                    if (!textarea.hasAttribute('data-resize-initialized')) {
+                        textarea.addEventListener('input', function() {
+                            autoResizeTextarea(this);
+                        });
+                        textarea.setAttribute('data-resize-initialized', 'true');
+                    }
                 }
             });
+            
+            // Also set up drag handles for loaded nodes
+            setupDragHandles();
         }
         
         // Restore text content from node data after loading
