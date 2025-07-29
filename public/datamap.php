@@ -689,25 +689,39 @@ try {
                 // Ensure input/output circles still work for connections
                 inputElements.forEach(element => {
                     element.addEventListener('mousedown', function(e) {
-                        e.stopImmediatePropagation();
+                        // Allow input connection behavior but prevent node dragging
+                        e.stopPropagation(); 
                     });
                 });
                 
-                outputElements.forEach(element => {
-                    element.addEventListener('mousedown', function(e) {
-                        e.stopImmediatePropagation();
-                    });
-                });
+                // DON'T add event listeners to outputs - let Drawflow handle them completely
+                // outputElements.forEach(element => {
+                //     element.addEventListener('mousedown', function(e) {
+                //         e.stopPropagation(); 
+                //     });
+                // });
                 
                 // Override Drawflow's default mousedown behavior
                 nodeElement.addEventListener('mousedown', function(e) {
+                    // Allow output connections to work normally
+                    if (e.target.closest('.output')) {
+                        // This is an output - let Drawflow handle it completely
+                        return true;
+                    }
+                    
+                    // Allow input connections to work normally  
+                    if (e.target.closest('.input')) {
+                        // This is an input - let Drawflow handle it completely
+                        return true;
+                    }
+                    
                     // Only allow dragging if clicking on the drag handle
                     if (e.target.closest('.node-drag-handle')) {
                         // This is a valid drag - let Drawflow handle it normally
                         return true;
                     } else {
-                        // This is not a drag handle - prevent Drawflow from starting drag
-                        e.stopImmediatePropagation();
+                        // This is not a drag handle or connection point - prevent Drawflow from starting drag
+                        e.stopPropagation();
                         return false;
                     }
                 }, true);
