@@ -33,7 +33,41 @@ Built for enterprise scalability with planned integrations:
 
 ## 🚀 Current Status & Latest Updates
 
-### Version 3.3.2 (July 28, 2025) - Production Cleanup & Documentation Update ✅
+### Version 3.3.2 (July 29, 2025) - DataMap Integration & DrawFlow Architecture ✅
+
+**Major Update**: Complete migration from Mermaid.js to DrawFlow with advanced DataMap integration architecture for visual system mapping.
+
+#### 🎨 **DataMap Visual Architecture - NEW MAJOR FEATURE** 🆕
+- **DrawFlow Integration**: Complete migration from Mermaid.js to DrawFlow (https://github.com/jerosoler/Drawflow) for interactive diagram editing
+- **Visual System Mapping**: Interactive canvas for creating and editing system integration diagrams with drag-and-drop functionality
+- **Node-Based Architecture**: Multiple node types (Application, Service, Database, External System, Visualization, Comment) with input/output connections
+- **Real-time Editing**: Live diagram editing with auto-save functionality and connection management
+- **Comment System**: Integrated comment nodes for technical, business, risk, implementation, and documentation annotations
+- **Integration Analysis**: AI-powered analysis of DataMap diagrams for architectural insights and system dependencies
+
+#### 🔧 **DataMap Technical Features**
+- **Advanced Canvas**: Grip-handle nodes with drag functionality and connection points for professional diagram creation
+- **Node Templates**: Database-driven node templates with configurable inputs, outputs, and CSS classes
+- **JSON Storage**: Efficient diagram storage as JSON in applications.drawflow_diagram field with version control
+- **Connection Management**: Visual connection lines with automatic routing and comment connection overlays
+- **Export Capabilities**: Export diagrams for documentation and architectural review processes
+- **Responsive Design**: Mobile-optimized interface with toolbar controls and context menus
+
+#### 🤖 **Enhanced AI Analysis Integration**
+- **DataMap AI Analysis**: AI analysis now includes comprehensive DataMap diagram interpretation for system architecture insights
+- **Comment Integration**: AI processing of comment nodes for enhanced architectural understanding and risk assessment
+- **Integration Mapping**: Automatic detection and analysis of system integration patterns from visual diagrams
+- **Architecture Recommendations**: AI-powered suggestions for system architecture improvements based on DataMap analysis
+- **Multilingual Support**: Enhanced AI prompt templates supporting Norwegian/English content with preserved context
+
+#### 📋 **AI Configuration System Enhancement**
+- **Advanced Prompt Templates**: 7 sophisticated AI configuration templates with version control (v2.0-narrative, v3.0-integration-focused, v3.3-english-only)
+- **Multilingual Processing**: Intelligent handling of Norwegian/English mixed content in analysis requests
+- **DataMap Integration**: AI prompts specifically designed to process DrawFlow diagram data and system relationships
+- **Token Optimization**: Optimized token usage with configurable limits (1800-2500 tokens) and temperature control
+- **Analysis Caching**: Intelligent caching system with hash-based change detection for performance optimization
+
+### Version 3.3.1 (July 28, 2025) - Production Cleanup & Documentation Update ✅
 
 **Major Update**: Comprehensive codebase cleanup and documentation refresh for production readiness.
 
@@ -775,31 +809,58 @@ AppTrack implements enterprise-grade security measures across all system layers 
 ### Frontend Technology Stack
 - **Bootstrap 5.3**: Latest responsive CSS framework with enhanced components
 - **Vanilla JavaScript (ES6+)**: Modern JavaScript without dependencies for core functionality
+- **DrawFlow Integration**: Professional diagram editor (https://github.com/jerosoler/Drawflow) for interactive system mapping
 - **Choices.js**: Enhanced multi-select dropdowns with search capabilities
-- **Custom CSS Architecture**: Modular component-based styling system
-- **AI Analysis Components**: Interactive modals with real-time progress feedback
+- **Custom CSS Architecture**: Modular component-based styling system with DataMap-specific components
+- **AI Analysis Components**: Interactive modals with real-time progress feedback and DataMap integration
+
+### DataMap Visual Architecture
+```
+public/datamap.php       # Main DataMap editor interface with DrawFlow integration
+assets/js/
+├── components/          # DataMap-specific JavaScript modules
+└── pages/
+    └── app-view.js     # Application view with DataMap integration
+
+Database Integration:
+├── applications.drawflow_diagram    # JSON storage for diagram data
+├── applications.drawflow_notes     # Text annotations and comments
+├── node_templates                  # Database-driven node configurations
+└── ai_analysis                    # AI-powered diagram analysis
+```
+
+### DataMap Technical Features
+- **Interactive Canvas**: Drag-and-drop visual editor with professional node templates and connection management
+- **Node System**: Application, Service, Database, External System, Visualization, and Comment node types with configurable inputs/outputs
+- **Real-time Collaboration**: Auto-save functionality with conflict resolution and version management
+- **Comment Integration**: Visual comment system for technical documentation, business requirements, and risk annotations
+- **AI Analysis**: Intelligent diagram interpretation for architectural insights and integration analysis
+- **Export Capabilities**: Professional diagram export for documentation and architectural review processes
 
 ### AI Analysis Architecture
 ```
 src/services/
-├── AIService.php         # Core AI analysis service with OpenAI integration
-├── DataAggregator.php    # Context gathering and data preparation
+├── AIService.php         # Core AI analysis service with OpenAI integration and DataMap processing
+├── DataAggregator.php    # Context gathering, data preparation, and diagram analysis
 
 Database Tables:
-├── ai_analysis          # Cached AI analysis results with expiration
-├── ai_configurations    # Model and prompt configurations  
+├── ai_analysis          # Cached AI analysis results with expiration and diagram integration
+├── ai_configurations    # Model and prompt configurations with DataMap-specific templates
 ├── ai_usage_log        # API usage tracking and cost monitoring
-└── data_snapshots      # Historical data preservation
+└── data_snapshots      # Historical data preservation including diagram versions
 ```
 
 ### AI Analysis Features in Detail
-- **Smart Cache Management**: Analysis results cached with configurable expiration (6-48 hours based on type)
-- **Change Detection**: Automatic comparison of application data and work notes to determine if new analysis is needed
+- **DataMap Integration**: AI analysis now includes comprehensive DrawFlow diagram interpretation and architectural insights
+- **Comment Processing**: Intelligent analysis of comment nodes for enhanced business context and risk assessment
+- **Smart Cache Management**: Analysis results cached with configurable expiration (6-48 hours based on type) including diagram-based analysis
+- **Change Detection**: Automatic comparison of application data, work notes, and DataMap diagrams to determine if new analysis is needed
+- **Multilingual Support**: Advanced prompt templates supporting Norwegian/English mixed content with preserved context
 - **Token Optimization**: Generate button disabled when analysis is current, reducing unnecessary API calls
-- **Multi-Model Support**: Configurable AI models (GPT-3.5-turbo, GPT-4) with type-specific parameters
-- **Progress Tracking**: Real-time UI feedback during analysis generation (10-30 seconds)
+- **Multi-Model Support**: Configurable AI models (GPT-3.5-turbo, GPT-4) with DataMap-specific parameters
+- **Progress Tracking**: Real-time UI feedback during analysis generation (10-30 seconds) with diagram processing status
 - **Error Recovery**: Robust error handling with retry mechanisms and user-friendly error messages
-- **Content Formatting**: Enhanced display with markdown support, proper spacing, and visual hierarchy
+- **Content Formatting**: Enhanced display with markdown support, proper spacing, and visual hierarchy including diagram insights
 
 ### User Interface Enhancements
 - **Icon-Only Buttons**: Streamlined Force Refresh (🔄) and History (🕐) buttons for cleaner interface

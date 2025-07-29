@@ -7,7 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Changelog
 
-## [3.3.2] - 2025-07-28 - Production Cleanup & Documentation Refresh
+## [3.3.2] - 2025-07-29 - DataMap Integration & DrawFlow Architecture
+
+### Added
+- **DataMap Visual Architecture - NEW MAJOR FEATURE**
+  - **DrawFlow Integration**: Complete migration from Mermaid.js to DrawFlow (https://github.com/jerosoler/Drawflow) for interactive diagram editing
+  - **Visual System Mapping**: Interactive canvas for creating and editing system integration diagrams with drag-and-drop functionality
+  - **Node-Based Architecture**: Multiple node types (Application, Service, Database, External System, Visualization, Comment) with input/output connections
+  - **Real-time Editing**: Live diagram editing with auto-save functionality and connection management
+  - **Comment System**: Integrated comment nodes for technical, business, risk, implementation, and documentation annotations
+  - **Integration Analysis**: AI-powered analysis of DataMap diagrams for architectural insights and system dependencies
+
+- **DataMap Technical Features**
+  - **Advanced Canvas**: Grip-handle nodes with drag functionality and connection points for professional diagram creation
+  - **Node Templates**: Database-driven node templates with configurable inputs, outputs, and CSS classes
+  - **JSON Storage**: Efficient diagram storage as JSON in applications.drawflow_diagram field with version control
+  - **Connection Management**: Visual connection lines with automatic routing and comment connection overlays
+  - **Export Capabilities**: Export diagrams for documentation and architectural review processes
+  - **Responsive Design**: Mobile-optimized interface with toolbar controls and context menus
+
+- **Enhanced AI Analysis Integration**
+  - **DataMap AI Analysis**: AI analysis now includes comprehensive DataMap diagram interpretation for system architecture insights
+  - **Comment Integration**: AI processing of comment nodes for enhanced architectural understanding and risk assessment
+  - **Integration Mapping**: Automatic detection and analysis of system integration patterns from visual diagrams
+  - **Architecture Recommendations**: AI-powered suggestions for system architecture improvements based on DataMap analysis
+  - **Multilingual Support**: Enhanced AI prompt templates supporting Norwegian/English content with preserved context
+
+- **AI Configuration System Enhancement**
+  - **Advanced Prompt Templates**: 7 sophisticated AI configuration templates with version control (v2.0-narrative, v3.0-integration-focused, v3.3-english-only)
+  - **Multilingual Processing**: Intelligent handling of Norwegian/English mixed content in analysis requests
+  - **DataMap Integration**: AI prompts specifically designed to process DrawFlow diagram data and system relationships
+  - **Token Optimization**: Optimized token usage with configurable limits (1800-2500 tokens) and temperature control
+  - **Analysis Caching**: Intelligent caching system with hash-based change detection for performance optimization
+
+### Changed
+- **Migration from Mermaid.js to DrawFlow**
+  - Replaced static Mermaid.js diagrams with interactive DrawFlow editor for enhanced user experience
+  - Updated database schema to support JSON diagram storage and node template configurations
+  - Enhanced AI analysis to interpret visual diagram data alongside traditional application data
+  - Improved user interface with professional diagram editing capabilities
+
+### Technical Infrastructure
+- **Database Schema Updates**
+  - Added `applications.drawflow_diagram` field for JSON diagram storage
+  - Added `applications.drawflow_notes` field for text annotations
+  - Enhanced `ai_configurations` table with DataMap-specific prompt templates
+  - Optimized indexing for diagram-based queries and AI analysis performance
+
+---
+
+## [3.3.1] - 2025-07-28 - Production Cleanup & Documentation Refresh
 
 ### Changed
 - **Production Codebase Optimization**

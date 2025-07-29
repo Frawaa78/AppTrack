@@ -1,53 +1,61 @@
-# AppTrack AI Features Documentation v3.4.0
+# AppTrack AI Features Documentation v3.3.2
 
 ## Overview
 
-AppTrack integrates advanced AI capabilities powered by OpenAI's GPT-3.5-turbo model to provide intelligent analysis and insights for application lifecycle management. The AI system transforms raw application data, work notes, and activity history into comprehensive business intelligence. Version 3.4.0 enhances AI integration with improved kanban workflow analysis and comprehensive audit logging.
+AppTrack integrates advanced AI capabilities powered by OpenAI's GPT-3.5-turbo model to provide intelligent analysis and insights for application lifecycle management. The AI system transforms raw application data, work notes, activity history, and DataMap visual architecture into comprehensive business intelligence. Version 3.3.2 enhances AI integration with DataMap diagram interpretation and multilingual Norwegian/English support.
 
 ## Core AI Features
 
 ### 🤖 Intelligent Analysis Types
 
 #### 1. Application Summary (Default)
-- **Purpose**: Comprehensive business overview of application status and context
+- **Purpose**: Comprehensive business overview including DataMap architecture analysis
 - **Cache Duration**: 24 hours
 - **Token Limit**: 2000 tokens
-- **Enhanced Features**: Now includes kanban phase progression analysis
-- **Use Case**: General purpose analysis for project reviews and status updates
+- **Enhanced Features**: DataMap diagram interpretation with system integration analysis
+- **Use Case**: General purpose analysis for project reviews and architecture documentation
 
 #### 2. Timeline Analysis  
-- **Purpose**: Chronological progression analysis of application development
+- **Purpose**: Chronological progression analysis with visual architecture evolution
 - **Cache Duration**: 12 hours
 - **Token Limit**: 2500 tokens
-- **Enhanced Features**: Incorporates kanban phase change audit logs
-- **Use Case**: Project milestone tracking and delivery timeline assessment
+- **Enhanced Features**: Incorporates DataMap changes and system evolution tracking
+- **Use Case**: Project milestone tracking and architecture evolution assessment
 
 #### 3. Risk Assessment
-- **Purpose**: Identification of potential risks, blockers, and mitigation strategies
+- **Purpose**: Risk identification including architectural complexity analysis from DataMap
 - **Cache Duration**: 6 hours (frequent updates for critical insights)
 - **Token Limit**: 2500 tokens
-- **Enhanced Features**: Analyzes kanban board stagnation patterns
-- **Use Case**: Project governance and risk management
+- **Enhanced Features**: Analyzes DataMap integration patterns for risk identification
+- **Use Case**: Architectural governance and technical risk management
 
 #### 4. Relationship Analysis
-- **Purpose**: Application dependencies and integration impact analysis
+- **Purpose**: System dependencies analysis enhanced with DataMap visual context
 - **Cache Duration**: 24 hours
 - **Token Limit**: 2000 tokens
-- **Enhanced Features**: Cross-references kanban phase positions with dependency mapping
-- **Use Case**: System architecture planning and change impact assessment
+- **Enhanced Features**: Cross-references visual DataMap with dependency relationships
+- **Use Case**: System architecture planning and integration impact assessment
 
 #### 5. Trend Analysis
-- **Purpose**: Long-term pattern recognition and predictive insights
+- **Purpose**: Long-term pattern recognition including DataMap architecture evolution
 - **Cache Duration**: 48 hours (stable over longer periods)
 - **Token Limit**: 3000 tokens
-- **Enhanced Features**: Predictive modeling based on kanban progression patterns
-- **Use Case**: Strategic planning and resource allocation
+- **Enhanced Features**: Predictive modeling based on architectural complexity trends
+- **Use Case**: Strategic planning and architecture evolution planning
 
-### 🎯 Kanban Integration AI Features (v3.4.0 NEW)
+### � DataMap Visual Architecture AI Integration (v3.3.2 NEW)
 
-#### Phase Progression Analysis
-- **Data Source**: Kanban audit logs from drag-and-drop operations
-- **Intelligence**: Pattern recognition for applications stuck in specific phases
+#### Diagram Interpretation
+- **Data Source**: DrawFlow JSON diagram data from `applications.drawflow_diagram`
+- **Intelligence**: Automatic interpretation of node types, connections, and system relationships
+- **Node Analysis**: Recognition of Application, Service, Database, External System, Visualization, and Comment nodes
+- **Connection Analysis**: Data flow interpretation and integration complexity assessment
+
+#### Architecture Intelligence
+- **Integration Patterns**: Automatic detection of common architectural patterns
+- **Complexity Assessment**: Analysis of diagram complexity and potential bottlenecks
+- **Business Context**: Interpretation of comment nodes for business requirements
+- **Technical Documentation**: Automatic generation of architecture summaries
 - **Insights**: Identifies bottlenecks and suggests process improvements
 - **Automation**: Automatic analysis when applications remain in same phase >30 days
 
@@ -81,15 +89,17 @@ $contextHash = hash('sha256', serialize([
     'application_data' => $applicationData,
     'work_notes' => $workNotes,
     'relationships' => $relationships,
-    'audit_history' => $auditHistory
+    'datamap_diagram' => $datamapData,
+    'datamap_notes' => $datamapNotes
 ]));
 ```
 
 #### Cache Management
-- **Input Hashing**: SHA-256 hash of application data + work notes + relationships
+- **Input Hashing**: SHA-256 hash of application data + work notes + relationships + DataMap diagram
 - **Expiration Policies**: Configurable per analysis type (6-48 hours)
-- **Automatic Invalidation**: Cache cleared when source data changes
+- **Automatic Invalidation**: Cache cleared when source data or DataMap changes
 - **Token Optimization**: Reduces OpenAI API calls by 70-80%
+- **DataMap Integration**: Diagram changes automatically invalidate related analysis cache
 
 ### Intelligent Request Management
 

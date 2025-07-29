@@ -286,7 +286,7 @@ AppTrack v3.1.1 introduces critical stability fixes:
 
 AppTrack v3.1 introduces significant enhancements:
 - **Enhanced Activity Tracking**: User display names and internationalized date formats
-- **Integration Architecture System**: Visual diagram creation and management with Mermaid.js
+- **DataMap Visual Architecture**: Interactive diagram system with DrawFlow library replacing Mermaid.js
 - **Database Schema Extensions**: New columns for integration diagrams and notes
 - **Improved User Experience**: Better readability and professional UI design
 - **API Expansion**: New endpoints for integration diagram management
@@ -393,7 +393,7 @@ Activity Tracking System/
 ## Integration Architecture System - NEW v3.1
 
 ### Overview
-The Integration Architecture System provides visual diagram creation and management for applications with integrations, using Mermaid.js for professional diagram rendering.
+The DataMap Visual Architecture System provides interactive diagram creation and management for applications with integrations, using the DrawFlow library for professional interactive diagram editing and AI-powered analysis.
 
 ### Architecture Components
 ```

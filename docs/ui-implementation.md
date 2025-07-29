@@ -1,10 +1,11 @@
 # UI/UX Implementation Guide v3.3.2
 
-This document details the technical implementation of the enhanced user interface in AppTrack v3.3.2, focusing on production optimization, visual improvements, and comprehensive system enhancements including the User Stories Management System and Visual Diagram Editor fixes.
+This document details the technical implementation of the enhanced user interface in AppTrack v3.3.2, focusing on production optimization, visual improvements, and comprehensive system enhancements including the User Stories Management System and DataMap Visual Architecture.
 
 ## Overview
 
 AppTrack v3.3.2 introduces production-ready UI optimizations:
+- **DataMap Visual Architecture**: Complete migration from Mermaid.js to interactive DrawFlow editor
 - **DrawFlow Connection Fixes**: Resolved visual diagram editor connection positioning issues
 - **FontAwesome Pro Integration**: Enhanced icon system with comprehensive fallback mechanisms
 - **Production UI Polish**: Streamlined interface following comprehensive file cleanup
@@ -41,10 +42,10 @@ AppTrack v3.3.2 introduces production-ready UI optimizations:
         <i class="fas fa-user-edit me-1"></i>User Stories
     </a>
     
-    <!-- Integration Architecture moved from S.A. Document field -->
-    <a href="javascript:void(0)" onclick="openDiagramEditor()" 
+    <!-- DataMap Visual Architecture - replaced Integration Architecture -->
+    <a href="javascript:void(0)" onclick="openDataMapEditor()" 
        class="btn header-action-btn">
-        <i class="fas fa-project-diagram me-1"></i>Integration Architecture
+        <i class="fas fa-project-diagram me-1"></i>DataMap Architecture
     </a>
     
     <a href="handover/index.php?application_id=<?= $application['id'] ?>" 
@@ -736,47 +737,66 @@ const templates = {
 }
 ```
 
-### Mermaid.js Integration
+### DataMap Visual Architecture - DrawFlow Integration
 
-#### Dynamic Loading and Initialization
+#### Interactive Diagram Editor
 ```javascript
-let mermaidLoaded = false;
+// DataMap initialization in datamap.php
+const editor = new Drawflow(document.getElementById('drawflow'));
+editor.reroute = true;
+editor.reroute_fix_curvature = true;
+editor.force_first_input = false;
 
-function loadMermaid() {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
-    script.onload = function() {
-        mermaid.initialize({ startOnLoad: false, theme: 'default' });
-        mermaidLoaded = true;
-        initializeIntegrationDiagram();
-    };
-    document.head.appendChild(script);
+// Node templates with grip handles
+function addNodeToDrawflow(nodeType, x, y) {
+    const nodeData = getNodeTemplate(nodeType);
+    const nodeId = generateNodeId();
+    
+    editor.addNode(nodeId, nodeData.inputs, nodeData.outputs, x, y, 
+                  nodeData.class, nodeData.data, nodeData.html);
+    
+    // Setup drag handles for positioning
+    setupDragHandles();
 }
 
-function renderDiagram(code) {
-    const container = document.getElementById('mermaid-container');
-    const diagramId = 'mermaid-diagram-' + Date.now();
-    
-    mermaid.render(diagramId, code).then(result => {
-        container.innerHTML = result.svg;
-    }).catch(error => {
-        container.innerHTML = `<div class="alert alert-danger">Diagram Error: ${error.message}</div>`;
+// Fixed connection handling (v3.3.2)
+function setupDragHandles() {
+    const nodes = document.querySelectorAll('.drawflow-node');
+    nodes.forEach(node => {
+        const gripHandle = node.querySelector('.grip-handle');
+        if (gripHandle && !gripHandle.hasAttribute('data-setup')) {
+            // Allow output connections while maintaining drag functionality
+            gripHandle.addEventListener('mousedown', handleNodeDrag);
+            gripHandle.setAttribute('data-setup', 'true');
+        }
     });
 }
 ```
 
-#### Template System
+#### Node Template System
 ```javascript
-const templates = {
-    'Basic Integration': `graph TD
-        A[Application] --> B[Database]
-        A --> C[External API]
-        D[Source System] --> A
-        A --> E[Target System]`,
+const nodeTemplates = {
+    'application': {
+        html: `<div class="node-content">
+                 <div class="grip-handle">≡≡≡</div>
+                 <div class="node-title">Application</div>
+                 <div class="node-description">{{description}}</div>
+               </div>`,
+        inputs: 1,
+        outputs: 1,
+        class: 'node-application'
+    },
     
-    'Data Pipeline': `graph LR
-        A[Source Data] --> B[Application]
-        B --> C[Transform]
+    'service': {
+        html: `<div class="node-content">
+                 <div class="grip-handle">≡≡≡</div>
+                 <div class="node-title">Service</div>
+                 <div class="node-description">{{description}}</div>
+               </div>`,
+        inputs: 1,
+        outputs: 2,
+        class: 'node-service'
+    }
         C --> D[Load]
         D --> E[Data Warehouse]`,
     
@@ -798,7 +818,7 @@ const templates = {
 
 ### Recent Enhancements (December 2024)
 - **Activity Tracker UI**: Enhanced user experience with display names and English date formatting
-- **Integration Architecture**: Complete Mermaid.js diagram system with modal interface
+- **DataMap Visual Architecture**: Complete DrawFlow-based interactive diagram system with AI integration
 - **Button Integration**: Seamless placement within existing form layout
 - **Text Overflow**: Proper handling in flex containers for long URLs
 

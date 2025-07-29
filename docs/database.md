@@ -1,13 +1,14 @@
 # AppTrack Database Documentation v3.3.2
 
-This document provides a comprehensive overview of the AppTrack database structure, including all tables, relationships, and AI integration capabilities.
+This document provides a comprehensive overview of the AppTrack database structure, including all tables, relationships, and AI integration capabilities with DataMap visual architecture.
 
 ## Overview
 
-The database follows an enterprise-grade normalized design pattern with comprehensive AI analytics integration and User Stories management. Key architectural features include:
+The database follows an enterprise-grade normalized design pattern with comprehensive AI analytics integration, User Stories management, and DataMap visual system mapping. Key architectural features include:
 
 - **25 Core Tables** with optimized relationships and constraints (based on SQL schema analysis)
-- **AI Analysis Engine** with intelligent caching and change detection  
+- **DataMap Integration** with DrawFlow diagram storage and visual system mapping
+- **AI Analysis Engine** with intelligent caching, change detection, and diagram interpretation
 - **Comprehensive Audit System** with full change tracking and timestamps
 - **Rich Work Notes** with attachment support and priority management
 - **User Stories Management** with Agile methodology support and application integration
@@ -20,25 +21,25 @@ The database follows an enterprise-grade normalized design pattern with comprehe
 ## Current Schema Status ✅
 
 ✅ **PRODUCTION READY**: All 25 application tables properly mapped and validated (confirmed by SQL schema)
-✅ **AI INTEGRATED**: Complete OpenAI analysis system with multilingual support (4 dedicated tables)  
+✅ **DATAMAP INTEGRATED**: DrawFlow diagram storage with JSON-based architecture and visual system mapping
+✅ **AI INTEGRATED**: Complete OpenAI analysis system with multilingual support and DataMap interpretation (4 dedicated tables)
 ✅ **USER STORIES MODULE**: Complete Agile User Stories management (2 dedicated tables with attachment support)
 ✅ **HANDOVER SYSTEM**: Complete 15-step handover management (4 dedicated tables)
-✅ **OPTIMIZED PERFORMANCE**: Smart caching with configurable expiration policies (6-48 hours)  
-✅ **AUDIT COMPLETE**: Full change tracking with user attribution and visibility controls  
-✅ **FILE MANAGEMENT**: Attachment system with BLOB storage and comprehensive metadata  
+✅ **OPTIMIZED PERFORMANCE**: Smart caching with configurable expiration policies (6-48 hours)
+✅ **AUDIT COMPLETE**: Full change tracking with user attribution and visibility controls
+✅ **FILE MANAGEMENT**: Attachment system with BLOB storage and comprehensive metadata
 ✅ **SEARCH ENABLED**: Real-time application search with relationship mapping and indexing
 ✅ **SECURITY HARDENED**: Data privacy controls with sensitive field exclusion for AI processing
-✅ **HANDOVER SYSTEM**: Complete 15-step handover management with participant tracking
 ✅ **KANBAN WORKFLOW**: Phase-based kanban system with drag-and-drop functionality
-✅ **USER STORIES MODULE**: Complete Agile User Stories management with application integration
 
 ## Database Architecture Summary
 
 | Category | Tables | Purpose | Key Features |
 |----------|--------|---------|--------------|
-| **Core Application** | applications, work_notes, audit_log | Primary business data | Full lifecycle tracking |
+| **Core Application** | applications, work_notes, audit_log | Primary business data with DataMap | Full lifecycle tracking, visual diagrams |
+| **DataMap Integration** | applications.drawflow_diagram, applications.drawflow_notes | Visual system mapping | JSON diagram storage, node templates |
 | **User Stories** | user_stories, user_story_attachments | Agile story management | Jira integration, CRUD operations |
-| **AI Analysis** | ai_analysis, ai_configurations, ai_usage_log, data_snapshots | AI insights & caching | Smart change detection |
+| **AI Analysis** | ai_analysis, ai_configurations, ai_usage_log, data_snapshots | AI insights & diagram analysis | Smart change detection, multilingual support |
 | **User Management** | users, application_user_relations | Authentication & authorization | Role-based access |
 | **Reference Data** | phases, statuses, deployment_models, portfolios, project_managers, product_owners | Controlled vocabularies | Data consistency |
 | **Relationships** | application_relations | Dependency mapping | Bidirectional links |
@@ -84,7 +85,33 @@ Primary entity storing all application lifecycle information with complete hando
 - **Kanban Integration**: `phase` field drives kanban board organization (Need, Solution, Build, Implement, Operate)
 - **User Assignment**: Three-tier assignment system (`assigned_to`, `project_manager`, `product_owner`) for "Show mine only" filtering
 - **Handover Integration**: Direct relationship to handover management system via `handover_document_id`
-- **Integration Architecture**: Built-in support for visual integration diagrams and technical notes
+- **DataMap Integration**: Built-in support for visual integration diagrams and technical notes through DrawFlow fields
+- **Visual Architecture**: `drawflow_diagram` (JSON) and `drawflow_notes` (TEXT) fields for interactive system mapping
+
+## DataMap Integration Architecture
+
+### DrawFlow Diagram Storage
+The applications table includes specialized fields for visual system mapping:
+
+| Field                | Type    | Description                                    | Purpose                           |
+|---------------------|---------|------------------------------------------------|-----------------------------------|
+| drawflow_diagram    | JSON    | Complete DrawFlow diagram data structure      | Node positions, connections, types |
+| drawflow_notes      | TEXT    | Additional diagram annotations and comments    | Technical notes, business context |
+
+**DataMap Features:**
+- **Interactive Editing**: Real-time diagram editing with drag-and-drop functionality
+- **Node Templates**: Database-driven node configurations with customizable inputs/outputs
+- **Connection Management**: Visual connection lines with automatic routing and comment overlays
+- **AI Integration**: Diagram data included in AI analysis for architectural insights
+- **Export Capabilities**: Professional diagram export for documentation and review processes
+
+**Node Types Supported:**
+- **Application**: Software applications and systems
+- **Service**: Microservices and API endpoints  
+- **Database**: Data stores and repositories
+- **External System**: Third-party integrations
+- **Visualization**: Dashboards and reporting tools
+- **Comment**: Technical, business, risk, and implementation annotations
 
 ## AI Analysis Tables
 
@@ -114,7 +141,7 @@ Stores AI-generated analysis results with intelligent caching and change detecti
 - **Change Detection**: Automatic cache invalidation when source data changes
 
 ### Table: ai_configurations
-Manages AI analysis prompts and model parameters for different analysis types.
+Manages AI analysis prompts and model parameters for different analysis types with advanced DataMap integration and multilingual support.
 
 | Field            | Type            | Description                           | Constraints           |
 |------------------|-----------------|---------------------------------------|-----------------------|
@@ -130,6 +157,20 @@ Manages AI analysis prompts and model parameters for different analysis types.
 | created_at       | datetime        | Configuration creation time           | DEFAULT CURRENT       |
 | updated_at       | datetime        | Last modification time                | ON UPDATE CURRENT     |
 | created_by       | int(11)         | FK to users table                     | NULL, MUL             |
+
+**AI Configuration Features:**
+- **DataMap Integration**: Specialized prompt templates for processing DrawFlow diagram data and system relationships
+- **Multilingual Support**: Advanced prompts supporting Norwegian/English mixed content with preserved context
+- **Version Control**: Template versioning (v2.0-narrative, v3.0-integration-focused, v3.3-english-only) for backward compatibility
+- **Token Optimization**: Configurable limits (1800-2500 tokens) with temperature control for different analysis types
+- **Business Context**: Prompts specifically designed for Yggdrasil greenfield program context and enterprise architecture
+
+**Current Prompt Templates (from database):**
+- **Summary Analysis**: Comprehensive application summaries with DataMap integration (500-600 words)
+- **Timeline Analysis**: Project timeline and progress analysis with development velocity insights
+- **Risk Assessment**: Comprehensive risk analysis including technical architecture, requirements, and delivery risks
+- **Narrative Summary**: Engaging business narratives for management and stakeholder communication
+- **Integration Focus**: Enhanced prompts emphasizing system integration architecture and data flow analysis
 
 ### Table: ai_usage_log
 Comprehensive logging of all AI API interactions for monitoring and cost tracking.
