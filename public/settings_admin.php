@@ -27,8 +27,57 @@ try {
     <title>System Settings - AppTrack</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Fjern eller endre til eksisterende CSS-fil -->
-    <!-- <link href="assets/css/style.css" rel="stylesheet"> -->
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon/favicon-16x16.png">
+    <link rel="manifest" href="../assets/favicon/site.webmanifest">
+    <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
+    
+    <!-- AppTrack CSS -->
+    <link href="../assets/css/main.css" rel="stylesheet">
+    
+    <style>
+        /* Header Action Button Styling - matching app_view.php */
+        .header-action-btn {
+            background-color: #FCFCFC;
+            border: 1px solid #F0F1F2;
+            color: #212529;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .header-action-btn:hover {
+            background-color: #F8F9FA;
+            border-color: #DEE2E6;
+            color: #212529;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-action-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+            background-color: #F8F9FA;
+            border-color: #86B7FE;
+            color: #212529;
+        }
+        
+        .header-action-btn i {
+            font-size: 16px;
+            min-width: 16px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <?php include 'shared/topbar.php'; ?>
@@ -37,7 +86,14 @@ try {
         <div class="row">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="bi bi-gear me-2"></i>System Settings</h2>
+                    <div class="d-flex align-items-center">
+                        <button onclick="goBack()" 
+                                class="header-action-btn me-3" 
+                                title="Go back">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </button>
+                        <h2><i class="bi bi-gear me-2"></i>System Settings</h2>
+                    </div>
                 </div>
 
                 <!-- Settings Tabs -->
@@ -108,46 +164,20 @@ try {
                                     <div class="col-md-6">
                                         <h6>Phases</h6>
                                         <div id="phases-config">
-                                            <div class="list-group">
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Need <span class="badge bg-primary">Active</span>
-                                                </div>
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Solution <span class="badge bg-primary">Active</span>
-                                                </div>
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Build <span class="badge bg-primary">Active</span>
-                                                </div>
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Implement <span class="badge bg-primary">Active</span>
-                                                </div>
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Operate <span class="badge bg-primary">Active</span>
-                                                </div>
-                                            </div>
+                                            <!-- Dynamic content will be loaded here -->
                                         </div>
+                                        <button class="btn btn-sm btn-outline-primary mt-2" id="add-phase">
+                                            <i class="bi bi-plus"></i> Add Phase
+                                        </button>
                                     </div>
                                     <div class="col-md-6">
                                         <h6>Statuses</h6>
                                         <div id="statuses-config">
-                                            <div class="list-group">
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Unknown <span class="badge bg-secondary">Active</span>
-                                                </div>
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Not started <span class="badge bg-danger">Active</span>
-                                                </div>
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Ongoing Work <span class="badge bg-warning">Active</span>
-                                                </div>
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    On Hold <span class="badge bg-info">Active</span>
-                                                </div>
-                                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                    Completed <span class="badge bg-success">Active</span>
-                                                </div>
-                                            </div>
+                                            <!-- Dynamic content will be loaded here -->
                                         </div>
+                                        <button class="btn btn-sm btn-outline-primary mt-2" id="add-status">
+                                            <i class="bi bi-plus"></i> Add Status
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -161,24 +191,46 @@ try {
                                 <h5 class="mb-0">AI Configuration</h5>
                             </div>
                             <div class="card-body">
-                                <div class="mb-3">
-                                    <label for="openai-api-key" class="form-label">OpenAI API Key</label>
-                                    <div class="input-group">
-                                        <input type="password" class="form-control" id="openai-api-key" placeholder="sk-...">
-                                        <button class="btn btn-outline-secondary" type="button" id="toggle-api-key">
-                                            <i class="bi bi-eye"></i>
+                                <!-- AI Configurations Management -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <h6>AI Prompt Configurations</h6>
+                                        <p class="text-muted small">Manage AI prompt templates and model settings for different analysis types.</p>
+                                        <div id="ai-configurations">
+                                            <!-- Dynamic content will be loaded here -->
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-primary mt-2" id="add-ai-config">
+                                            <i class="bi bi-plus"></i> Add Configuration
                                         </button>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="ai-model" class="form-label">AI Model</label>
-                                    <select class="form-select" id="ai-model">
-                                        <option value="gpt-4">GPT-4</option>
-                                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Analysis Types</label>
+
+                                <hr>
+
+                                <!-- Global AI Settings -->
+                                <form id="ai-settings-form">
+                                    <h6>Global AI Settings</h6>
+                                    <!-- Hidden username field for accessibility -->
+                                    <input type="text" style="display:none" name="username" autocomplete="username">
+                                    
+                                    <div class="mb-3">
+                                        <label for="openai-api-key" class="form-label">OpenAI API Key</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="openai-api-key" placeholder="sk-..." autocomplete="new-password">
+                                            <button class="btn btn-outline-secondary" type="button" id="toggle-api-key">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="ai-model" class="form-label">Default AI Model</label>
+                                        <select class="form-select" id="ai-model">
+                                            <option value="gpt-4">GPT-4</option>
+                                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Analysis Types</label>
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="enable-summary" checked>
                                         <label class="form-check-label" for="enable-summary">
@@ -193,6 +245,7 @@ try {
                                     </div>
                                 </div>
                                 <button class="btn btn-primary" id="save-ai-settings">Save AI Settings</button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -241,55 +294,129 @@ try {
     <script>
         // Settings page functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Load portfolios when page loads
+            // Load only portfolio settings when page loads (since it's the default active tab)
             loadPortfolios();
+
+            // Setup tab change handlers
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function (e) {
+                    const target = e.target.getAttribute('data-bs-target');
+                    if (target === '#application') {
+                        // Only load if not already loaded
+                        const phasesContainer = document.getElementById('phases-config');
+                        const statusesContainer = document.getElementById('statuses-config');
+                        
+                        if (!phasesContainer.hasAttribute('data-loaded')) {
+                            console.log('Loading phases for the first time');
+                            loadPhases();
+                        } else {
+                            console.log('Phases already loaded, skipping');
+                        }
+                        if (!statusesContainer.hasAttribute('data-loaded')) {
+                            console.log('Loading statuses for the first time');
+                            loadStatuses();
+                        } else {
+                            console.log('Statuses already loaded, skipping');
+                        }
+                    } else if (target === '#ai') {
+                        // Load AI configurations when AI tab is clicked
+                        const aiContainer = document.getElementById('ai-configurations');
+                        if (!aiContainer.hasAttribute('data-loaded')) {
+                            console.log('Loading AI configurations for the first time');
+                            loadAiConfigurations();
+                        } else {
+                            console.log('AI configurations already loaded, skipping');
+                        }
+                    }
+                });
+            });
 
             // Portfolio Management Functions
             function loadPortfolios() {
-                // Mock data for testing while API is missing
-                console.log('Loading portfolios...');
+                console.log('=== Loading portfolios START ===');
+                console.log('Current URL:', window.location.href);
+                console.log('Session info:', {
+                    user_id: '<?php echo $_SESSION["user_id"] ?? "not set"; ?>',
+                    user_role: '<?php echo $_SESSION["user_role"] ?? "not set"; ?>'
+                });
                 
-                const mockData = {
-                    success: true,
-                    preops_portfolios: [
-                        { name: 'Infrastructure', count: 12 },
-                        { name: 'Security Portfolio', count: 8 },
-                        { name: 'Network Operations', count: 5 }
-                    ],
-                    app_portfolios: [
-                        { name: 'Customer Applications', count: 15 },
-                        { name: 'Internal Tools', count: 6 },
-                        { name: 'Mobile Apps', count: 9 }
-                    ]
-                };
+                // Add cache-busting parameter
+                const timestamp = new Date().getTime();
+                const apiUrl = `api/settings/portfolios.php?t=${timestamp}`;
+                console.log('Fetching from URL:', apiUrl);
+                console.log('Full fetch URL:', new URL(apiUrl, window.location.href).href);
                 
-                renderPortfolios('preops', mockData.preops_portfolios);
-                renderPortfolios('app', mockData.app_portfolios);
-                
-                // Original API call - commented out until API is created
-                /*
-                fetch('api/settings/portfolios.php')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            renderPortfolios('preops', data.preops_portfolios);
-                            renderPortfolios('app', data.app_portfolios);
-                        } else {
-                            showToast('Error loading portfolios', 'error');
+                fetch(apiUrl)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        console.log('Response headers:', response.headers);
+                        
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                console.error('Error response body:', text);
+                                throw new Error(`HTTP ${response.status}: ${text || 'Unknown error'}`);
+                            });
                         }
+                        return response.text(); // First get as text to debug
+                    })
+                    .then(text => {
+                        console.log('=== PORTFOLIO API RESPONSE START ===');
+                        console.log('Raw response from portfolios API:', text);
+                        console.log('Response length:', text.length);
+                        console.log('Response type:', typeof text);
+                        
+                        try {
+                            const data = JSON.parse(text);
+                            console.log('Parsed portfolio data:', data);
+                            console.log('Data keys:', Object.keys(data));
+                            
+                            if (data.success) {
+                                // Check if this is actually portfolio data
+                                if (data.preops_portfolios && data.app_portfolios) {
+                                    console.log('✅ Correct portfolio data structure detected');
+                                    renderPortfolios('preops', data.preops_portfolios);
+                                    renderPortfolios('app', data.app_portfolios);
+                                } else if (data.phases) {
+                                    // This is phases data, not portfolios
+                                    console.error('❌ API returned phases data instead of portfolios data');
+                                    console.error('Phases data:', data.phases);
+                                    showToast('API returned wrong data type (phases instead of portfolios)', 'error');
+                                } else {
+                                    console.error('❌ Unexpected data structure:', data);
+                                    showToast('Unexpected data structure from portfolios API', 'error');
+                                }
+                            } else {
+                                console.error('❌ API returned error:', data.error);
+                                showToast('Error loading portfolios: ' + (data.error || 'Unknown error'), 'error');
+                            }
+                        } catch (e) {
+                            console.error('❌ JSON Parse Error:', e);
+                            console.error('Response text that failed to parse:', text);
+                            console.log('=== PORTFOLIO API RESPONSE END ===');
+                            throw new Error('Invalid JSON response from server');
+                        }
+                        console.log('=== PORTFOLIO API RESPONSE END ===');
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                        showToast('Failed to load portfolios', 'error');
+                        console.error('❌ Portfolio API Error:', error);
+                        showToast('Failed to load portfolios: ' + error.message, 'error');
+                        
+                        // Show empty state instead of demo data
+                        document.getElementById('preops-portfolios').innerHTML = '<p class="text-muted">Failed to load portfolios</p>';
+                        document.getElementById('app-portfolios').innerHTML = '<p class="text-muted">Failed to load portfolios</p>';
                     });
-                */
             }
 
             function renderPortfolios(type, portfolios) {
                 const containerId = type === 'preops' ? 'preops-portfolios' : 'app-portfolios';
                 const container = document.getElementById(containerId);
                 
-                if (portfolios.length === 0) {
+                console.log(`Rendering ${type} portfolios:`, portfolios);
+                console.log(`Container found:`, container);
+                console.log(`Container ID: ${containerId}`);
+                
+                if (!portfolios || !Array.isArray(portfolios) || portfolios.length === 0) {
+                    console.log(`No portfolios to render for ${type}`);
                     container.innerHTML = '<p class="text-muted">No portfolios found</p>';
                     return;
                 }
@@ -320,7 +447,10 @@ try {
                     </div>
                 `).join('');
                 
+                console.log(`Generated HTML for ${type}:`, html);
+                console.log(`Setting innerHTML for container: ${containerId}`);
                 container.innerHTML = html;
+                console.log(`Container innerHTML set. Current content:`, container.innerHTML);
 
                 // Add event listeners
                 container.querySelectorAll('.btn-edit').forEach(btn => {
@@ -350,6 +480,8 @@ try {
                         deletePortfolio(item);
                     });
                 });
+                
+                console.log(`Event listeners added for ${type} portfolios`);
             }
 
             function startEdit(item) {
@@ -489,6 +621,293 @@ try {
                 });
             }
 
+            // Phases Management Functions
+            function loadPhases() {
+                fetch('api/settings/phases.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderPhases(data.phases);
+                        } else {
+                            showToast('Error loading phases', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Failed to load phases', 'error');
+                    });
+            }
+
+            function renderPhases(phases) {
+                const container = document.getElementById('phases-config');
+                
+                if (phases.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No phases found</p>';
+                    container.setAttribute('data-loaded', 'true');
+                    return;
+                }
+
+                const html = phases.map(phase => `
+                    <div class="d-flex justify-content-between align-items-center mb-2 config-item" data-type="phase" data-name="${phase.name}">
+                        <div class="config-display">
+                            <span class="config-name">${phase.name}</span>
+                            <small class="text-muted ms-2">(${phase.count} apps)</small>
+                        </div>
+                        <div class="config-edit" style="display: none;">
+                            <input type="text" class="form-control form-control-sm config-edit-input" value="${phase.name}">
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary btn-edit" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-success btn-save" style="display: none;" title="Save">
+                                <i class="bi bi-check"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-cancel" style="display: none;" title="Cancel">
+                                <i class="bi bi-x"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-delete" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = html;
+                container.setAttribute('data-loaded', 'true'); // Mark as loaded
+                setupConfigEventListeners(container, 'phase');
+            }
+
+            // Statuses Management Functions
+            function loadStatuses() {
+                fetch('api/settings/statuses.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderStatuses(data.statuses);
+                        } else {
+                            showToast('Error loading statuses', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Failed to load statuses', 'error');
+                    });
+            }
+
+            function renderStatuses(statuses) {
+                const container = document.getElementById('statuses-config');
+                
+                if (statuses.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No statuses found</p>';
+                    container.setAttribute('data-loaded', 'true');
+                    return;
+                }
+
+                const html = statuses.map(status => `
+                    <div class="d-flex justify-content-between align-items-center mb-2 config-item" data-type="status" data-name="${status.name}">
+                        <div class="config-display">
+                            <span class="config-name">${status.name}</span>
+                            <small class="text-muted ms-2">(${status.count} apps)</small>
+                            <span class="badge bg-${status.badge_color} ms-2">Active</span>
+                        </div>
+                        <div class="config-edit" style="display: none;">
+                            <input type="text" class="form-control form-control-sm config-edit-input" value="${status.name}">
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary btn-edit" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-success btn-save" style="display: none;" title="Save">
+                                <i class="bi bi-check"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary btn-cancel" style="display: none;" title="Cancel">
+                                <i class="bi bi-x"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-delete" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = html;
+                container.setAttribute('data-loaded', 'true'); // Mark as loaded
+                setupConfigEventListeners(container, 'status');
+            }
+
+            // Generic config item event listeners
+            function setupConfigEventListeners(container, type) {
+                container.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const item = this.closest('.config-item');
+                        startConfigEdit(item);
+                    });
+                });
+
+                container.querySelectorAll('.btn-save').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const item = this.closest('.config-item');
+                        saveConfigEdit(item, type);
+                    });
+                });
+
+                container.querySelectorAll('.btn-cancel').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const item = this.closest('.config-item');
+                        cancelConfigEdit(item);
+                    });
+                });
+
+                container.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const item = this.closest('.config-item');
+                        deleteConfig(item, type);
+                    });
+                });
+            }
+
+            function startConfigEdit(item) {
+                const display = item.querySelector('.config-display');
+                const edit = item.querySelector('.config-edit');
+                const btnEdit = item.querySelector('.btn-edit');
+                const btnSave = item.querySelector('.btn-save');
+                const btnCancel = item.querySelector('.btn-cancel');
+
+                display.style.display = 'none';
+                edit.style.display = 'block';
+                btnEdit.style.display = 'none';
+                btnSave.style.display = 'inline-block';
+                btnCancel.style.display = 'inline-block';
+
+                edit.querySelector('input').focus();
+            }
+
+            function cancelConfigEdit(item) {
+                const display = item.querySelector('.config-display');
+                const edit = item.querySelector('.config-edit');
+                const btnEdit = item.querySelector('.btn-edit');
+                const btnSave = item.querySelector('.btn-save');
+                const btnCancel = item.querySelector('.btn-cancel');
+
+                display.style.display = 'block';
+                edit.style.display = 'none';
+                btnEdit.style.display = 'inline-block';
+                btnSave.style.display = 'none';
+                btnCancel.style.display = 'none';
+            }
+
+            function saveConfigEdit(item, type) {
+                const oldName = item.dataset.name;
+                const newName = item.querySelector('.config-edit-input').value.trim();
+
+                if (!newName) {
+                    showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} name cannot be empty`, 'error');
+                    return;
+                }
+
+                const apiUrl = type === 'phase' ? 'api/settings/phases.php' : 'api/settings/statuses.php';
+
+                fetch(apiUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        old_name: oldName,
+                        new_name: newName
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} updated successfully`, 'success');
+                        if (type === 'phase') loadPhases();
+                        else loadStatuses();
+                    } else {
+                        showToast(data.error || `Failed to update ${type}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast(`Failed to update ${type}`, 'error');
+                });
+            }
+
+            function deleteConfig(item, type) {
+                const name = item.dataset.name;
+
+                if (!confirm(`Are you sure you want to delete the ${type} "${name}"? This will remove it from all applications.`)) {
+                    return;
+                }
+
+                const apiUrl = type === 'phase' ? 'api/settings/phases.php' : 'api/settings/statuses.php';
+
+                fetch(apiUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully (${data.affected_rows} apps updated)`, 'success');
+                        if (type === 'phase') loadPhases();
+                        else loadStatuses();
+                    } else {
+                        showToast(data.error || `Failed to delete ${type}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast(`Failed to delete ${type}`, 'error');
+                });
+            }
+
+            // Add buttons event listeners
+            document.getElementById('add-phase').addEventListener('click', function() {
+                addConfig('phase');
+            });
+
+            document.getElementById('add-status').addEventListener('click', function() {
+                addConfig('status');
+            });
+
+            function addConfig(type) {
+                const name = prompt(`Enter name for new ${type}:`);
+                if (!name || !name.trim()) return;
+
+                const apiUrl = type === 'phase' ? 'api/settings/phases.php' : 'api/settings/statuses.php';
+
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name.trim()
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} ready to be used`, 'success');
+                        if (type === 'phase') loadPhases();
+                        else loadStatuses();
+                    } else {
+                        showToast(data.error || `Failed to create ${type}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast(`Failed to create ${type}`, 'error');
+                });
+            }
+
             function showToast(message, type = 'info') {
                 // Create toast if not exists
                 if (!document.getElementById('toast-container')) {
@@ -500,7 +919,9 @@ try {
                 }
 
                 const toastId = 'toast-' + Date.now();
-                const bgClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+                const bgClass = type === 'success' ? 'bg-success' : 
+                              type === 'error' ? 'bg-danger' : 
+                              type === 'warning' ? 'bg-warning' : 'bg-info';
                 
                 const toastHtml = `
                     <div id="${toastId}" class="toast ${bgClass} text-white" role="alert">
@@ -521,6 +942,374 @@ try {
                     toastElement.remove();
                 });
             }
+
+            // AI Configurations Management Functions
+            function loadAiConfigurations() {
+                console.log('Loading AI configurations...');
+                
+                fetch('api/settings/ai_configurations.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderAiConfigurations(data.configurations);
+                        } else {
+                            showToast('Error loading AI configurations: ' + (data.error || 'Unknown error'), 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Failed to load AI configurations', 'error');
+                    });
+            }
+
+            function renderAiConfigurations(configurations) {
+                const container = document.getElementById('ai-configurations');
+                
+                if (!configurations || configurations.length === 0) {
+                    container.innerHTML = '<p class="text-muted">No AI configurations found</p>';
+                    container.setAttribute('data-loaded', 'true');
+                    return;
+                }
+
+                const html = configurations.map(config => `
+                    <div class="card mb-3 ai-config-item" data-id="${config.id}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${config.analysis_type}</strong>
+                                <span class="badge bg-secondary ms-2">${config.prompt_version}</span>
+                                <span class="badge bg-${config.is_active ? 'success' : 'secondary'} ms-1">
+                                    ${config.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary btn-edit-config" title="Edit Configuration" data-id="${config.id}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-outline-info btn-view-prompt" title="View Prompt" data-id="${config.id}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-delete-config" title="Delete Configuration" data-id="${config.id}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Model:</small> ${config.model_name}<br>
+                                    <small class="text-muted">Max Tokens:</small> ${config.max_tokens}<br>
+                                    <small class="text-muted">Temperature:</small> ${config.temperature}
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">Created:</small> ${config.created_at}<br>
+                                    <small class="text-muted">Updated:</small> ${config.updated_at}
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">Prompt Preview:</small><br>
+                                <small class="text-secondary">${config.prompt_preview}</small>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = html;
+                container.setAttribute('data-loaded', 'true');
+                setupAiConfigEventListeners();
+            }
+
+            function setupAiConfigEventListeners() {
+                // Edit configuration buttons
+                document.querySelectorAll('.btn-edit-config').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const configId = this.dataset.id;
+                        editAiConfiguration(configId);
+                    });
+                });
+
+                // View prompt buttons
+                document.querySelectorAll('.btn-view-prompt').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const configId = this.dataset.id;
+                        viewPromptTemplate(configId);
+                    });
+                });
+
+                // Delete configuration buttons
+                document.querySelectorAll('.btn-delete-config').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const configId = this.dataset.id;
+                        deleteAiConfiguration(configId);
+                    });
+                });
+            }
+
+            function editAiConfiguration(configId) {
+                // Find the configuration data
+                fetch(`api/settings/ai_configurations.php`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const config = data.configurations.find(c => c.id == configId);
+                            if (config) {
+                                showAiConfigModal(config);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Failed to load configuration details', 'error');
+                    });
+            }
+
+            function viewPromptTemplate(configId) {
+                fetch(`api/settings/ai_configurations.php`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const config = data.configurations.find(c => c.id == configId);
+                            if (config) {
+                                showPromptViewModal(config);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Failed to load prompt template', 'error');
+                    });
+            }
+
+            function deleteAiConfiguration(configId) {
+                if (!confirm('Are you sure you want to delete this AI configuration? This action cannot be undone.')) {
+                    return;
+                }
+
+                fetch('api/settings/ai_configurations.php', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: parseInt(configId)
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('AI configuration deleted successfully', 'success');
+                        loadAiConfigurations(); // Reload configurations
+                    } else {
+                        showToast(data.error || 'Failed to delete configuration', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Failed to delete configuration', 'error');
+                });
+            }
+
+            function showAiConfigModal(config = null) {
+                const isEdit = config !== null;
+                const modalId = 'aiConfigModal';
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById(modalId);
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                // Extract safe values
+                const analysisType = config ? (config.analysis_type || '') : '';
+                const promptVersion = config ? (config.prompt_version || 'v1.0') : 'v1.0';
+                const promptTemplate = config ? (config.prompt_template || '') : '';
+                const modelName = config ? (config.model_name || 'gpt-3.5-turbo') : 'gpt-3.5-turbo';
+                const maxTokens = config ? (config.max_tokens || 2000) : 2000;
+                const temperature = config ? (config.temperature || 0.7) : 0.7;
+                const isActive = config ? (config.is_active !== 0) : true;
+                const gpt35Selected = modelName === 'gpt-3.5-turbo' ? 'selected' : '';
+                const gpt4Selected = modelName === 'gpt-4' ? 'selected' : '';
+                const checkedAttr = isActive ? 'checked' : '';
+
+                const modalHtml = `
+                    <div class="modal fade" id="${modalId}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">${isEdit ? 'Edit' : 'Add'} AI Configuration</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="aiConfigForm">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="analysisType" class="form-label">Analysis Type *</label>
+                                                    <input type="text" class="form-control" id="analysisType" 
+                                                           value="${analysisType}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="promptVersion" class="form-label">Prompt Version *</label>
+                                                    <input type="text" class="form-control" id="promptVersion" 
+                                                           value="${promptVersion}" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="promptTemplate" class="form-label">Prompt Template *</label>
+                                            <textarea class="form-control" id="promptTemplate" rows="8" required>${promptTemplate}</textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="modelName" class="form-label">Model Name</label>
+                                                    <select class="form-select" id="modelName">
+                                                        <option value="gpt-3.5-turbo" ${gpt35Selected}>GPT-3.5 Turbo</option>
+                                                        <option value="gpt-4" ${gpt4Selected}>GPT-4</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="maxTokens" class="form-label">Max Tokens</label>
+                                                    <input type="number" class="form-control" id="maxTokens" 
+                                                           value="${maxTokens}" min="100" max="4000">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <label for="temperature" class="form-label">Temperature</label>
+                                                    <input type="number" class="form-control" id="temperature" 
+                                                           value="${temperature}" min="0" max="1" step="0.1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="isActive" 
+                                                       ${checkedAttr}>
+                                                <label class="form-check-label" for="isActive">
+                                                    Active Configuration
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary" id="saveAiConfig">
+                                        ${isEdit ? 'Update' : 'Create'} Configuration
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const modal = new bootstrap.Modal(document.getElementById(modalId));
+                modal.show();
+
+                // Add save handler
+                document.getElementById('saveAiConfig').addEventListener('click', function() {
+                    saveAiConfiguration(isEdit ? config.id : null, modal);
+                });
+
+                // Remove modal from DOM when hidden
+                document.getElementById(modalId).addEventListener('hidden.bs.modal', function() {
+                    this.remove();
+                });
+            }
+
+            function showPromptViewModal(config) {
+                const modalId = 'promptViewModal';
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById(modalId);
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                const modalHtml = `
+                    <div class="modal fade" id="${modalId}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Prompt Template - ${config.analysis_type} (${config.prompt_version})</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <pre style="white-space: pre-wrap; background-color: #f8f9fa; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto;">${config.prompt_template}</pre>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const modal = new bootstrap.Modal(document.getElementById(modalId));
+                modal.show();
+
+                // Remove modal from DOM when hidden
+                document.getElementById(modalId).addEventListener('hidden.bs.modal', function() {
+                    this.remove();
+                });
+            }
+
+            function saveAiConfiguration(configId, modal) {
+                const form = document.getElementById('aiConfigForm');
+                
+                const data = {
+                    analysis_type: document.getElementById('analysisType').value.trim(),
+                    prompt_template: document.getElementById('promptTemplate').value.trim(),
+                    prompt_version: document.getElementById('promptVersion').value.trim(),
+                    model_name: document.getElementById('modelName').value,
+                    max_tokens: parseInt(document.getElementById('maxTokens').value),
+                    temperature: parseFloat(document.getElementById('temperature').value),
+                    is_active: document.getElementById('isActive').checked ? 1 : 0
+                };
+
+                if (!data.analysis_type || !data.prompt_template) {
+                    showToast('Analysis type and prompt template are required', 'error');
+                    return;
+                }
+
+                const method = configId ? 'PUT' : 'POST';
+                if (configId) {
+                    data.id = configId;
+                }
+
+                fetch('api/settings/ai_configurations.php', {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(`AI configuration ${configId ? 'updated' : 'created'} successfully`, 'success');
+                        modal.hide();
+                        loadAiConfigurations(); // Reload configurations
+                    } else {
+                        showToast(data.error || `Failed to ${configId ? 'update' : 'create'} configuration`, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast(`Failed to ${configId ? 'update' : 'create'} configuration`, 'error');
+                });
+            }
+
+            // Add AI configuration button
+            document.getElementById('add-ai-config').addEventListener('click', function() {
+                showAiConfigModal();
+            });
 
             // Toggle API key visibility
             document.getElementById('toggle-api-key').addEventListener('click', function() {
@@ -552,6 +1341,16 @@ try {
                 alert('Database backup started!');
             });
         });
+
+        // Back button functionality - same as other pages
+        function goBack() {
+            if (document.referrer && document.referrer !== window.location.href) {
+                window.history.back();
+            } else {
+                // Fallback to dashboard if no referrer
+                window.location.href = 'dashboard.php';
+            }
+        }
     </script>
 </body>
 </html>
