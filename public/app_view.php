@@ -368,14 +368,14 @@ if (empty($statuses)) {
       <!-- Venstre kolonne -->
       <div class="col-md-6">
         <div class="form-group-horizontal">
-          <label for="shortDescription" class="form-label">Short description</label>
+          <label for="shortDescription" class="form-label">App. Name</label>
           <div class="input-group">
-            <input type="text" class="form-control" id="shortDescription" name="short_description" placeholder="Short description" value="<?php echo htmlspecialchars($app['short_description']); ?>" readonly>
+            <input type="text" class="form-control" id="shortDescription" name="short_description" placeholder="App. Name" value="<?php echo htmlspecialchars($app['short_description']); ?>" readonly>
             <button type="button" class="btn btn-outline-secondary info-btn" tabindex="-1" disabled
               data-bs-toggle="popover"
               data-bs-placement="bottom"
-              title="Short description"
-              data-bs-content="Provide a short and meaningful description of the application.">
+              title="App. Name"
+              data-bs-content="Provide a short and meaningful description of the application.">>
               <i class="bi bi-info-circle"></i>
             </button>
           </div>

@@ -299,7 +299,7 @@ function getTimeBadge($updatedAt) {
             <table class="table dashboard-table mb-0" id="applications-table">
                 <thead>
                     <tr>
-                        <th class="sortable" data-column="short_description">Short description</th>
+                        <th class="sortable" data-column="short_description">App. Name</th>
                         <th class="sortable" data-column="preops_portfolio">Pre-ops portfolio</th>
                         <th class="sortable" data-column="phase">Phase</th>
                         <th class="sortable" data-column="status">Status</th>

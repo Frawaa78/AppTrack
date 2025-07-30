@@ -195,6 +195,7 @@ $dashboard_path = str_repeat('../', $levels_deep) . 'dashboard.php';
           <li><a class="dropdown-item" href="<?php echo str_repeat('../', $levels_deep); ?>profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
           <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
             <li><a class="dropdown-item" href="<?php echo str_repeat('../', $levels_deep); ?>users_admin.php"><i class="bi bi-people me-2"></i>Users</a></li>
+            <li><a class="dropdown-item" href="<?php echo str_repeat('../', $levels_deep); ?>settings_admin.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
           <?php endif; ?>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item" href="<?php echo str_repeat('../', $levels_deep); ?>logout.php"><i class="bi bi-box-arrow-right me-2"></i>Log out</a></li>
