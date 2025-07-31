@@ -105,7 +105,7 @@ try {
             flex-shrink: 0;
             background: #f8f9fa;
             border-right: 1px solid #ddd;
-            margin-top: 62px;
+            margin-top: 0;
         }
         
         .main-content {
@@ -181,7 +181,7 @@ try {
         .toolbar {
             background: #f8f9fa;
             border-bottom: 1px solid #ddd;
-            padding: 5px 15px;
+            padding: 8px 15px;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
@@ -442,45 +442,6 @@ try {
         .navbar {
             z-index: 1050 !important;
         }
-        
-        /* Header action button styling */
-        .header-action-btn {
-            background-color: #FCFCFC;
-            border: 1px solid #F0F1F2;
-            color: #212529;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        
-        .header-action-btn:hover {
-            background-color: #F8F9FA;
-            border-color: #DEE2E6;
-            color: #212529;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header-action-btn:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
-            background-color: #F8F9FA;
-            border-color: #86B7FE;
-            color: #212529;
-        }
-        
-        .header-action-btn i {
-            font-size: 16px;
-            min-width: 16px;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
@@ -506,20 +467,14 @@ try {
             <!-- Application Header -->
             <div class="app-header">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h1 class="app-title" style="margin: 0;">
+                        DataMap: <?php echo htmlspecialchars($application['name']); ?>
+                        <span class="status-badge <?php echo strtolower($application['status']); ?>">
+                            <?php echo htmlspecialchars($application['status']); ?>
+                        </span>
+                    </h1>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <a href="app_view.php?id=<?php echo $application_id; ?>" 
-                           class="header-action-btn me-3" 
-                           title="Go back to application view">
-                            <i class="bi bi-arrow-left"></i> Back
-                        </a>
-                        <h1 class="app-title" style="margin: 0;">
-                            DataMap: <?php echo htmlspecialchars($application['name']); ?>
-                            <span class="status-badge <?php echo strtolower($application['status']); ?>">
-                                <?php echo htmlspecialchars($application['status']); ?>
-                            </span>
-                        </h1>
-                    </div>
-                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="<?php echo 'app_form.php?id=' . $application_id; ?>" class="btn btn-secondary">Cancel</a>
                         <button onclick="saveDiagram()" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save
                         </button>
