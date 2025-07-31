@@ -5,7 +5,87 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Changelog
+## [3.3.3] - 2025-01-27 - Administrative Settings & System Management
+
+### Added
+- **Admin Settings System - NEW MAJOR FEATURE**
+  - **Comprehensive Administrative Interface**: Complete admin settings page with tabbed navigation and professional Bootstrap 5.3 styling
+  - **Portfolio Management Tab**: Full CRUD operations for portfolios with inline editing, automatic application assignment, and validation systems
+  - **Application Configuration Tab**: Define and manage application phases, statuses, and system-wide defaults with import/export capabilities
+  - **AI Settings Tab**: Configure AI analysis models, customize prompts and templates, control feature availability and performance tuning
+  - **System Maintenance Tab**: Database optimization tools, system health monitoring, cache management, and backup functionality
+
+- **Portfolio Management System**
+  - **Dynamic Portfolio CRUD**: Create, read, update, delete portfolios with real-time validation and error handling
+  - **Smart Assignment Logic**: Automatic application assignment to portfolios based on configurable rules
+  - **Portfolio Statistics**: Real-time counts, usage metrics, and portfolio health indicators
+  - **Inline Editing**: Direct table editing with immediate save functionality and optimistic updates
+  - **Deletion Protection**: Prevents deletion of portfolios with associated applications, maintaining data integrity
+
+- **Configuration Management**
+  - **Phases Management**: Define custom application development phases with ordering and status transitions
+  - **Status Management**: Configure application status types, colors, and workflow rules
+  - **Default Settings**: Set system-wide defaults for new applications including phases, statuses, and portfolios
+  - **Configuration Backup**: Export/import system configurations for backup and environment synchronization
+
+- **Advanced Admin APIs**
+  - **Portfolio API**: `GET/POST/PUT/DELETE /api/settings/portfolios.php` with full CRUD operations and validation
+  - **Phases API**: `GET/POST/PUT/DELETE /api/settings/phases.php` for phase configuration management
+  - **Statuses API**: `GET/POST/PUT/DELETE /api/settings/statuses.php` for status type management
+  - **Backup APIs**: Configuration export/import endpoints for system maintenance
+
+### Enhanced
+- **DataMap Visual Architecture System**
+  - **Improved Connection Handling**: Enhanced connection preservation during node recreation with smart port mapping
+  - **Advanced Context Menus**: Right-click menus for nodes and connections with dynamic options based on node types
+  - **Comment Connection System**: Special dashed-line connections for comment nodes with visual distinction
+  - **Port Management**: Dynamic input/output port addition/removal with intelligent connection redistribution
+  - **Grip Handle System**: Dedicated drag handles preventing accidental text editing while maintaining connection functionality
+  - **Connection Recreation Logic**: Advanced algorithms for maintaining connections when nodes are modified or ports changed
+
+- **User Stories Management Enhancements**
+  - **Inline Editing System**: Direct table editing for priority, status, and application associations
+  - **Advanced Filtering**: Enhanced filtering capabilities with "Show My Stories" and application-specific views
+  - **Statistics Dashboard**: Real-time statistics cards showing story distribution by status and priority
+  - **Application Integration**: Seamless linking between User Stories and applications with context preservation
+  - **Performance Optimizations**: Improved loading times and responsive updates for large story datasets
+
+- **AI Analysis Integration**
+  - **Admin Settings Integration**: AI analysis now incorporates admin configuration data for comprehensive insights
+  - **Portfolio Analysis**: AI recommendations consider portfolio structure and application groupings
+  - **Configuration Impact Analysis**: AI assessment of configuration changes on system performance and user experience
+
+### Fixed
+- **DataMap Connection Issues**
+  - **Output Element Blocking**: Fixed issue where grip handles prevented output connections from working properly
+  - **Connection Line Alignment**: Resolved connection lines not aligning properly with input/output circles after import
+  - **Port Recreation Problems**: Fixed connection loss when nodes were recreated with different input/output counts
+  - **Context Menu Positioning**: Improved context menu positioning to stay within viewport boundaries
+
+- **Admin Settings Stability**
+  - **API Error Handling**: Comprehensive error handling and validation for all admin settings operations
+  - **Database Consistency**: Ensured data integrity across all configuration changes with proper transaction handling
+  - **UI State Management**: Fixed state synchronization issues in tabbed interface with proper event handling
+
+- **Performance Optimizations**
+  - **Database Query Optimization**: Improved query performance for large datasets with proper indexing
+  - **JavaScript Performance**: Optimized client-side operations for better responsiveness
+  - **Memory Management**: Reduced memory usage in DataMap editor for complex diagrams
+
+### Technical Implementation
+- **Bootstrap 5.3 Integration**: Professional tabbed interface with consistent styling across admin settings
+- **Advanced JavaScript Architecture**: ES6+ classes with proper event handling and state management
+- **Database Schema Enhancements**: New tables for portfolios, phases, and statuses with proper foreign key relationships
+- **API Architecture**: RESTful API design with comprehensive error handling and validation
+- **Security Improvements**: Enhanced input validation and CSRF protection across all admin operations
+
+### Documentation Updates
+- **System Overview**: Comprehensive documentation of all admin settings functionality
+- **API Documentation**: Complete API reference for all admin settings endpoints
+- **User Guide**: Step-by-step guides for using admin settings features
+- **Technical Architecture**: Updated architecture documentation reflecting new admin system components
+
+---
 
 ## [3.3.2] - 2025-07-29 - DataMap Integration & DrawFlow Architecture
 

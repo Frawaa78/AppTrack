@@ -1,21 +1,142 @@
-# AppTrack v3.3.2 - Technical Architecture Documentation
+# AppTrack v3.3.3 - Technical Architecture Documentation
 
-This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.3.2, focusing on production optimization, file structure cleanup, and comprehensive documentation updates following the User Stories Management System, Executive Dashboard, and Visual Diagram Editor enhancements.
+This document provides a comprehensive overview of the technical architecture and recent improvements in AppTrack v3.3.3, focusing on the new Administrative Settings System, enhanced portfolio management, and comprehensive system configuration capabilities.
 
-## Version 3.3.2 Overview (January 2025)
+## Version 3.3.3 Overview (January 2025)
 
-AppTrack v3.3.2 is a production optimization release featuring:
-- **Production Hardening**: Removed 19 obsolete development files for deployment readiness
-- **File Structure Cleanup**: Comprehensive cleanup of test files, debug scripts, and executed migrations
-- **Documentation Updates**: Complete documentation refresh reflecting cleaned codebase
-- **DrawFlow Enhancements**: Fixed connection line positioning in visual diagram editor
-- **FontAwesome Pro Integration**: Enhanced icon system with fallback mechanisms
-- **93 Core PHP Files**: Streamlined production-ready file structure
-- **31 API Endpoints**: Complete REST API for all system functions
-- **12 CSS Components**: Modular styling architecture
-- **5 JavaScript Components**: Client-side functionality modules
+AppTrack v3.3.3 introduces major administrative capabilities:
+- **Admin Settings System**: Complete administrative interface with tabbed navigation
+- **Portfolio Management**: Full CRUD operations for application portfolios
+- **Configuration Management**: System-wide settings for phases, statuses, and defaults
+- **Enhanced APIs**: New administrative API endpoints for system management
+- **Database Enhancements**: New tables for portfolios, phases, and statuses configuration
+- **UI/UX Improvements**: Professional Bootstrap 5.3 interface with consistent styling
+- **Documentation Updates**: Comprehensive documentation of all administrative features
 
-## User Stories Management System - New Feature v3.3.0
+## Administrative Settings System - New Feature v3.3.3
+
+### System Architecture
+
+#### Admin Settings Module Structure
+```php
+// Administrative Settings complete implementation
+├── Database Layer
+│   ├── portfolios table (portfolio management)
+│   ├── phases table (development phases configuration)
+│   └── statuses table (application status types)
+├── API Layer (Administrative endpoints)
+│   ├── portfolios.php (Portfolio CRUD operations)
+│   ├── phases.php (Phases configuration management)
+│   └── statuses.php (Status types management)
+├── Frontend Layer
+│   └── settings_admin.php (Tabbed administrative interface)
+└── JavaScript Components
+    └── Admin settings event handling and UI management
+```
+
+#### Administrative Interface Components
+
+##### Portfolio Management Tab
+- **CRUD Operations**: Complete create, read, update, delete functionality
+- **Inline Editing**: Direct table editing with immediate save
+- **Validation System**: Prevents deletion of portfolios with associated applications
+- **Statistics Display**: Real-time counts and usage metrics
+- **Auto-Assignment**: Automatic application assignment to portfolios
+
+##### Application Configuration Tab
+- **Phases Management**: Define and manage application development phases
+- **Status Management**: Configure application status types and workflows
+- **Default Settings**: Set system-wide defaults for new applications
+- **Configuration Export**: Backup and restore system configurations
+
+##### AI Settings Tab
+- **Model Configuration**: Configure AI analysis models and parameters
+- **Prompt Management**: Customize AI analysis prompts and templates
+- **Feature Control**: Control AI feature availability and behavior
+- **Performance Tuning**: Optimize AI analysis performance
+
+##### System Maintenance Tab
+- **Database Tools**: Database optimization and maintenance utilities
+- **Health Monitoring**: System performance and health indicators
+- **Cache Management**: System cache clearing and optimization
+- **Backup Management**: System backup and restore functionality
+
+### Database Schema Enhancements
+
+#### New Administrative Tables
+```sql
+-- portfolios table
+CREATE TABLE portfolios (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    color VARCHAR(7) DEFAULT '#0d6efd',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- phases table  
+CREATE TABLE phases (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    sort_order INT DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- statuses table
+CREATE TABLE statuses (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    color VARCHAR(7) DEFAULT '#6c757d',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### Enhanced Application Integration
+```sql
+-- Updated applications table with portfolio reference
+ALTER TABLE applications 
+ADD COLUMN portfolio_id INT,
+ADD FOREIGN KEY (portfolio_id) REFERENCES portfolios(id);
+```
+
+### API Architecture Enhancements
+
+#### Administrative API Endpoints
+```php
+// Portfolio Management API
+GET    /api/settings/portfolios.php     // List all portfolios
+POST   /api/settings/portfolios.php     // Create new portfolio
+PUT    /api/settings/portfolios.php     // Update portfolio
+DELETE /api/settings/portfolios.php     // Delete portfolio
+
+// Phases Configuration API
+GET    /api/settings/phases.php        // List all phases
+POST   /api/settings/phases.php        // Create new phase
+PUT    /api/settings/phases.php        // Update phase
+DELETE /api/settings/phases.php        // Delete phase
+
+// Status Types API
+GET    /api/settings/statuses.php      // List all statuses
+POST   /api/settings/statuses.php      // Create new status
+PUT    /api/settings/statuses.php      // Update status
+DELETE /api/settings/statuses.php      // Delete status
+```
+
+#### API Features
+- **Comprehensive Validation**: Input validation and error handling
+- **Database Transactions**: Atomic operations for data integrity
+- **Error Responses**: Standardized JSON error responses
+- **Authentication**: Session-based authentication for all admin operations
+- **Logging**: Complete audit trail for administrative changes
+
+---
+
+## User Stories Management System - Existing Feature v3.3.0
 
 ### System Architecture
 

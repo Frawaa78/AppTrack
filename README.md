@@ -1,4 +1,4 @@
-# AppTrack v3.3.2
+# AppTrack v3.3.3
 
 **AppTrack** is a comprehensive application management platform designed for enterprise application portfolio management. The system transforms traditional spreadsheet-based application tracking into an intelligent, centralized registry with AI-powered insights and automated analysis capabilities.
 
@@ -33,11 +33,43 @@ Built for enterprise scalability with planned integrations:
 
 ## 🚀 Current Status & Latest Updates
 
+### Version 3.3.3 (January 27, 2025) - Administrative Settings & System Management ✅
+
+**Major Update**: Complete administrative settings system with portfolio management, configuration control, and system maintenance tools.
+
+#### 🔧 **Admin Settings System - NEW MAJOR FEATURE** 🆕
+- **Comprehensive Administrative Interface**: Complete admin settings page with tabbed navigation and professional Bootstrap 5.3 styling
+- **Portfolio Management Tab**: Full CRUD operations for portfolios with inline editing, automatic application assignment, and validation systems
+- **Application Configuration Tab**: Define and manage application phases, statuses, and system-wide defaults with import/export capabilities
+- **AI Settings Tab**: Configure AI analysis models, customize prompts and templates, control feature availability and performance tuning
+- **System Maintenance Tab**: Database optimization tools, system health monitoring, cache management, and backup functionality
+
+#### 🏢 **Portfolio Management System**
+- **Dynamic Portfolio CRUD**: Create, read, update, delete portfolios with real-time validation and error handling
+- **Smart Assignment Logic**: Automatic application assignment to portfolios based on configurable rules
+- **Portfolio Statistics**: Real-time counts, usage metrics, and portfolio health indicators
+- **Inline Editing**: Direct table editing with immediate save functionality and optimistic updates
+- **Deletion Protection**: Prevents deletion of portfolios with associated applications, maintaining data integrity
+
+#### ⚙️ **Configuration Management**
+- **Phases Management**: Define custom application development phases with ordering and status transitions
+- **Status Management**: Configure application status types, colors, and workflow rules
+- **Default Settings**: Set system-wide defaults for new applications including phases, statuses, and portfolios
+- **Configuration Backup**: Export/import system configurations for backup and environment synchronization
+
+#### 🔌 **Advanced Admin APIs**
+- **Portfolio API**: `GET/POST/PUT/DELETE /api/settings/portfolios.php` with full CRUD operations and validation
+- **Phases API**: `GET/POST/PUT/DELETE /api/settings/phases.php` for phase configuration management
+- **Statuses API**: `GET/POST/PUT/DELETE /api/settings/statuses.php` for status type management
+- **Backup APIs**: Configuration export/import endpoints for system maintenance
+
+---
+
 ### Version 3.3.2 (July 29, 2025) - DataMap Integration & DrawFlow Architecture ✅
 
 **Major Update**: Complete migration from Mermaid.js to DrawFlow with advanced DataMap integration architecture for visual system mapping.
 
-#### 🎨 **DataMap Visual Architecture - NEW MAJOR FEATURE** 🆕
+#### 🎨 **DataMap Visual Architecture - MAJOR FEATURE** 🆕
 - **DrawFlow Integration**: Complete migration from Mermaid.js to DrawFlow (https://github.com/jerosoler/Drawflow) for interactive diagram editing
 - **Visual System Mapping**: Interactive canvas for creating and editing system integration diagrams with drag-and-drop functionality
 - **Node-Based Architecture**: Multiple node types (Application, Service, Database, External System, Visualization, Comment) with input/output connections
@@ -606,7 +638,9 @@ AppTrack/ (Production-Ready Architecture)
 │   │   └── drawflow.min.js   # DrawFlow JavaScript library
 │   ├── favicon/              # Favicon files
 │   └── logo.png              # Application branding
-├── docs/                      # Comprehensive documentation (Production-Updated)
+├── docs/                      # Organized documentation structure (17+ files)
+│   ├── README.md             # Documentation index and navigation guide  
+│   ├── system-overview.md    # Complete system overview and features (moved from root)
 │   ├── database.md           # Complete database schema (25 tables) - UPDATED v3.3.2
 │   ├── technical-architecture.md  # System architecture guide (v3.3.2) - UPDATED
 │   ├── architecture.md            # System architecture overview - UPDATED v3.3.2
@@ -614,10 +648,18 @@ AppTrack/ (Production-Ready Architecture)
 │   ├── AI_FEATURES_README.md      # AI system documentation
 │   ├── AI_USER_STORIES_INTEGRATION.md # AI & User Stories integration
 │   ├── USER_STORIES_MODULE_README.md # User Stories installation guide
+│   ├── DATAMAP_GUIDE.md           # DataMap visual architecture documentation
+│   ├── DATAMAP_QUICK_REFERENCE.md # DataMap quick reference guide
 │   ├── EXECUTIVE_DASHBOARD_GUIDE.md # Executive dashboard guide
 │   ├── SECURITY.md               # Security guidelines and measures
-│   ├── RELEASE_NOTES_2.6.1.md   # Version 2.6.1 release notes
-│   ├── RELEASE_NOTES_3.2.0.md   # Version 3.2.0 release notes
+│   ├── implementation-guides/     # Implementation guides and tutorials
+│   │   └── ai-user-stories.md    # AI User Stories implementation (moved from root)
+│   ├── migration-logs/           # Migration documentation and logs
+│   │   ├── integration-architecture-removal.md # Integration removal log (moved from root)
+│   │   └── user-stories-migration.md # User Stories migration guide (moved from root)
+│   ├── release-notes/            # Version release documentation
+│   │   ├── RELEASE_NOTES_2.6.1.md # Version 2.6.1 release documentation
+│   │   └── RELEASE_NOTES_3.2.0.md # Version 3.2.0 release documentation
 │   ├── user-stories-database.sql # User Stories database setup
 │   └── run-database-updates.php  # Database maintenance utilities
 ├── database_migrations/      # Structured database migrations (2 files)
@@ -625,10 +667,6 @@ AppTrack/ (Production-Ready Architecture)
 │   └── remove_jira_fields.sql              # JIRA fields removal migration
 ├── sync-assets.sh             # Asset synchronization script
 ├── index.php                  # Root redirect to public/index.php  
-├── APPTRACK_V3.3.0_COMPLETE_OVERVIEW.md # Complete system overview
-├── IMPLEMENTATION_GUIDE_AI_USER_STORIES.md # AI User Stories implementation
-├── INTEGRATION_ARCHITECTURE_REMOVAL.md # Integration architecture notes
-├── MIGRATION_STEPS.md         # Migration documentation
 ├── CHANGELOG.md              # Version history and feature tracking - UPDATED v3.3.2
 └── README.md                 # This comprehensive guide - UPDATED v3.3.2
 ```
@@ -638,6 +676,7 @@ AppTrack/ (Production-Ready Architecture)
 - **API Endpoints**: 31 (fully functional REST API)
 - **CSS Modules**: 15 (component-based architecture)
 - **JavaScript Modules**: 10 (modular frontend architecture)
+- **Documentation Files**: 17+ (organized in `/docs` with structured subdirectories)
 - **Database Tables**: 25 (fully normalized schema)
 │   ├── users_admin.php        # User administration
 │   ├── api/                   # RESTful API endpoints
