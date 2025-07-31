@@ -119,10 +119,11 @@ div#drawflow {
   background-image: none !important;
 }
 
-/* Node drag handle styling */
+/* Node drag handle styling - only show move cursor on the grip bar */
 .node-drag-handle {
   transition: background-color 0.2s ease;
   user-select: none; /* Prevent text selection on drag handle */
+  cursor: move !important; /* Move cursor only on the drag handle */
 }
 
 .node-drag-handle:hover {
@@ -133,7 +134,7 @@ div#drawflow {
   color: #666 !important;
 }
 
-/* Ensure text elements allow selection and editing */
+/* Text cursor for editable text elements */
 .drawflow .drawflow-node .node-title,
 .drawflow .drawflow-node .node-description {
   user-select: text !important;
@@ -143,6 +144,17 @@ div#drawflow {
 .drawflow .drawflow-node .node-title:focus,
 .drawflow .drawflow-node .node-description:focus {
   cursor: text !important;
+}
+
+/* Text cursor for textarea specifically */
+.drawflow .drawflow-node textarea.node-description {
+  cursor: text !important;
+}
+
+/* Crosshair cursor for input/output connection points */
+.drawflow .drawflow-node .input,
+.drawflow .drawflow-node .output {
+  cursor: crosshair !important;
 }
 
 /* Title editing styles */
@@ -174,6 +186,7 @@ div#drawflow {
   padding-bottom: var(--dfNodePaddingBottom);
   -webkit-box-shadow: var(--dfNodeBoxShadowHL) var(--dfNodeBoxShadowVL) var(--dfNodeBoxShadowBR) var(--dfNodeBoxShadowS) var(--dfNodeBoxShadowColor);
   box-shadow:  var(--dfNodeBoxShadowHL) var(--dfNodeBoxShadowVL) var(--dfNodeBoxShadowBR) var(--dfNodeBoxShadowS) var(--dfNodeBoxShadowColor);
+  cursor: default !important; /* Normal cursor for the node body */
 }
 
 .drawflow .drawflow-node:hover {
@@ -265,10 +278,6 @@ div#drawflow {
 }
 
 /* Comment connection styling - using same structure as regular connections */
-.drawflow .comment-connection {
-  /* No z-index needed - use natural stacking order like regular connections */
-}
-
 .drawflow .comment-connection .comment-path {
   stroke: #F6EC55 !important; /* Light cream yellow color */
   stroke-width: 1px !important; 
@@ -311,6 +320,7 @@ div#drawflow {
   padding-bottom: 8px;
   -webkit-box-shadow: 0px 1px 6px 0px rgba(143, 143, 143, 1);
   box-shadow: 0px 1px 6px 0px rgba(143, 143, 143, 1);
+  cursor: default !important; /* Normal cursor for comment nodes too */
 }
 
 .drawflow .drawflow-node.comment-node:hover {
@@ -357,6 +367,12 @@ div#drawflow {
   background: #ffffff;
   border: 2px solid #000000;
   border-radius: 50px;
+}
+
+/* Crosshair cursor for comment node input/output circles */
+.drawflow .drawflow-node.comment-node .input,
+.drawflow .drawflow-node.comment-node .output {
+  cursor: crosshair !important;
 }
 
 /* Comment node title styling */

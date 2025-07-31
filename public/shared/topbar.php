@@ -149,7 +149,7 @@ $dashboard_path = str_repeat('../', $levels_deep) . 'dashboard.php';
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 sticky-top" style="z-index: 1030; margin-bottom:0; padding-top:0; padding-bottom:0;">
   <div class="container-fluid px-0">
     <a class="navbar-brand" href="<?php echo $dashboard_path; ?>">
-      <img src="<?php echo $assets_path; ?>/logo.png" alt="AppTrack" style="height: 40px;">
+      <img src="<?php echo $assets_path; ?>/logo.png" alt="AppTrack" style="height: 32px; margin-top: 5px; margin-left: 10px;">
     </a>
     <div class="flex-grow-1 d-flex justify-content-center">
       <div class="position-relative w-100" style="max-width:600px;">

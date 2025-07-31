@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse - AppTrack Prototype</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Replace 'your-kit-id' with your actual FontAwesome Pro Kit ID -->
+    <script src="https://kit.fontawesome.com/your-kit-id.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header class="app-header">
+            <h1 class="logo">Apptrack</h1>
+        </header>
+        
+        <main class="app-main">
+            <div class="progress-indicator" id="progressIndicator">
+                <span class="progress-text" id="progressText">Question 1 of 3</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 33.33%;"></div>
+                </div>
+            </div>
+            
+            <div class="question-container">
+                <div class="question-card" id="questionCard">
+                    <div class="card-content">
+                        <div class="info-section">
+                            <i class="fa-thin fa-circle-info info-icon"></i>
+                            <p class="info-text" id="infoText">This application Lenel S2 is listed as being in the Build Phase, but has a Go-live date in the past.</p>
+                        </div>
+                        
+                        <div class="question-section">
+                            <i class="fa-thin fa-circle-question question-icon"></i>
+                            <h2 class="question-text" id="questionText">Should the status be updated to Complete?</h2>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button class="btn btn-no" id="noBtn" onclick="handleAnswer('no')">No</button>
+                            <button class="btn btn-not-sure" id="notSureBtn" onclick="handleAnswer('not-sure')">Note sure</button>
+                            <button class="btn btn-yes" id="yesBtn" onclick="handleAnswer('yes')">Yes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Completion Screen (hidden initially) -->
+            <div class="completion-screen" id="completionScreen" style="display: none;">
+                <h2>All questions completed!</h2>
+                <p>Thank you for your input. Your responses have been recorded.</p>
+                <div class="completion-stats" id="completionStats">
+                    <p>Questions answered: <span id="totalAnswers">0</span></p>
+                    <p>Yes: <span id="yesCount">0</span></p>
+                    <p>No: <span id="noCount">0</span></p>
+                    <p>Delegated: <span id="delegatedCount">0</span></p>
+                </div>
+                <button class="btn btn-primary" onclick="resetQuestions()">Start Over</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Confirmation Modal (hidden initially) -->
+    <div class="modal-overlay" id="modalOverlay" style="display: none;">
+        <div class="confirmation-modal">
+            <h3>🤔 Not sure about this?</h3>
+            <p>Do you want to send this question to someone else for review?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-no" onclick="handleConfirmationNo()">No, I'll decide</button>
+                <button class="btn btn-yes" onclick="handleConfirmationYes()">Yes, send it</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

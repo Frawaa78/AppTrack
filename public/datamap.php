@@ -442,6 +442,39 @@ try {
         .navbar {
             z-index: 1050 !important;
         }
+        
+        /* Header Action Button Styling - for Back button */
+        .header-action-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .header-action-btn:hover {
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header-action-btn i {
+            margin-right: 6px;
+            font-size: 16px;
+        }
+        
+        .header-action-btn.me-3 {
+            margin-right: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -467,14 +500,18 @@ try {
             <!-- Application Header -->
             <div class="app-header">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h1 class="app-title" style="margin: 0;">
-                        DataMap: <?php echo htmlspecialchars($application['name']); ?>
-                        <span class="status-badge <?php echo strtolower($application['status']); ?>">
-                            <?php echo htmlspecialchars($application['status']); ?>
-                        </span>
-                    </h1>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <a href="javascript:history.back()" class="header-action-btn me-3" title="Go back to previous page">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
+                        <h1 class="app-title" style="margin: 0;">
+                            DataMap: <?php echo htmlspecialchars($application['name']); ?>
+                            <span class="status-badge <?php echo strtolower($application['status']); ?>">
+                                <?php echo htmlspecialchars($application['status']); ?>
+                            </span>
+                        </h1>
+                    </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <a href="<?php echo 'app_form.php?id=' . $application_id; ?>" class="btn btn-secondary">Cancel</a>
                         <button onclick="saveDiagram()" class="btn btn-primary">
                             <i class="fas fa-save"></i> Save
                         </button>
@@ -748,15 +785,12 @@ try {
             
             if (isCommentNode) {
                 menuItems = [
-                    { icon: 'fas fa-edit', text: 'Edit Comment', action: () => editNodeText(nodeElement) },
                     { icon: 'fas fa-link', text: 'Connect to', action: null, submenu: () => getConnectSubmenu(nodeId) },
                     { divider: true },
                     { icon: 'fas fa-trash', text: 'Delete', action: () => deleteNode(nodeId), danger: true }
                 ];
             } else {
                 menuItems = [
-                    { icon: 'fas fa-edit', text: 'Edit Node', action: () => editNodeText(nodeElement) },
-                    { divider: true },
                     { icon: 'fas fa-trash', text: 'Delete', action: () => deleteNode(nodeId), danger: true }
                 ];
             }

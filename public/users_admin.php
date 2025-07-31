@@ -127,6 +127,7 @@ try {
     <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon/favicon-16x16.png">
     <link rel="manifest" href="../assets/favicon/site.webmanifest">
     <link rel="shortcut icon" href="../assets/favicon/favicon.ico">
+    <link rel="stylesheet" href="../assets/css/main.css">
     <style>
         .editable-input {
             border: none;
@@ -315,29 +316,69 @@ try {
             border-radius: 4px;
             font-weight: 500;
         }
+        
+        /* Header Action Button Styling */
+        .header-action-btn {
+            background-color: #FCFCFC;
+            border: 1px solid #F0F1F2;
+            color: #212529;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .header-action-btn:hover {
+            background-color: #F8F9FA;
+            border-color: #DEE2E6;
+            color: #212529;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-action-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+            background-color: #F8F9FA;
+            border-color: #86B7FE;
+            color: #212529;
+        }
+        
+        .header-action-btn i {
+            font-size: 16px;
+            min-width: 16px;
+            text-align: center;
+        }
+        
+        .header-with-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 15px;
+        }
     </style>
 </head>
 <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4 sticky-top" style="z-index: 1030; margin-bottom:0; padding-top:0; padding-bottom:0;">
-        <div class="container-fluid px-0">
-            <a class="navbar-brand" href="dashboard.php">
-                <img src="../assets/logo.png" alt="AppTrack" style="height: 40px;">
-            </a>
-            <div class="flex-grow-1 d-flex justify-content-center">
-                <h4 class="mb-0 text-muted">
-                    <i class="bi bi-people-fill me-2"></i>
-                    User Administration
-                </h4>
-            </div>
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="btn btn-outline-secondary" href="dashboard.php">
-                        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+<?php include __DIR__ . '/shared/topbar.php'; ?>
+<div class="container">
+  <div class="header-with-buttons">
+    <div class="d-flex align-items-center">
+      <a href="dashboard.php" 
+         class="header-action-btn me-3" 
+         title="Go back to dashboard">
+        <i class="bi bi-arrow-left"></i> Back
+      </a>
+      <h5 class="mb-0">User Administration</h5>
+    </div>
+  </div>
+</div>
 
     <div class="container-fluid mt-4">
         <div class="row">
@@ -345,10 +386,7 @@ try {
                 <div class="card main-card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h4 class="mb-0">
-                                <i class="bi bi-people-fill text-primary me-2"></i>
-                                User Administration
-                            </h4>
+                            <h4 class="mb-0">Users</h4>
                             <span class="badge bg-secondary">
                                 Total Users: <?= count($users) ?>
                             </span>
