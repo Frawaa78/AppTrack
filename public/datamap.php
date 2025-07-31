@@ -790,7 +790,16 @@ try {
                     { icon: 'fas fa-trash', text: 'Delete', action: () => deleteNode(nodeId), danger: true }
                 ];
             } else {
+                // Get current input/output counts for validation
+                const currentInputs = Object.keys(nodeData.inputs || {}).length || 1;
+                const currentOutputs = Object.keys(nodeData.outputs || {}).length || 1;
+                
                 menuItems = [
+                    { icon: 'fas fa-plus-circle', text: 'Add Input', action: () => addNodeInput(nodeId) },
+                    { icon: 'fas fa-plus-circle', text: 'Add Output', action: () => addNodeOutput(nodeId) },
+                    { icon: 'fas fa-minus-circle', text: 'Remove Input', action: () => removeNodeInput(nodeId), disabled: currentInputs <= 1 },
+                    { icon: 'fas fa-minus-circle', text: 'Remove Output', action: () => removeNodeOutput(nodeId), disabled: currentOutputs <= 1 },
+                    { divider: true },
                     { icon: 'fas fa-trash', text: 'Delete', action: () => deleteNode(nodeId), danger: true }
                 ];
             }
@@ -803,7 +812,7 @@ try {
                     menu.appendChild(divider);
                 } else {
                     const menuItem = document.createElement('div');
-                    menuItem.className = `context-menu-item ${item.danger ? 'danger' : ''}${item.submenu ? ' has-submenu' : ''}`;
+                    menuItem.className = `context-menu-item ${item.danger ? 'danger' : ''}${item.submenu ? ' has-submenu' : ''}${item.disabled ? ' disabled' : ''}`;
                     
                     let iconHtml = `<i class="${item.icon}"></i>${item.text}`;
                     if (item.submenu) {
@@ -811,7 +820,11 @@ try {
                     }
                     menuItem.innerHTML = iconHtml;
                     
-                    if (item.submenu) {
+                    if (item.disabled) {
+                        // Disabled items should not have click handlers
+                        menuItem.style.opacity = '0.5';
+                        menuItem.style.cursor = 'not-allowed';
+                    } else if (item.submenu) {
                         // Handle submenu on hover
                         let submenuTimeout;
                         menuItem.onmouseenter = () => {
@@ -1487,6 +1500,610 @@ try {
             hideSubmenu(); // Also hide any open submenu
         }
         
+        // Dynamic Input/Output Management Functions
+        
+        // Save node connections before recreation
+        function saveNodeConnections(nodeId) {
+            const connections = { inputs: [], outputs: [] };
+            const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+            
+            if (!nodeData) return connections;
+            
+            // Save input connections
+            Object.keys(nodeData.inputs || {}).forEach(inputKey => {
+                const input = nodeData.inputs[inputKey];
+                if (input.connections) {
+                    input.connections.forEach(conn => {
+                        connections.inputs.push({
+                            inputKey: inputKey,
+                            sourceNodeId: conn.node,
+                            sourceOutput: conn.input
+                        });
+                    });
+                }
+            });
+            
+            // Save output connections
+            Object.keys(nodeData.outputs || {}).forEach(outputKey => {
+                const output = nodeData.outputs[outputKey];
+                if (output.connections) {
+                    output.connections.forEach(conn => {
+                        connections.outputs.push({
+                            outputKey: outputKey,
+                            targetNodeId: conn.node,
+                            targetInput: conn.output
+                        });
+                    });
+                }
+            });
+            
+            log(`💾 Saved ${connections.inputs.length} input and ${connections.outputs.length} output connections for node ${nodeId}`);
+            return connections;
+        }
+        
+        // Save comment connections for a node before recreation
+        function saveCommentConnections(nodeId) {
+            try {
+                const commentConnections = { incoming: [], outgoing: [] };
+                
+                if (!window.commentConnections) {
+                    log(`💬 No global commentConnections found`);
+                    return commentConnections;
+                }
+                
+                log(`💬 Saving comment connections for node ${nodeId}`);
+                log(`💬 Current global commentConnections:`, window.commentConnections);
+                
+                // Find connections where this node is the target (incoming comments)
+                Object.keys(window.commentConnections).forEach(commentNodeId => {
+                    const connections = window.commentConnections[commentNodeId];
+                    if (Array.isArray(connections)) {
+                        connections.forEach(conn => {
+                            if (conn.targetId == nodeId) {
+                                const connectionObj = {
+                                    commentNodeId: commentNodeId,
+                                    targetId: nodeId
+                                };
+                                commentConnections.incoming.push(connectionObj);
+                                log(`💬 Found incoming comment: ${commentNodeId} → ${nodeId}`);
+                                log(`💬 DEBUG: Added connectionObj with commentNodeId=${connectionObj.commentNodeId}, targetId=${connectionObj.targetId}`);
+                                log(`💬 DEBUG: Array length after push: ${commentConnections.incoming.length}`);
+                                log(`💬 DEBUG: Array contents: [${commentConnections.incoming.map(c => c.commentNodeId + '->' + c.targetId).join(', ')}]`);
+                            }
+                        });
+                    }
+                });
+                
+                log(`💬 DEBUG: Final incoming array length: ${commentConnections.incoming ? commentConnections.incoming.length : 'undefined'}`);
+                log(`💬 DEBUG: Final incoming array type: ${typeof commentConnections.incoming}`);
+                
+                // Find connections where this node is the comment (outgoing comments)
+                if (window.commentConnections[nodeId]) {
+                    const outgoingConnections = window.commentConnections[nodeId];
+                    if (Array.isArray(outgoingConnections)) {
+                        outgoingConnections.forEach(conn => {
+                            commentConnections.outgoing.push({
+                                commentNodeId: nodeId,
+                                targetId: conn.targetId
+                            });
+                            log(`💬 Found outgoing comment: ${nodeId} → ${conn.targetId}`);
+                        });
+                    }
+                }
+                
+                log(`💬 Saved comment connections - Incoming: ${commentConnections.incoming.length}, Outgoing: ${commentConnections.outgoing.length}`);
+                
+                // Return immediately with a fresh copy to prevent corruption
+                return {
+                    incoming: [...commentConnections.incoming],
+                    outgoing: [...commentConnections.outgoing]
+                };
+                
+            } catch (error) {
+                log(`💬 ERROR in saveCommentConnections:`, error);
+                return { incoming: [], outgoing: [] };
+            }
+        }
+        
+        // Restore comment connections after node recreation
+        function restoreCommentConnections(oldNodeId, newNodeId, savedCommentConnections) {
+            log(`💬 ===== restoreCommentConnections CALLED =====`);
+            log(`💬 restoreCommentConnections called: ${oldNodeId} → ${newNodeId}`);
+            log(`💬 Parameters received:`, { oldNodeId, newNodeId, savedCommentConnections });
+            
+            if (!savedCommentConnections) {
+                log(`💬 EARLY EXIT: No saved comment connections data`);
+                return;
+            }
+            log(`💬 ✓ savedCommentConnections exists`);
+            
+            if (!window.commentConnections) {
+                log(`💬 EARLY EXIT: No global commentConnections object`);
+                return;
+            }
+            log(`💬 ✓ window.commentConnections exists`);
+            
+            log(`💬 Restoring comment connections: ${oldNodeId} → ${newNodeId}`);
+            log(`💬 Saved data:`, savedCommentConnections);
+            log(`💬 Saved data type: ${typeof savedCommentConnections}`);
+            log(`💬 Incoming array: ${savedCommentConnections.incoming ? 'exists' : 'missing'}`);
+            if (savedCommentConnections.incoming) {
+                log(`💬 Incoming length: ${savedCommentConnections.incoming.length}`);
+                if (savedCommentConnections.incoming.length > 0) {
+                    log(`💬 First incoming item:`, savedCommentConnections.incoming[0]);
+                }
+            }
+            log(`💬 Current global commentConnections before restore:`, window.commentConnections);
+            
+            let restoredCount = 0;
+            
+            log(`💬 Starting restoration process...`);
+            log(`💬 Processing ${savedCommentConnections.incoming.length} incoming connections`);
+            
+            // Restore incoming comment connections (other comments pointing to this node)
+            savedCommentConnections.incoming.forEach((conn, index) => {
+                log(`💬 Processing incoming connection ${index + 1}:`, conn);
+                
+                if (window.commentConnections[conn.commentNodeId]) {
+                    log(`💬 Found comment node ${conn.commentNodeId} in global connections`);
+                    // Update the target ID from old to new
+                    const connections = window.commentConnections[conn.commentNodeId];
+                    if (Array.isArray(connections)) {
+                        log(`💬 Comment node has ${connections.length} connections`);
+                        connections.forEach((connection, connIndex) => {
+                            log(`💬 Checking connection ${connIndex}:`, connection);
+                            if (connection.targetId == oldNodeId) {
+                                log(`💬 MATCH! Updating connection from ${oldNodeId} to ${newNodeId}`);
+                                connection.targetId = newNodeId;
+                                restoredCount++;
+                                log(`💬 Updated incoming comment connection: ${conn.commentNodeId} → ${newNodeId} (was ${oldNodeId})`);
+                            } else {
+                                log(`💬 No match: ${connection.targetId} != ${oldNodeId}`);
+                            }
+                        });
+                    } else {
+                        log(`💬 Warning: connections is not an array:`, connections);
+                    }
+                } else {
+                    log(`💬 Warning: Comment node ${conn.commentNodeId} no longer exists in global connections`);
+                    log(`💬 Available comment nodes:`, Object.keys(window.commentConnections));
+                }
+            });
+            
+            // Restore outgoing comment connections (this node commenting on others)
+            if (savedCommentConnections.outgoing.length > 0) {
+                // Move the comment connections from old ID to new ID
+                window.commentConnections[newNodeId] = savedCommentConnections.outgoing.map(conn => ({
+                    targetId: conn.targetId
+                }));
+                
+                // Remove old comment connections if they exist
+                if (window.commentConnections[oldNodeId]) {
+                    delete window.commentConnections[oldNodeId];
+                    log(`💬 Removed old comment connections for ${oldNodeId}`);
+                }
+                
+                restoredCount += savedCommentConnections.outgoing.length;
+                log(`💬 Moved ${savedCommentConnections.outgoing.length} outgoing comment connections from ${oldNodeId} to ${newNodeId}`);
+            }
+            
+            log(`💬 Restored ${restoredCount} comment connections for node ${oldNodeId} → ${newNodeId}`);
+            log(`💬 Updated global commentConnections:`, window.commentConnections);
+            
+            // Visual updates will happen automatically through existing system
+            log(`💬 Comment connections restored - visual updates will follow automatically`);
+            log(`💬 ===== restoreCommentConnections COMPLETED =====`);
+        }
+        
+        // Restore node connections after recreation with smart port selection
+        function restoreNodeConnections(nodeId, savedConnections) {
+            if (!savedConnections) return;
+            
+            log(`🔗 Starting connection restoration for node ${nodeId}`);
+            
+            // Longer delay to ensure node is fully created and initialized
+            setTimeout(() => {
+                let restoredCount = 0;
+                
+                // Verify the node exists before attempting restoration
+                const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+                
+                if (!nodeData) {
+                    log(`❌ Node ${nodeId} not found in editor data for connection restoration`);
+                    log(`📋 Available nodes: [${Object.keys(editor.drawflow.drawflow.Home.data).join(', ')}]`);
+                    return;
+                }
+                
+                // Get available ports on the recreated node
+                const availableInputs = Object.keys(nodeData.inputs || {});
+                const availableOutputs = Object.keys(nodeData.outputs || {});
+                
+                log(`📍 Node ${nodeId} available ports - Inputs: [${availableInputs.join(', ')}], Outputs: [${availableOutputs.join(', ')}]`);
+                
+                // Track used ports to distribute connections intelligently
+                const usedInputs = {};
+                const usedOutputs = {};
+                
+                // Restore input connections (connections coming INTO this node)
+                savedConnections.inputs.forEach((conn, index) => {
+                    try {
+                        // Check if source node still exists
+                        if (editor.drawflow.drawflow.Home.data[conn.sourceNodeId]) {
+                            let targetInput = conn.inputKey;
+                            
+                            // If the original input port doesn't exist, find the best available one
+                            if (!availableInputs.includes(conn.inputKey)) {
+                                // Strategy: Use the "oldest" (first) available input, or distribute evenly
+                                targetInput = findBestAvailablePort(availableInputs, usedInputs, 'input');
+                                log(`🔄 Redirecting input connection from port ${conn.inputKey} to ${targetInput}`);
+                            }
+                            
+                            if (targetInput && availableInputs.includes(targetInput)) {
+                                editor.addConnection(conn.sourceNodeId, nodeId, conn.sourceOutput, targetInput);
+                                usedInputs[targetInput] = (usedInputs[targetInput] || 0) + 1;
+                                restoredCount++;
+                                log(`✅ Restored input: ${conn.sourceNodeId}[${conn.sourceOutput}] → ${nodeId}[${targetInput}]`);
+                            } else {
+                                log(`❌ No available input port for connection from ${conn.sourceNodeId}`);
+                            }
+                        } else {
+                            log(`⚠️ Source node ${conn.sourceNodeId} no longer exists`);
+                        }
+                    } catch (error) {
+                        log(`⚠️ Failed to restore input connection: ${error.message}`);
+                    }
+                });
+                
+                // Restore output connections (connections going OUT of this node)
+                savedConnections.outputs.forEach((conn, index) => {
+                    try {
+                        // Check if target node still exists
+                        if (editor.drawflow.drawflow.Home.data[conn.targetNodeId]) {
+                            let sourceOutput = conn.outputKey;
+                            
+                            // If the original output port doesn't exist, find the best available one
+                            if (!availableOutputs.includes(conn.outputKey)) {
+                                // Strategy: Use the "oldest" (first) available output, or distribute evenly
+                                sourceOutput = findBestAvailablePort(availableOutputs, usedOutputs, 'output');
+                                log(`🔄 Redirecting output connection from port ${conn.outputKey} to ${sourceOutput}`);
+                            }
+                            
+                            if (sourceOutput && availableOutputs.includes(sourceOutput)) {
+                                editor.addConnection(nodeId, conn.targetNodeId, sourceOutput, conn.targetInput);
+                                usedOutputs[sourceOutput] = (usedOutputs[sourceOutput] || 0) + 1;
+                                restoredCount++;
+                                log(`✅ Restored output: ${nodeId}[${sourceOutput}] → ${conn.targetNodeId}[${conn.targetInput}]`);
+                            } else {
+                                log(`❌ No available output port for connection to ${conn.targetNodeId}`);
+                            }
+                        } else {
+                            log(`⚠️ Target node ${conn.targetNodeId} no longer exists`);
+                        }
+                    } catch (error) {
+                        log(`⚠️ Failed to restore output connection: ${error.message}`);
+                    }
+                });
+                
+                log(`🔗 Restored ${restoredCount} connections for node ${nodeId}`);
+                
+                // Update connection positions after restoration
+                setTimeout(() => {
+                    updateAllConnectionPositions();
+                    log(`🔧 Connection positions updated for node ${nodeId}`);
+                }, 100);
+            }, 200); // Increased delay to ensure node is fully ready
+        }
+        
+        // Find the best available port for connection restoration
+        function findBestAvailablePort(availablePorts, usedPorts, portType) {
+            if (!availablePorts || availablePorts.length === 0) {
+                return null;
+            }
+            
+            // Strategy 1: Use the "oldest" (first) available port if it's not heavily used
+            const firstPort = availablePorts[0];
+            const firstPortUsage = usedPorts[firstPort] || 0;
+            
+            // Strategy 2: Find the least used port
+            let leastUsedPort = firstPort;
+            let minUsage = firstPortUsage;
+            
+            availablePorts.forEach(port => {
+                const usage = usedPorts[port] || 0;
+                if (usage < minUsage) {
+                    leastUsedPort = port;
+                    minUsage = usage;
+                }
+            });
+            
+            // Prefer the first port if it's not significantly more used than the least used
+            if (firstPortUsage <= minUsage + 1) {
+                log(`📌 Using first available ${portType} port: ${firstPort} (usage: ${firstPortUsage})`);
+                return firstPort;
+            } else {
+                log(`📌 Using least used ${portType} port: ${leastUsedPort} (usage: ${minUsage})`);
+                return leastUsedPort;
+            }
+        }
+        
+        // Recreate node with modified input/output counts
+        function recreateNodeWithPorts(nodeId, newInputCount, newOutputCount) {
+            const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+            if (!nodeData) {
+                log(`❌ Node ${nodeId} not found for recreation`);
+                return null;
+            }
+            
+            // Save current state INCLUDING the current text content from DOM
+            const nodeElement = document.getElementById(`node-${nodeId}`);
+            let currentTitle = nodeData.data?.title || '';
+            let currentDescription = nodeData.data?.description || '';
+            
+            // Get current text from DOM elements if they exist
+            if (nodeElement) {
+                const titleElement = nodeElement.querySelector('.node-title');
+                const descElement = nodeElement.querySelector('.node-description');
+                
+                if (titleElement) {
+                    currentTitle = titleElement.textContent.trim();
+                }
+                if (descElement && descElement.tagName === 'TEXTAREA') {
+                    currentDescription = descElement.value;
+                }
+                
+                log(`💾 Preserving current text - Title: "${currentTitle}", Description: "${currentDescription}"`);
+            }
+            
+            const currentState = {
+                data: {
+                    ...nodeData.data,
+                    title: currentTitle,
+                    description: currentDescription
+                },
+                position: { x: nodeData.pos_x, y: nodeData.pos_y },
+                class: nodeData.class,
+                html: nodeData.html,
+                inputs: newInputCount,
+                outputs: newOutputCount
+            };
+            
+            // Save connections and comment connections
+            const savedConnections = saveNodeConnections(nodeId);
+            log(`💬 DEBUG: Before calling saveCommentConnections`);
+            const savedCommentConnections = saveCommentConnections(nodeId);
+            log(`💬 DEBUG: After calling saveCommentConnections, result:`, savedCommentConnections);
+            
+            log(`💾 Saved ${savedConnections.inputs.length + savedConnections.outputs.length} regular connections and ${savedCommentConnections.incoming.length + savedCommentConnections.outgoing.length} comment connections`);
+            
+            // Remove old node
+            editor.removeNodeId(`node-${nodeId}`);
+            
+            // Let Drawflow generate its own ID by not specifying one
+            // This ensures compatibility with Drawflow's internal ID management
+            const addedNodeId = editor.addNode(
+                undefined, // Let Drawflow auto-generate ID
+                currentState.inputs,
+                currentState.outputs,
+                currentState.position.x,
+                currentState.position.y,
+                currentState.class,
+                currentState.data,
+                currentState.html
+            );
+            
+            // Get the actual ID that Drawflow assigned
+            const actualNodeId = addedNodeId || Object.keys(editor.drawflow.drawflow.Home.data).pop();
+            
+            log(`🔄 Recreated node ${nodeId} as ${actualNodeId} with ${newInputCount} inputs and ${newOutputCount} outputs`);
+            
+            // Store values in variables that will be accessible in nested timeouts
+            const originalNodeId = nodeId;
+            const newNodeId = actualNodeId;
+            const connectionData = savedConnections;
+            const commentConnectionData = savedCommentConnections;
+            const nodeTitle = currentTitle;
+            const nodeDescription = currentDescription;
+            
+            log(`💬 DEBUG: About to restore comment connections - oldId: ${originalNodeId}, newId: ${newNodeId}`);
+            log(`💬 DEBUG: Comment connection data:`, commentConnectionData);
+            
+            // Small delay to ensure DOM is ready, then restore comment connections
+            setTimeout(() => {
+                try {
+                    log(`💬 DEBUG: Inside setTimeout - about to call restoreCommentConnections`);
+                    log(`💬 DEBUG: Parameters - oldId: ${originalNodeId}, newId: ${newNodeId}, data:`, commentConnectionData);
+                    log(`💬 DEBUG: Data type: ${typeof commentConnectionData}, incoming length: ${commentConnectionData?.incoming?.length || 'undefined'}`);
+                    log(`💬 DEBUG: Data as JSON: ${JSON.stringify(commentConnectionData)}`);
+                    if (commentConnectionData && commentConnectionData.incoming && commentConnectionData.incoming.length > 0) {
+                        log(`💬 DEBUG: First incoming connection:`, commentConnectionData.incoming[0]);
+                        log(`💬 DEBUG: First incoming as JSON: ${JSON.stringify(commentConnectionData.incoming[0])}`);
+                    }
+                    
+                    log(`💬 DEBUG: About to call restoreCommentConnections function`);
+                    log(`💬 DEBUG: Function type: ${typeof restoreCommentConnections}`);
+                    if (typeof restoreCommentConnections === 'function') {
+                        log(`💬 DEBUG: Function exists, calling now...`);
+                        restoreCommentConnections(originalNodeId, newNodeId, commentConnectionData);
+                        log(`💬 DEBUG: restoreCommentConnections call completed`);
+                    } else {
+                        log(`💬 ERROR: restoreCommentConnections is not a function!`);
+                    }
+                } catch (error) {
+                    log(`💬 ERROR in setTimeout for restoreCommentConnections:`, error);
+                    log(`💬 ERROR stack:`, error.stack);
+                }
+            }, 50);
+            
+            // Initialize new node and restore content with proper timing
+            setTimeout(() => {
+                initializeTextareas();
+                setupDragHandles();
+                
+                // Restore text content to the new node - longer delay to ensure DOM is ready
+                setTimeout(() => {
+                    restoreTextToNode(newNodeId, nodeTitle, nodeDescription);
+                    
+                    // Then restore regular connections after text is restored
+                    setTimeout(() => {
+                        restoreNodeConnections(newNodeId, connectionData);
+                    }, 100);
+                }, 200);
+                
+            }, 100);
+            
+            return actualNodeId;
+        }
+        
+        // Restore text content to a specific node after recreation
+        function restoreTextToNode(nodeId, title, description) {
+            log(`🔄 Attempting to restore text to node ${nodeId}`);
+            
+            // Try multiple ways to find the node element
+            let nodeElement = document.getElementById(`node-${nodeId}`);
+            if (!nodeElement) {
+                nodeElement = document.getElementById(nodeId);
+            }
+            
+            if (!nodeElement) {
+                // Try finding by scanning all nodes
+                const allNodes = document.querySelectorAll('.drawflow-node');
+                allNodes.forEach(node => {
+                    if (node.id === `node-${nodeId}` || node.id === nodeId) {
+                        nodeElement = node;
+                    }
+                });
+            }
+            
+            if (nodeElement) {
+                log(`✅ Found node element for ${nodeId}: ${nodeElement.id}`);
+                
+                // Restore title
+                if (title) {
+                    const titleElement = nodeElement.querySelector('.node-title');
+                    if (titleElement) {
+                        titleElement.textContent = title;
+                        log(`✅ Title restored to node ${nodeId}: "${title}"`);
+                    } else {
+                        log(`⚠️ Title element not found in node ${nodeId}`);
+                    }
+                }
+                
+                // Restore description
+                if (description) {
+                    const descElement = nodeElement.querySelector('.node-description');
+                    if (descElement && descElement.tagName === 'TEXTAREA') {
+                        descElement.value = description;
+                        // Auto-resize textarea
+                        autoResizeTextarea(descElement);
+                        log(`✅ Description restored to node ${nodeId}: "${description}"`);
+                    } else {
+                        log(`⚠️ Description textarea not found in node ${nodeId}`);
+                    }
+                }
+                
+                // Update the node data in the editor as well
+                const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+                if (nodeData && nodeData.data) {
+                    nodeData.data.title = title;
+                    nodeData.data.description = description;
+                    log(`💾 Node data updated for ${nodeId}`);
+                } else {
+                    log(`⚠️ Node data not found for ${nodeId} in editor`);
+                    log(`📋 Available nodes: [${Object.keys(editor.drawflow.drawflow.Home.data).join(', ')}]`);
+                }
+            } else {
+                log(`❌ Could not find node element for ${nodeId} for text restoration`);
+                log(`🔍 Tried IDs: node-${nodeId}, ${nodeId}`);
+                
+                // List all available node elements for debugging
+                const allNodes = document.querySelectorAll('.drawflow-node');
+                const nodeIds = Array.from(allNodes).map(node => node.id);
+                log(`📋 Available node elements: [${nodeIds.join(', ')}]`);
+            }
+        }
+        
+        // Add input to node with smart connection handling
+        function addNodeInput(nodeId) {
+            const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+            if (!nodeData) return;
+            
+            const currentInputs = Object.keys(nodeData.inputs || {}).length || 1;
+            const currentOutputs = Object.keys(nodeData.outputs || {}).length || 1;
+            
+            log(`➕ Adding input to node ${nodeId} (current: ${currentInputs} inputs, ${currentOutputs} outputs)`);
+            
+            const newNodeId = recreateNodeWithPorts(nodeId, currentInputs + 1, currentOutputs);
+            if (newNodeId) {
+                log(`✅ Successfully added input to node ${nodeId} → ${newNodeId}`);
+            }
+            
+            autoSave();
+        }
+        
+        // Add output to node with smart connection handling
+        function addNodeOutput(nodeId) {
+            const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+            if (!nodeData) return;
+            
+            const currentInputs = Object.keys(nodeData.inputs || {}).length || 1;
+            const currentOutputs = Object.keys(nodeData.outputs || {}).length || 1;
+            
+            log(`➕ Adding output to node ${nodeId} (current: ${currentInputs} inputs, ${currentOutputs} outputs)`);
+            
+            const newNodeId = recreateNodeWithPorts(nodeId, currentInputs, currentOutputs + 1);
+            if (newNodeId) {
+                log(`✅ Successfully added output to node ${nodeId} → ${newNodeId}`);
+            }
+            
+            autoSave();
+        }
+        
+        // Remove input from node with connection preservation
+        function removeNodeInput(nodeId) {
+            const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+            if (!nodeData) return;
+            
+            const currentInputs = Object.keys(nodeData.inputs || {}).length || 1;
+            const currentOutputs = Object.keys(nodeData.outputs || {}).length || 1;
+            
+            if (currentInputs <= 1) {
+                log(`⚠️ Cannot remove input: node ${nodeId} must have at least 1 input`);
+                return;
+            }
+            
+            log(`➖ Removing input from node ${nodeId} (current: ${currentInputs} inputs, ${currentOutputs} outputs)`);
+            
+            const newNodeId = recreateNodeWithPorts(nodeId, currentInputs - 1, currentOutputs);
+            if (newNodeId) {
+                log(`✅ Successfully removed input from node ${nodeId} → ${newNodeId}`);
+            }
+            
+            autoSave();
+        }
+        
+        // Remove output from node with connection preservation
+        function removeNodeOutput(nodeId) {
+            const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
+            if (!nodeData) return;
+            
+            const currentInputs = Object.keys(nodeData.inputs || {}).length || 1;
+            const currentOutputs = Object.keys(nodeData.outputs || {}).length || 1;
+            
+            if (currentOutputs <= 1) {
+                log(`⚠️ Cannot remove output: node ${nodeId} must have at least 1 output`);
+                return;
+            }
+            
+            log(`➖ Removing output from node ${nodeId} (current: ${currentInputs} inputs, ${currentOutputs} outputs)`);
+            
+            const newNodeId = recreateNodeWithPorts(nodeId, currentInputs, currentOutputs - 1);
+            if (newNodeId) {
+                log(`✅ Successfully removed output from node ${nodeId} → ${newNodeId}`);
+            }
+            
+            autoSave();
+        }
+        
         // Context menu actions
         function editNodeText(nodeElement) {
             const titleElement = nodeElement.querySelector('.node-title');
@@ -1822,8 +2439,8 @@ try {
             }
         }
         
-        // Restore comment connections from saved data
-        function restoreCommentConnections() {
+        // Initialize comment connections restoration (stub for diagram loading)
+        function initializeCommentConnections() {
             // This will be called during diagram loading to restore comment connections
             // The actual restoration happens in loadDiagram when we import the data
             log('🔄 Comment connections restoration initialized');
@@ -1861,7 +2478,7 @@ try {
                             restoreNodeTexts();
                             
                             // Restore comment connections from saved data
-                            restoreCommentConnections();
+                            initializeCommentConnections();
                             
                             // FIX: Update connection positions after import
                             // This fixes the issue where connection lines don't align properly with input/output circles
@@ -2041,29 +2658,39 @@ try {
                 if (editor && editor.drawflow && editor.drawflow.drawflow && editor.drawflow.drawflow.Home && editor.drawflow.drawflow.Home.data) {
                     console.log('All available nodes:', Object.keys(editor.drawflow.drawflow.Home.data));
                     
-                    // Extract numeric ID from node ID (e.g., "node-2" -> "2")
-                    let numericId = nodeId;
+                    // Extract numeric or string ID from node ID (handle both old and new ID formats)
+                    let cleanId = nodeId;
                     if (nodeId.startsWith('node-')) {
-                        numericId = nodeId.replace('node-', '');
+                        cleanId = nodeId.replace('node-', '');
                     }
                     
-                    // Try different ID formats
+                    // Try to find node data with flexible ID matching
                     let nodeData = null;
                     let actualNodeId = null;
                     
-                    // Try the numeric ID first
-                    if (editor.drawflow.drawflow.Home.data[numericId]) {
-                        nodeData = editor.drawflow.drawflow.Home.data[numericId].data;
-                        actualNodeId = numericId;
-                    } else if (editor.drawflow.drawflow.Home.data[parseInt(numericId)]) {
-                        nodeData = editor.drawflow.drawflow.Home.data[parseInt(numericId)].data;
-                        actualNodeId = parseInt(numericId);
-                    } else if (editor.drawflow.drawflow.Home.data[nodeId]) {
-                        nodeData = editor.drawflow.drawflow.Home.data[nodeId].data;
-                        actualNodeId = nodeId;
+                    // Try exact match first
+                    if (editor.drawflow.drawflow.Home.data[cleanId]) {
+                        nodeData = editor.drawflow.drawflow.Home.data[cleanId].data;
+                        actualNodeId = cleanId;
+                    }
+                    // Try numeric conversion for old-style IDs
+                    else if (!isNaN(cleanId) && editor.drawflow.drawflow.Home.data[parseInt(cleanId)]) {
+                        nodeData = editor.drawflow.drawflow.Home.data[parseInt(cleanId)].data;
+                        actualNodeId = parseInt(cleanId);
+                    }
+                    // Try all nodes if direct lookup fails (for recreated nodes)
+                    else {
+                        const allNodes = editor.drawflow.drawflow.Home.data;
+                        Object.keys(allNodes).forEach(id => {
+                            const currentNodeElement = document.getElementById(`node-${id}`);
+                            if (currentNodeElement === nodeElement) {
+                                nodeData = allNodes[id].data;
+                                actualNodeId = id;
+                            }
+                        });
                     }
                     
-                    console.log('Trying numeric ID:', numericId);
+                    console.log('Trying clean ID:', cleanId);
                     
                     if (nodeData) {
                         console.log('Current node data:', nodeData);
@@ -2083,7 +2710,7 @@ try {
                         console.error('Could not find node data for ID:', nodeId);
                         console.log('Available node IDs:', Object.keys(editor.drawflow.drawflow.Home.data));
                         console.log('Looking for ID:', nodeId, 'type:', typeof nodeId);
-                        console.log('Numeric ID tried:', numericId, 'type:', typeof numericId);
+                        console.log('Clean ID tried:', cleanId, 'type:', typeof cleanId);
                     }
                 } else {
                     console.error('Editor structure not available');
