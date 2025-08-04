@@ -44,6 +44,26 @@ $phases = $db->query('SELECT name FROM phases ORDER BY id')->fetchAll(PDO::FETCH
 // Fetch statuses from database
 $statuses = $db->query('SELECT name FROM statuses ORDER BY id')->fetchAll(PDO::FETCH_COLUMN);
 
+// Fetch application types from database
+try {
+    $applicationTypes = $db->query("SELECT id, type_name, description, complexity_level, typical_duration_weeks, requires_infrastructure, vendor_support_available FROM application_types ORDER BY type_name")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    // Fallback if application_types table doesn't exist
+    error_log("Application types table error: " . $e->getMessage());
+    $applicationTypes = [];
+}
+
+// Find the selected application type for this app
+$selectedApplicationType = null;
+if (!empty($app['application_type_id']) && !empty($applicationTypes)) {
+    foreach ($applicationTypes as $type) {
+        if ($type['id'] == $app['application_type_id']) {
+            $selectedApplicationType = $type;
+            break;
+        }
+    }
+}
+
 // Fallback to hardcoded values if database is empty
 if (empty($phases)) {
     $phases = ['Need', 'Solution', 'Build', 'Implement', 'Operate'];
@@ -108,6 +128,31 @@ if (empty($statuses)) {
     }
     .choices--disabled .choices__button {
       display: none !important;
+    }
+
+    /* Application Type Info Popover Styling */
+    .application-type-info {
+        font-size: 0.875rem;
+        max-width: 300px;
+    }
+    
+    .application-type-info .row {
+        margin: 0;
+    }
+    
+    .application-type-info .col-6 {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .application-type-info strong {
+        font-size: 0.8rem;
+        color: #6c757d;
+        display: block;
+    }
+    
+    .application-type-info .text-primary {
+        font-weight: 500;
+        font-size: 0.9rem;
     }
 
     /* Header Action Button Styling */
@@ -375,14 +420,33 @@ if (empty($statuses)) {
               data-bs-toggle="popover"
               data-bs-placement="bottom"
               title="App. Name"
-              data-bs-content="Provide a short and meaningful description of the application.">>
+              data-bs-content="Provide a short and meaningful description of the application.">
               <i class="bi bi-info-circle"></i>
             </button>
           </div>
         </div>
         <div class="form-group-horizontal">
-          <label for="applicationService" class="form-label">Application service</label>
-          <input type="text" class="form-control" id="applicationService" name="application_service" placeholder="Application service" value="<?php echo htmlspecialchars($app['application_service']); ?>" readonly>
+          <label for="applicationType" class="form-label">Application Type</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="applicationType" name="application_type" 
+                   value="<?php echo $selectedApplicationType ? htmlspecialchars($selectedApplicationType['type_name']) : 'Not specified'; ?>" 
+                   readonly>
+            <?php if ($selectedApplicationType): ?>
+            <button type="button" class="btn btn-outline-secondary info-btn" tabindex="-1"
+              data-bs-toggle="popover"
+              data-bs-placement="bottom"
+              data-bs-trigger="click"
+              data-bs-html="true"
+              title="Application Type Information"
+              id="applicationTypeInfoBtn"
+              data-complexity="<?php echo htmlspecialchars($selectedApplicationType['complexity_level']); ?>"
+              data-duration="<?php echo htmlspecialchars($selectedApplicationType['typical_duration_weeks']); ?>"
+              data-infrastructure="<?php echo $selectedApplicationType['requires_infrastructure'] ? 'Yes' : 'No'; ?>"
+              data-vendor="<?php echo $selectedApplicationType['vendor_support_available'] ? 'Yes' : 'No'; ?>">
+              <i class="bi bi-info-circle"></i>
+            </button>
+            <?php endif; ?>
+          </div>
         </div>
         <div class="form-group-horizontal">
           <label for="relevantFor" class="form-label">Relevant for</label>
@@ -729,6 +793,64 @@ function goBack() {
     window.location.href = 'dashboard.php';
   }
 }
+</script>
+
+<script>
+// Set current app ID for AI analysis
+window.currentAppId = <?php echo $id; ?>;
+
+// Application Type Information Display - Read-only version with popup
+document.addEventListener('DOMContentLoaded', function() {
+    const infoBtn = document.getElementById('applicationTypeInfoBtn');
+    
+    if (infoBtn) {
+        console.log('Application Type info button found in view mode');
+        
+        const complexity = infoBtn.getAttribute('data-complexity');
+        const duration = infoBtn.getAttribute('data-duration');
+        const infrastructure = infoBtn.getAttribute('data-infrastructure');
+        const vendor = infoBtn.getAttribute('data-vendor');
+        
+        if (complexity && duration && infrastructure && vendor) {
+            // Create popover content
+            const popoverContent = `
+                <div class="application-type-info">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <strong>Complexity:</strong><br>
+                            <span class="text-primary">${complexity}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Duration:</strong><br>
+                            <span class="text-primary">${duration} weeks</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Infrastructure:</strong><br>
+                            <span class="text-primary">${infrastructure}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong>Vendor Support:</strong><br>
+                            <span class="text-primary">${vendor}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Set popover content
+            infoBtn.setAttribute('data-bs-content', popoverContent);
+            
+            // Initialize popover
+            new bootstrap.Popover(infoBtn, {
+                html: true,
+                trigger: 'click',
+                placement: 'bottom',
+                container: 'body'
+            });
+            
+            console.log('Application Type popover initialized in view mode');
+        }
+    }
+});
 </script>
 
 <script>

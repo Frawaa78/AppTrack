@@ -15,7 +15,7 @@ if (!isset($_SESSION['user_id'])) {
 // Get existing data if id is set (edit mode)
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $app = [
-    'short_description' => '', 'application_service' => '', 'relevant_for' => '', 'phase' => '', 'status' => '',
+    'short_description' => '', 'application_type_id' => '', 'relevant_for' => '', 'phase' => '', 'status' => '',
     'handover_status' => 0, 'contract_number' => '', 'contract_responsible' => '', 'information_space' => '',
     'ba_sharepoint_list' => '', 'relationship_yggdrasil' => [], 'assigned_to' => '', 'preops_portfolio' => '',
     'application_portfolio' => '', 'delivery_responsible' => '', 'corporator_link' => '', 'project_manager' => '',
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Debug output removed - form working correctly
         
         $fields = [
-            'short_description', 'application_service', 'relevant_for', 'phase', 'status', 'handover_status',
+            'short_description', 'application_type_id', 'relevant_for', 'phase', 'status', 'handover_status',
             'contract_number', 'contract_responsible', 'information_space', 'ba_sharepoint_list', 'assigned_to',
             'preops_portfolio', 'application_portfolio', 'delivery_responsible', 'corporator_link',
             'project_manager', 'product_owner', 'due_date', 'deployment_model', 'integrations', 'sa_document',
@@ -216,6 +216,15 @@ $applicationPortfolios = $db->query("SELECT id, name FROM portfolios WHERE type 
 
 // Fetch deployment models from database
 $deploymentModels = $db->query("SELECT id, name FROM deployment_models ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch application types from database
+try {
+    $applicationTypes = $db->query("SELECT id, type_name, description, complexity_level, typical_duration_weeks, requires_infrastructure, vendor_support_available FROM application_types ORDER BY type_name")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    // Fallback if application_types table doesn't exist
+    error_log("Application types table error: " . $e->getMessage());
+    $applicationTypes = [];
+}
 
 // Fallback to hardcoded values if database is empty
 if (empty($phases)) {
@@ -680,6 +689,31 @@ if (empty($statuses)) {
         min-height: 0;
         box-sizing: border-box;
     }
+    
+    /* Application Type Info Popover Styling */
+    .application-type-info {
+        font-size: 0.875rem;
+        max-width: 300px;
+    }
+    
+    .application-type-info .row {
+        margin: 0;
+    }
+    
+    .application-type-info .col-6 {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .application-type-info strong {
+        font-size: 0.8rem;
+        color: #6c757d;
+        display: block;
+    }
+    
+    .application-type-info .text-primary {
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -746,8 +780,32 @@ if (empty($statuses)) {
           </div>
         </div>
         <div class="form-group-horizontal">
-          <label for="applicationService" class="form-label">Application service</label>
-          <input type="text" class="form-control" id="applicationService" name="application_service" placeholder="Application service" value="<?php echo htmlspecialchars($app['application_service'] ?? ''); ?>">
+          <label for="applicationType" class="form-label">Application Type <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <select class="form-select" id="applicationType" name="application_type_id" required>
+              <option value="">Select Application Type...</option>
+              <?php foreach ($applicationTypes as $type): ?>
+                <option value="<?php echo $type['id']; ?>" 
+                        data-complexity="<?php echo $type['complexity_level']; ?>"
+                        data-duration="<?php echo $type['typical_duration_weeks']; ?>"
+                        data-infrastructure="<?php echo $type['requires_infrastructure'] ? 'Yes' : 'No'; ?>"
+                        data-vendor="<?php echo $type['vendor_support_available'] ? 'Yes' : 'No'; ?>"
+                        <?php if(($app['application_type_id'] ?? '') == $type['id']) echo 'selected'; ?>>
+                  <?php echo htmlspecialchars($type['type_name']); ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <button type="button" class="btn btn-outline-secondary info-btn" tabindex="-1"
+              data-bs-toggle="popover"
+              data-bs-placement="bottom"
+              data-bs-trigger="click"
+              data-bs-html="true"
+              title="Application Type Information"
+              id="applicationTypeInfoBtn"
+              style="display: none;">
+              <i class="bi bi-info-circle"></i>
+            </button>
+          </div>
         </div>
         <div class="form-group-horizontal">
           <label for="relevantFor" class="form-label">Relevant for</label>
@@ -1028,6 +1086,7 @@ if (empty($statuses)) {
 
 
 
+
 <script>
 // Set current app ID for integration diagram
 window.currentAppId = <?php echo $id; ?>;
@@ -1090,5 +1149,128 @@ function openDataMap() {
 <script src="../assets/js/components/form-handlers.js"></script>
 <script src="../assets/js/components/choices-init.js"></script>
 <script src="../assets/js/pages/app-form.js"></script>
+
+<script>
+// Application Type Information Display - Enhanced with popup info button
+document.addEventListener('DOMContentLoaded', function() {
+    // Add a small delay to ensure all other scripts have loaded
+    setTimeout(function() {
+        console.log('Application Type script loading...');
+        
+        const applicationTypeSelect = document.getElementById('applicationType');
+        const infoBtn = document.getElementById('applicationTypeInfoBtn');
+
+        console.log('Elements found:', {
+            select: applicationTypeSelect ? 'Found' : 'NOT FOUND',
+            infoBtn: infoBtn ? 'Found' : 'NOT FOUND'
+        });
+
+        if (applicationTypeSelect && infoBtn) {
+            console.log('All elements found, setting up enhanced event listeners');
+            
+            let currentPopover = null;
+            
+            // Function to update info button and popover
+            function updateTypeInfo(eventType = 'unknown') {
+                console.log(`Application type update triggered by: ${eventType}, value: ${applicationTypeSelect.value}`);
+                const selectedOption = applicationTypeSelect.options[applicationTypeSelect.selectedIndex];
+                
+                if (selectedOption && selectedOption.value) {
+                    const complexity = selectedOption.getAttribute('data-complexity');
+                    const duration = selectedOption.getAttribute('data-duration');
+                    const infrastructure = selectedOption.getAttribute('data-infrastructure');
+                    const vendor = selectedOption.getAttribute('data-vendor');
+                    
+                    console.log('Data attributes:', { complexity, duration, infrastructure, vendor });
+                    
+                    if (complexity && duration && infrastructure && vendor) {
+                        // Show the info button
+                        infoBtn.style.display = 'block';
+                        
+                        // Destroy existing popover if it exists
+                        if (currentPopover) {
+                            currentPopover.dispose();
+                        }
+                        
+                        // Create popover content
+                        const popoverContent = `
+                            <div class="application-type-info">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <strong>Complexity:</strong><br>
+                                        <span class="text-primary">${complexity}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Duration:</strong><br>
+                                        <span class="text-primary">${duration} weeks</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Infrastructure:</strong><br>
+                                        <span class="text-primary">${infrastructure}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Vendor Support:</strong><br>
+                                        <span class="text-primary">${vendor}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Update popover content
+                        infoBtn.setAttribute('data-bs-content', popoverContent);
+                        
+                        // Initialize new popover
+                        currentPopover = new bootstrap.Popover(infoBtn, {
+                            html: true,
+                            trigger: 'click',
+                            placement: 'bottom',
+                            container: 'body'
+                        });
+                        
+                        console.log(`Info button shown and popover updated via ${eventType}`);
+                    } else {
+                        console.log('Some data attributes missing');
+                        infoBtn.style.display = 'none';
+                        if (currentPopover) {
+                            currentPopover.dispose();
+                            currentPopover = null;
+                        }
+                    }
+                } else {
+                    infoBtn.style.display = 'none';
+                    if (currentPopover) {
+                        currentPopover.dispose();
+                        currentPopover = null;
+                    }
+                    console.log(`Info button hidden via ${eventType} - no selection`);
+                }
+            }
+            
+            // Event listeners for dropdown changes
+            applicationTypeSelect.addEventListener('change', () => updateTypeInfo('change'));
+            applicationTypeSelect.addEventListener('input', () => updateTypeInfo('input'));
+            
+            // Show info for pre-selected option on page load
+            if (applicationTypeSelect.value) {
+                console.log('Triggering change for pre-selected value:', applicationTypeSelect.value);
+                updateTypeInfo('page-load');
+            }
+            
+            // Close popover when clicking elsewhere
+            document.addEventListener('click', function(e) {
+                if (currentPopover && !infoBtn.contains(e.target)) {
+                    currentPopover.hide();
+                }
+            });
+            
+            console.log('Application Type functionality initialized with popup info button');
+        } else {
+            console.error('Some elements not found for Application Type functionality');
+            console.log('applicationTypeSelect:', applicationTypeSelect);
+            console.log('infoBtn:', infoBtn);
+        }
+    }, 500); // 500ms delay to ensure everything is loaded
+});
+</script>
 </body>
 </html>

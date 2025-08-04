@@ -137,27 +137,27 @@ $tags = array_map('trim', $tags);
     <div class="container">
         <div class="header-with-buttons">
             <div class="d-flex align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-journal-text"></i> User Story Details
-                </h5>
-            </div>
-            <div class="header-buttons">
                 <?php if (isset($_GET['from_app']) && $_GET['from_app']): ?>
                     <a href="user_stories.php?application_id=<?php echo $story['application_id']; ?>" 
-                       class="header-action-btn me-2" 
+                       class="header-action-btn me-3" 
                        title="Back to User Stories">
                         <i class="bi bi-arrow-left"></i> Stories
                     </a>
+                <?php else: ?>
+                    <a href="user_stories.php" 
+                       class="header-action-btn me-3" 
+                       title="Back to User Stories">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </a>
+                <?php endif; ?>
+                <h5 class="mb-0">User Story Details</h5>
+            </div>
+            <div class="header-buttons">
+                <?php if (isset($_GET['from_app']) && $_GET['from_app']): ?>
                     <a href="app_view.php?id=<?php echo $story['application_id']; ?>" 
                        class="header-action-btn me-2" 
                        title="Back to Application">
                         <i class="bi bi-house"></i> App
-                    </a>
-                <?php else: ?>
-                    <a href="user_stories.php" 
-                       class="header-action-btn me-2" 
-                       title="Back to User Stories">
-                        <i class="bi bi-arrow-left"></i> Back
                     </a>
                 <?php endif; ?>
                 <a href="user_story_form.php?id=<?php echo $story['id']; ?><?php echo isset($_GET['from_app']) && $_GET['from_app'] ? '&application_id=' . $story['application_id'] : ''; ?>" 

@@ -148,6 +148,41 @@ $showMineOnly = isset($_GET['show_mine_only']) && $_GET['show_mine_only'] === 't
             font-size: 0.9rem;
         }
 
+        /* Custom styling for Title and Story columns */
+        .table td.title-column {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .table td.story-column {
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+        
+        /* Style story content specifically */
+        .table td.story-column .story-summary {
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+        
+        .table td.story-column .story-summary .story-role {
+            font-size: 0.85rem;
+            font-weight: 400;
+        }
+        
+        .table td.story-column .story-summary .text-muted {
+            font-size: 0.85rem !important;
+            font-weight: 400 !important;
+        }
+        
+        /* Keep "As a" and "I want to" bold and colored - override inline styles */
+        .table td.story-column .story-role span[style],
+        .table td.story-column .text-muted span[style] {
+            color: #0D8ABC !important;
+            font-weight: bold !important;
+            font-size: 0.85rem !important;
+        }
+
         /* Inline editing styles */
         .editable-field {
             cursor: pointer;

@@ -196,6 +196,12 @@ class UserStory {
                 $params[':application_id'] = null;
             }
         }
+        // Handle application_id as comma-separated string (for inline editing)
+        elseif (isset($data['application_id'])) {
+            $updateFields[] = "application_id = :application_id";
+            $params[':application_id'] = $data['application_id'];
+            error_log('UserStory::update - Setting application_id to: ' . $data['application_id']);
+        }
         
         // Handle regular fields (excluding application_id to avoid conflicts)
         foreach ($allowedFields as $field) {

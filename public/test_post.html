@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test POST Request</title>
+</head>
+<body>
+    <h1>Test POST Request</h1>
+    <button onclick="testPost()">Test POST to update_story.php</button>
+    <button onclick="testSimplePost()">Test POST to simple_update.php</button>
+    <div id="result"></div>
+
+    <script>
+        async function testPost() {
+            try {
+                console.log('Sending POST request to update_story.php...');
+                const response = await fetch('api/user_stories/update_story.php?id=123', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        priority: 'High'
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                document.getElementById('result').innerHTML = '<h3>update_story.php Result:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testSimplePost() {
+            try {
+                console.log('Sending POST request to simple_update.php...');
+                const response = await fetch('api/user_stories/simple_update.php?id=123', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        application_id: '1,2,3'
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                document.getElementById('result').innerHTML = '<h3>simple_update.php Result:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

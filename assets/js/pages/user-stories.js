@@ -163,13 +163,13 @@ class UserStoriesDashboard {
 
         tbody.innerHTML = this.stories.map(story => `
             <tr>
-                <td>
+                <td class="title-column">
                     <a href="user_story_view.php?id=${story.id}${this.fromAppId ? '&from_app=1' : ''}" class="story-title">
                         ${this.escapeHtml(story.title)}
                     </a>
                     ${story.jira_id ? `<br><small class="jira-badge">JIRA: ${this.escapeHtml(story.jira_id)}</small>` : ''}
                 </td>
-                <td>
+                <td class="story-column">
                     <div class="story-summary">
                         <span class="story-role"><span style="color: #0D8ABC; font-weight: bold;">As a</span> ${this.escapeHtml(story.role)}</span><br>
                         <small class="text-muted"><span style="color: #0D8ABC; font-weight: bold;">I want to</span> ${this.truncateText(story.want_to, 60)}</small>
@@ -523,7 +523,7 @@ class UserStoriesDashboard {
             }
 
             const response = await fetch(`api/user_stories/update_story.php?id=${storyId}`, {
-                method: 'PUT',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -631,8 +631,19 @@ class UserStoriesDashboard {
             }, 300);
         });
 
-        // Save on change
+        // Save on change - use Choices.js events for better reliability
         selectElement.addEventListener('change', async () => {
+            const selectedValues = choices.getValue().map(item => item.value);
+            await this.saveInlineEdit(storyId, 'application_ids', selectedValues);
+        });
+
+        // Also listen to Choices.js specific events
+        selectElement.addEventListener('addItem', async () => {
+            const selectedValues = choices.getValue().map(item => item.value);
+            await this.saveInlineEdit(storyId, 'application_ids', selectedValues);
+        });
+
+        selectElement.addEventListener('removeItem', async () => {
             const selectedValues = choices.getValue().map(item => item.value);
             await this.saveInlineEdit(storyId, 'application_ids', selectedValues);
         });

@@ -11,8 +11,8 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Only allow PUT requests
-if ($_SERVER['REQUEST_METHOD'] !== 'PUT') {
+// Allow both PUT and POST requests
+if (!in_array($_SERVER['REQUEST_METHOD'], ['PUT', 'POST'])) {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
     exit;
