@@ -1,7 +1,7 @@
 :root {
-  --dfBackgroundColor: transparent;
-  --dfBackgroundSize: 20px;
-  --dfBackgroundImage: none;
+  --dfBackgroundColor: #ffffff;
+  --dfBackgroundSize: 10px;
+  --dfBackgroundImage: linear-gradient(to right, rgba(245, 245, 245, 1) 1px, transparent 1px), linear-gradient(to bottom, rgba(245, 245, 245, 1) 1px, transparent 1px);
 
   --dfNodeType: flex;
   --dfNodeTypeFloat: none;
@@ -100,23 +100,24 @@
 }
 
 #drawflow {
-  background: transparent !important; /* Remove background so comment connections show through */
+  background: var(--dfBackgroundColor);
   background-size: var(--dfBackgroundSize) var(--dfBackgroundSize);
-  background-image: none !important; /* Remove grid pattern */
+  background-image: var(--dfBackgroundImage);
   position: relative; /* Ensure proper stacking context */
 }
 
-/* Additional rule to override inline styles */
+/* Additional rule to apply grid background */
 div#drawflow {
-  background: transparent !important;
-  background-color: transparent !important;
+  background: var(--dfBackgroundColor);
+  background-size: var(--dfBackgroundSize) var(--dfBackgroundSize);
+  background-image: var(--dfBackgroundImage);
 }
 
-/* Force background transparency for Drawflow library */
+/* Apply grid to Drawflow container */
 .drawflow {
-  background: transparent !important;
-  background-color: transparent !important;
-  background-image: none !important;
+  background: var(--dfBackgroundColor);
+  background-size: var(--dfBackgroundSize) var(--dfBackgroundSize);
+  background-image: var(--dfBackgroundImage);
 }
 
 /* Node drag handle styling - only show move cursor on the grip bar */

@@ -584,6 +584,9 @@ try {
             editor.curvature = 0.5;
             editor.start();
             
+            // Initialize comment connections as empty object
+            window.commentConnections = {};
+            
             // Force transparent background to override inline CSS
             setTimeout(() => {
                 const drawflowContainer = document.getElementById('drawflow');
@@ -625,6 +628,22 @@ try {
             
             // Set up real-time comment connection updates during node dragging
             const observer = new MutationObserver((mutations) => {
+                // Skip if editor doesn't exist or no diagram data
+                if (!editor || !editor.drawflow || !editor.drawflow.drawflow || !editor.drawflow.drawflow.Home) {
+                    return;
+                }
+                
+                // Skip if there are no nodes in the diagram
+                const diagramNodes = editor.drawflow.drawflow.Home.data || {};
+                if (Object.keys(diagramNodes).length === 0) {
+                    return;
+                }
+                
+                // Skip if no comment connections exist
+                if (!window.commentConnections || Object.keys(window.commentConnections).length === 0) {
+                    return;
+                }
+                
                 let needsUpdate = false;
                 mutations.forEach(mutation => {
                     if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
@@ -772,7 +791,20 @@ try {
         function showContextMenu(event, nodeElement) {
             hideContextMenu(); // Hide any existing menu
             
+            // Check if nodeElement is valid
+            if (!nodeElement || !nodeElement.id) {
+                console.warn('⚠️ Invalid nodeElement passed to showContextMenu');
+                return;
+            }
+            
             const nodeId = nodeElement.id.replace('node-', '');
+            
+            // Check if editor and node data exist
+            if (!editor || !editor.drawflow || !editor.drawflow.drawflow.Home.data[nodeId]) {
+                console.warn('⚠️ Node data not found for nodeId:', nodeId);
+                return;
+            }
+            
             const nodeData = editor.drawflow.drawflow.Home.data[nodeId];
             const isCommentNode = nodeData && nodeData.class && nodeData.class.includes('comment-node');
             
@@ -1010,8 +1042,30 @@ try {
         function updateCommentConnections() {
             console.log('🔄 updateCommentConnections called');
             
+            // Check if editor exists and has data
+            if (!editor || !editor.drawflow || !editor.drawflow.drawflow || !editor.drawflow.drawflow.Home) {
+                console.log('⚠️ Editor not ready or no diagram data');
+                return;
+            }
+            
             if (!window.commentConnections) {
                 console.log('⚠️ No commentConnections found');
+                return;
+            }
+            
+            // Check if commentConnections is corrupted (is an array instead of object)
+            if (Array.isArray(window.commentConnections)) {
+                console.log('🔧 Fixing corrupted commentConnections array, resetting to object');
+                window.commentConnections = {};
+                return;
+            }
+            
+            // If there are no nodes in the diagram, just clear connections and return
+            const diagramNodes = editor.drawflow.drawflow.Home.data || {};
+            if (Object.keys(diagramNodes).length === 0) {
+                console.log('📭 No nodes in diagram, clearing comment connections');
+                window.commentConnections = {};
+                document.querySelectorAll('.comment-connection').forEach(el => el.remove());
                 return;
             }
             
@@ -1043,9 +1097,25 @@ try {
         function cleanupInvalidConnections() {
             if (!window.commentConnections) return;
             
+            // Check if commentConnections is an array instead of an object (data corruption)
+            if (Array.isArray(window.commentConnections)) {
+                console.log('🧹 Detected corrupted commentConnections array, resetting to object');
+                window.commentConnections = {};
+                return;
+            }
+            
             let hasChanges = false;
             
             Object.keys(window.commentConnections).forEach(commentNodeId => {
+                // Check if the connection data is valid
+                const connectionData = window.commentConnections[commentNodeId];
+                if (!connectionData || !Array.isArray(connectionData)) {
+                    console.log('🧹 Removing invalid connection data for node:', commentNodeId);
+                    delete window.commentConnections[commentNodeId];
+                    hasChanges = true;
+                    return;
+                }
+                
                 // Check if comment node still exists
                 const commentElement = document.getElementById(`node-${commentNodeId}`);
                 if (!commentElement) {
@@ -1056,7 +1126,13 @@ try {
                 }
                 
                 // Check if target nodes still exist
-                const validConnections = window.commentConnections[commentNodeId].filter(conn => {
+                const validConnections = connectionData.filter(conn => {
+                    if (!conn || !conn.targetId) {
+                        console.log('🧹 Removing invalid connection object');
+                        hasChanges = true;
+                        return false;
+                    }
+                    
                     const targetElement = document.getElementById(`node-${conn.targetId}`);
                     if (!targetElement) {
                         console.log('🧹 Removing connection to deleted target node:', conn.targetId);
@@ -1084,6 +1160,7 @@ try {
         function drawCommentConnection(commentNodeId, targetNodeId, connectionId) {
             console.log('🎨 Drawing comment connection:', commentNodeId, '->', targetNodeId, 'ID:', connectionId);
             
+            // Check if elements exist before proceeding
             const commentElement = document.getElementById(`node-${commentNodeId}`);
             const targetElement = document.getElementById(`node-${targetNodeId}`);
             
@@ -1107,6 +1184,12 @@ try {
             }
             
             console.log('✅ Drawflow container found');
+            
+            // Check if elements are still in the DOM and visible
+            if (!commentElement.isConnected || !targetElement.isConnected) {
+                console.log('⚠️ Elements not connected to DOM, skipping connection draw');
+                return;
+            }
             
             // Calculate positions (center of each node)
             const commentRect = commentElement.getBoundingClientRect();
@@ -2463,8 +2546,17 @@ try {
                         
                         // Restore comment connections from saved data
                         if (diagramData.commentConnections) {
-                            window.commentConnections = diagramData.commentConnections;
-                            log(`💬 Loaded ${Object.keys(diagramData.commentConnections).length} comment connection groups`);
+                            // Validate that commentConnections is an object, not an array
+                            if (Array.isArray(diagramData.commentConnections)) {
+                                console.log('⚠️ Detected corrupted commentConnections array in saved data, resetting');
+                                window.commentConnections = {};
+                            } else if (typeof diagramData.commentConnections === 'object') {
+                                window.commentConnections = diagramData.commentConnections;
+                                log(`💬 Loaded ${Object.keys(diagramData.commentConnections).length} comment connection groups`);
+                            } else {
+                                console.log('⚠️ Invalid commentConnections format in saved data, resetting');
+                                window.commentConnections = {};
+                            }
                         } else {
                             window.commentConnections = {};
                         }
@@ -2510,12 +2602,21 @@ try {
             if (!editor) return;
             
             if (confirm('Are you sure you want to clear the entire diagram? This action cannot be undone.')) {
+                // Clear the editor
                 editor.clear();
                 nodeCounter = 1;
                 
-                // Clear comment connections
+                // Clear comment connections data
                 window.commentConnections = {};
+                
+                // Remove all comment connection visual elements
                 document.querySelectorAll('.comment-connection').forEach(el => el.remove());
+                
+                // Cancel any pending comment connection animation frames
+                if (window.commentConnectionAnimationFrame) {
+                    cancelAnimationFrame(window.commentConnectionAnimationFrame);
+                    window.commentConnectionAnimationFrame = null;
+                }
                 
                 log('🗑️ Diagram cleared');
                 autoSave();
