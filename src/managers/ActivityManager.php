@@ -301,6 +301,20 @@ class ActivityManager {
             }
         }
         
+        // Handle application_type_id field specially - convert IDs to type names
+        if ($field_name === 'application_type_id') {
+            $old_name = $this->convertApplicationTypeIdToName($old_value);
+            $new_name = $this->convertApplicationTypeIdToName($new_value);
+            
+            if (empty($old_value)) {
+                return "application_type_id set to: " . $new_name;
+            } elseif (empty($new_value)) {
+                return "application_type_id cleared (was: " . $old_name . ")";
+            } else {
+                return "application_type_id changed from \"" . $old_name . "\" to \"" . $new_name . "\"";
+            }
+        }
+        
         // For all other fields, use standard format
         if (empty($old_value)) {
             return $field_name . " set to: " . $new_value;
@@ -342,6 +356,31 @@ class ActivityManager {
         } catch (Exception $e) {
             // If something goes wrong, return the original IDs
             return $ids_string;
+        }
+    }
+    
+    /**
+     * Convert application type ID to type name
+     */
+    private function convertApplicationTypeIdToName($type_id) {
+        if (empty($type_id) || !is_numeric($type_id)) {
+            return $type_id ?: 'Not specified';
+        }
+        
+        try {
+            $sql = "SELECT type_name FROM application_types WHERE id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$type_id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($result) {
+                return $result['type_name'];
+            } else {
+                return "Unknown type (ID: $type_id)";
+            }
+        } catch (Exception $e) {
+            // If something goes wrong, return the original ID
+            return "Type ID: $type_id";
         }
     }
     
