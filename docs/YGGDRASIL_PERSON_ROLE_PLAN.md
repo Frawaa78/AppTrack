@@ -49,64 +49,85 @@ is_active, password_hash, role (admin/editor/viewer), created_at
 
 ### Yggdrasil Digital Organisasjonsmodell
 
-#### Toppledelse
+### Fagmessige Kommunikasjonslinjer (Ikke Hierarkiske)
+
 ```yaml
-Digital Leadership:
-  - Ander Bay Næss: AOM (Yggdrasil Digital)
-  - Lars Erik Ydstie: Digital Execution Manager  
-  - Rangval Soldal: PreOps Digital Manager
-  - Tina Ødegård: Business Support
-```
+Faglig Struktur i Yggdrasil Digital:
 
-#### 8 Porteføljer med Rollestruktur
-```yaml
-Porteføljer:
-  - Maintenance & Integrity
-  - Barrier & Safety Management  
-  - Integrated Planning
-  - Integrated Operations
-  - Production Optimization & Energy Management
-  - LCI & Engineering
-  - Digital Twin/Virtual Plant
-  - OT/IT Infrastructure
+Hovedledelse (Strategisk nivå):
+  - Ander Bay Næss (AOM): Overordnet digital strategi
+  - Lars Erik Ydstie (Digital Execution Manager): Utførelse og koordinering
+  - Rangval Soldal (PreOps Digital Manager): Pre-operativ digital aktivitet
+  - Tina Ødegård (Business Support): Forretningsstøtte
 
-Roller per Portefølje:
-  - Porteføljeeier: Overordnet ansvar
-  - Digital Portfolio Manager (DPM): Styrer digitale initiativer
-  - Fagansvarlig Lead: Forretningsstøtte
+Porteføljenivå (8 fagområder):
+  Digital Portfolio Manager (DPM):
+    - Kommuniserer med: Porteføljeeier, andre DPMer, hovedledelse
+    - Koordinerer: Digitale initiativer i sitt fagområde
+    - Ansvar: Digital strategi og prioritering
+  
+  Fagansvarlig Lead:
+    - Kommuniserer med: DPM, prosjektledere, fageksperter
+    - Koordinerer: Faglig kvalitet og best practices
+    - Ansvar: Faglig ledelse og kompetanse
 
-Roller per Prosjekt/Initiativ:
-  - Project Owner: Prosjekteier
-  - Teknisk Prosjektleder/Lead: Teknisk ledelse
-  - Digital Prosjektleder/Koordinator: Digital koordinering
-  - Løsningsarkitekt: Arkitektur og utførelse
-  - Forretningsanalytiker: Business analysis
-  - Utvikler: Utvikling
-  - Informasjonsarkitekt: Informasjonsarkitektur
-  - Cyber Security: Sikkerhet
-  - Fagekspert (SME): Domenekunnskap
+Prosjekt/Initiativ-nivå (Faglig utførelse):
+  Project Owner:
+    - Kommuniserer med: DPM, prosjektleder, stakeholders
+    - Ansvar: Forretningsresultat og beslutninger
+  
+  Teknisk Prosjektleder:
+    - Kommuniserer med: Project Owner, team, andre prosjektledere
+    - Koordinerer: Teknisk utførelse og leveranser
+    - Ansvar: Prosjektgjennomføring og kvalitet
+  
+  Digital Koordinator:
+    - Kommuniserer med: Prosjektleder, DPM, andre koordinatorer
+    - Koordinerer: Digital transformasjon og alignment
+    - Ansvar: Digital coherence på tvers
 
-ASM Roller:
-  - Application Service Manager: Eier drift-porteføljer
+Fagteam-nivå (Spesialisert arbeid):
+  Løsningsarkitekt:
+    - Kommuniserer med: Prosjektleder, utviklere, andre arkitekter
+    - Ansvar: Teknisk design og arkitektur
+  
+  Forretningsanalytiker:
+    - Kommuniserer med: Project Owner, prosjektleder, brukere
+    - Ansvar: Krav og forretningsprosesser
+  
+  Informasjonsarkitekt:
+    - Kommuniserer med: Løsningsarkitekt, forretningsanalytiker
+    - Ansvar: Datamodeller og informasjonsflyt
+  
+  Subject Matter Expert (SME):
+    - Kommuniserer med: Prosjektteam, andre SMEer, fagansvarlig
+    - Ansvar: Domenekunnskap og faglig validering
+  
+  Utvikler:
+    - Kommuniserer med: Løsningsarkitekt, prosjektleder
+    - Ansvar: Koding og implementering
+
+Cross-cutting Roller:
+  Cyber Security Specialist:
+    - Kommuniserer med: Alle nivåer basert på sikkerhetsbehov
+    - Ansvar: Sikkerhet på tvers av initiativer
 ```
 
 ---
 
 ## 💾 Database Design for Ny Struktur
 
-### 1. Utvidet Brukertabell
+### 1. Forenklet Brukertabell (Fagmessig Fokus)
 ```sql
--- Utvide eksisterende users-tabell
-ALTER TABLE users ADD COLUMN employee_id VARCHAR(20) NULL;           -- Ansattnummer
-ALTER TABLE users ADD COLUMN department VARCHAR(100) NULL;           -- Avdeling
-ALTER TABLE users ADD COLUMN title VARCHAR(150) NULL;                -- Stillingstittel
-ALTER TABLE users ADD COLUMN manager_id INT NULL;                    -- Rapporterer til
-ALTER TABLE users ADD COLUMN office_location VARCHAR(100) NULL;      -- Kontorlokasjon
-ALTER TABLE users ADD COLUMN cost_center VARCHAR(20) NULL;           -- Kostnadssenter
-ALTER TABLE users ADD COLUMN is_yggdrasil_member BOOLEAN DEFAULT FALSE; -- Yggdrasil-medlem
+-- Utvide eksisterende users-tabell - kun faglig relevante felt
+ALTER TABLE users ADD COLUMN professional_title VARCHAR(150) NULL;   -- Faglig tittel (Solution Architect, etc.)
+ALTER TABLE users ADD COLUMN expertise_areas TEXT NULL;              -- Kompetanseområder (JSON eller kommaseparert)
+ALTER TABLE users ADD COLUMN yggdrasil_member BOOLEAN DEFAULT FALSE; -- Aktiv i Yggdrasil Digital
+ALTER TABLE users ADD COLUMN preferred_contact VARCHAR(50) NULL;     -- Teams, telefon, etc.
+ALTER TABLE users ADD COLUMN bio TEXT NULL;                          -- Faglig bakgrunn/erfaring
 
--- Foreign key for hierarki
-ALTER TABLE users ADD FOREIGN KEY (manager_id) REFERENCES users(id);
+-- Ikke nødvendig: employee_id, department, manager_id, office_location, cost_center
+-- Rapportering skjer gjennom prosjekt/initiativ-roller
 ```
 
 ### 2. Organisasjonsstruktur Tabeller
@@ -184,49 +205,92 @@ CREATE TABLE role_definitions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Populer med standard roller
+-- Populate with standard roles (English for database)
 INSERT INTO role_definitions (role_name, role_category, description, responsibilities) VALUES
 -- Yggdrasil Leadership
-('AOM', 'yggdrasil_leadership', 'Application Operations Manager', 'Overordnet ansvar for Yggdrasil Digital organisasjonen'),
-('Digital Execution Manager', 'yggdrasil_leadership', 'Digital Execution Manager', 'Utførelse og koordinering av digital strategi'),
-('PreOps Digital Manager', 'yggdrasil_leadership', 'PreOps Digital Manager', 'Ansvarlig for pre-operativ digital aktivitet'),
-('Business Support', 'yggdrasil_leadership', 'Business Support', 'Forretningsstøtte for ledelse'),
+('AOM', 'yggdrasil_leadership', 'Application Operations Manager', 'Overall responsibility for Yggdrasil Digital organization'),
+('Digital Execution Manager', 'yggdrasil_leadership', 'Digital Execution Manager', 'Execution and coordination of digital strategy'),
+('PreOps Digital Manager', 'yggdrasil_leadership', 'PreOps Digital Manager', 'Responsible for pre-operational digital activities'),
+('Business Support', 'yggdrasil_leadership', 'Business Support', 'Business support for leadership'),
 
 -- Portfolio Management
-('Portfolio Owner', 'portfolio_management', 'Porteføljeeier', 'Overordnet ansvar for portefølje'),
-('Digital Portfolio Manager', 'portfolio_management', 'Digital Portfolio Manager', 'Styrer digitale initiativer i portefølje'),
-('Lead Expert', 'portfolio_management', 'Fagansvarlig Lead', 'Forretningsstøtte på porteføljenivå'),
+('Portfolio Owner', 'portfolio_management', 'Portfolio Owner', 'Overall responsibility for portfolio'),
+('Digital Portfolio Manager', 'portfolio_management', 'Digital Portfolio Manager', 'Manages digital initiatives in portfolio'),
+('Lead Expert', 'portfolio_management', 'Lead Expert', 'Business support at portfolio level'),
 
 -- Project Execution
-('Project Owner', 'project_execution', 'Prosjekteier', 'Prosjektansvar og eierskap'),
-('Technical Project Lead', 'project_execution', 'Teknisk Prosjektleder', 'Teknisk prosjektledelse'),
-('Digital Project Coordinator', 'project_execution', 'Digital Prosjektkoordinator', 'Digital koordinering'),
-('Solution Architect', 'project_execution', 'Løsningsarkitekt', 'Arkitektur og løsningsdesign'),
-('Business Analyst', 'specialist', 'Forretningsanalytiker', 'Forretningsanalyse og krav'),
-('Developer', 'specialist', 'Utvikler', 'Systemutvikling'),
-('Information Architect', 'specialist', 'Informasjonsarkitekt', 'Informasjonsarkitektur'),
-('Cyber Security Specialist', 'specialist', 'Cyber Security', 'Sikkerhetsspesialist'),
-('Subject Matter Expert', 'specialist', 'Fagekspert (SME)', 'Domenespesifikk ekspertise'),
+('Project Owner', 'project_execution', 'Project Owner', 'Project responsibility and ownership'),
+('Technical Project Lead', 'project_execution', 'Technical Project Lead', 'Technical project leadership'),
+('Digital Project Coordinator', 'project_execution', 'Digital Project Coordinator', 'Digital coordination'),
+('Solution Architect', 'project_execution', 'Solution Architect', 'Architecture and solution design'),
+('Business Analyst', 'specialist', 'Business Analyst', 'Business analysis and requirements'),
+('Developer', 'specialist', 'Developer', 'System development'),
+('Information Architect', 'specialist', 'Information Architect', 'Information architecture'),
+('Cyber Security Specialist', 'specialist', 'Cyber Security Specialist', 'Security specialist'),
+('Subject Matter Expert', 'specialist', 'Subject Matter Expert', 'Domain-specific expertise'),
 
 -- ASM Operations
-('Application Service Manager', 'asm_operations', 'Application Service Manager', 'Ansvarlig for applikasjonsdrift'),
-('Deputy ASM', 'asm_operations', 'Deputy ASM', 'Stedfortreder for ASM');
+('Application Service Manager', 'asm_operations', 'Application Service Manager', 'Responsible for application operations'),
+('Deputy ASM', 'asm_operations', 'Deputy ASM', 'Deputy for ASM');
 ```
 
-### 4. Person-til-Rolle Mapping System
+### 4. Faglig Kommunikasjon og Samarbeid
 ```sql
--- Applikasjon-til-person roller
+-- Communication lines based on professional work (not hierarchical reporting)
+CREATE TABLE professional_collaborations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    from_user_id INT NOT NULL,                 -- Person collaborating
+    to_user_id INT NOT NULL,                   -- Person being collaborated with
+    collaboration_type ENUM(
+        'reports_to',                          -- Professional reporting (project-based)
+        'coordinates_with',                    -- Coordination at same level
+        'consults_with',                       -- Professional advisory
+        'collaborates_with',                   -- Close collaboration
+        'escalates_to'                         -- Escalation for decisions
+    ) NOT NULL,
+    context_type ENUM('initiative', 'portfolio', 'application', 'general') NOT NULL,
+    context_id INT NULL,                       -- ID to initiative, portfolio or app
+    relationship_strength ENUM('occasional', 'regular', 'frequent', 'daily') DEFAULT 'regular',
+    notes TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (from_user_id) REFERENCES users(id),
+    FOREIGN KEY (to_user_id) REFERENCES users(id),
+    
+    UNIQUE KEY unique_collaboration (from_user_id, to_user_id, collaboration_type, context_type, context_id)
+);
+
+-- Expertise areas and competencies (English for database)
+CREATE TABLE user_expertise (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    expertise_area VARCHAR(100) NOT NULL,     -- e.g. "Production Optimization", "Safety Systems"
+    proficiency_level ENUM('beginner', 'intermediate', 'advanced', 'expert') NOT NULL,
+    years_experience INT DEFAULT 0,
+    certification VARCHAR(255) NULL,          -- Certifications
+    is_primary_expertise BOOLEAN DEFAULT FALSE, -- Primary competency
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_expertise (user_id, expertise_area)
+);
+```
+
+### 5. Person-til-Rolle Mapping (Faglig Basert)
+```sql
+-- Application-to-person roles (professional connection)
 CREATE TABLE application_person_roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     application_id INT NOT NULL,
     user_id INT NOT NULL,
     role_definition_id INT NOT NULL,
-    initiative_id INT NULL,                    -- Kobling til prosjekt/initiativ
-    is_primary BOOLEAN DEFAULT FALSE,          -- Primær person for denne rollen
+    initiative_id INT NULL,                    -- Connection to project/initiative
+    is_lead_role BOOLEAN DEFAULT FALSE,        -- Leadership responsibility for this role
     start_date DATE DEFAULT (CURRENT_DATE),
     end_date DATE NULL,
-    allocation_percentage DECIMAL(5,2) DEFAULT 100.00, -- Ressursallokering
-    notes TEXT,
+    allocation_percentage DECIMAL(5,2) DEFAULT 100.00, -- Resource allocation
+    collaboration_notes TEXT,                  -- How the person collaborates
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INT,
     
@@ -239,17 +303,17 @@ CREATE TABLE application_person_roles (
     UNIQUE KEY unique_app_user_role (application_id, user_id, role_definition_id, start_date)
 );
 
--- Initiativ-til-person roller (for team-oversikt)
+-- Initiative-to-person roles (project team)
 CREATE TABLE initiative_person_roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     initiative_id INT NOT NULL,
     user_id INT NOT NULL,
     role_definition_id INT NOT NULL,
-    is_lead BOOLEAN DEFAULT FALSE,             -- Lederrolle i prosjektet
+    is_team_lead BOOLEAN DEFAULT FALSE,        -- Team leader for this role
     allocation_percentage DECIMAL(5,2) DEFAULT 100.00,
     start_date DATE DEFAULT (CURRENT_DATE),
     end_date DATE NULL,
-    notes TEXT,
+    responsibility_areas TEXT,                 -- Specific areas of responsibility
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INT,
     
@@ -262,9 +326,9 @@ CREATE TABLE initiative_person_roles (
 );
 ```
 
-### 5. Modifisere applications-tabellen
+### 6. Modifisere applications-tabellen
 ```sql
--- Legge til nye felt og deprecate gamle
+-- Add new fields and deprecate old ones
 ALTER TABLE applications ADD COLUMN primary_initiative_id INT NULL;
 ALTER TABLE applications ADD COLUMN asm_portfolio_id INT NULL;
 ALTER TABLE applications ADD COLUMN yggdrasil_portfolio_id INT NULL;
@@ -274,13 +338,13 @@ ALTER TABLE applications ADD FOREIGN KEY (primary_initiative_id) REFERENCES yggd
 ALTER TABLE applications ADD FOREIGN KEY (asm_portfolio_id) REFERENCES asm_portfolios(id);
 ALTER TABLE applications ADD FOREIGN KEY (yggdrasil_portfolio_id) REFERENCES yggdrasil_portfolios(id);
 
--- Deprecate gamle felt (beholdes for bakoverkompatibilitet)
+-- Deprecate old fields (kept for backward compatibility)
 ALTER TABLE applications ADD COLUMN legacy_assigned_to VARCHAR(100) DEFAULT NULL COMMENT 'Deprecated - use application_person_roles';
 ALTER TABLE applications ADD COLUMN legacy_project_manager VARCHAR(100) DEFAULT NULL COMMENT 'Deprecated - use application_person_roles';
 ALTER TABLE applications ADD COLUMN legacy_product_owner VARCHAR(100) DEFAULT NULL COMMENT 'Deprecated - use application_person_roles';
 ALTER TABLE applications ADD COLUMN legacy_delivery_responsible VARCHAR(100) DEFAULT NULL COMMENT 'Deprecated - use application_person_roles';
 
--- Migrer eksisterende data
+-- Migrate existing data
 UPDATE applications SET 
     legacy_assigned_to = assigned_to,
     legacy_project_manager = project_manager,
@@ -324,31 +388,31 @@ UPDATE applications SET
 
 **Data Migration Strategy:**
 ```sql
--- Migrer eksisterende personer til strukturert format
--- 1. Lag brukere basert på eksisterende navn-felt
-INSERT INTO users (email, display_name, title, is_yggdrasil_member)
+-- Migrate existing persons to structured format
+-- 1. Create users based on existing name fields
+INSERT INTO users (email, display_name, professional_title, yggdrasil_member)
 SELECT DISTINCT 
     LOWER(CONCAT(REPLACE(project_manager, ' ', '.'), '@akerbp.com')) as email,
     project_manager as display_name,
-    'Project Manager' as title,
-    TRUE as is_yggdrasil_member
+    'Project Manager' as professional_title,
+    TRUE as yggdrasil_member
 FROM applications 
 WHERE project_manager IS NOT NULL AND project_manager != '';
 
--- 2. Opprett application_person_roles basert på eksisterende data
-INSERT INTO application_person_roles (application_id, user_id, role_definition_id, is_primary)
+-- 2. Create application_person_roles based on existing data
+INSERT INTO application_person_roles (application_id, user_id, role_definition_id, is_lead_role)
 SELECT 
     a.id as application_id,
     u.id as user_id,
     rd.id as role_definition_id,
-    TRUE as is_primary
+    TRUE as is_lead_role
 FROM applications a
 JOIN users u ON u.display_name = a.project_manager
 JOIN role_definitions rd ON rd.role_name = 'Technical Project Lead'
 WHERE a.project_manager IS NOT NULL AND a.project_manager != '';
 ```
 
-**Nye API Endepunkter:**
+**New API Endpoints:**
 ```php
 // api/yggdrasil/portfolios.php - Portfolio management
 // api/yggdrasil/initiatives.php - Initiative/project management  
@@ -360,11 +424,11 @@ WHERE a.project_manager IS NOT NULL AND a.project_manager != '';
 ### Fase 3: UI Components (Uke 5-6)
 **Mål**: Nye brukergrensesnitt for person- og rollehåndtering
 
-**Nye UI Komponenter:**
+**New UI Components:**
 
 1. **Initiative/Project Selector**
 ```html
-<!-- Erstatt "Delivery Responsible" med Initiative dropdown -->
+<!-- Replace "Delivery Responsible" with Initiative dropdown -->
 <div class="form-group-horizontal">
     <label for="primaryInitiative" class="form-label">Initiative/Project</label>
     <select class="form-select" id="primaryInitiative" name="primary_initiative_id">
@@ -376,7 +440,7 @@ WHERE a.project_manager IS NOT NULL AND a.project_manager != '';
 
 2. **Person Role Assignment Widget**
 ```html
-<!-- Ny seksjon for rollehåndtering -->
+<!-- New section for role management -->
 <div class="card mt-4">
     <div class="card-header">
         <h6>Project Team & Roles</h6>
@@ -394,7 +458,7 @@ WHERE a.project_manager IS NOT NULL AND a.project_manager != '';
 
 3. **Portfolio Hierarchy Visualization**
 ```html
-<!-- Portfolio struktur visning -->
+<!-- Portfolio structure display -->
 <div class="portfolio-hierarchy">
     <div class="portfolio-level">
         <strong>Portfolio:</strong> <span class="portfolio-name">Integrated Operations</span>
@@ -446,26 +510,61 @@ WHERE a.project_manager IS NOT NULL AND a.project_manager != '';
 
 ## 📋 Datamodell Eksempler
 
-### Portefølje Setup
+### Fagmessig Portefølje Setup
 ```sql
 -- Eksempel data for Integrated Operations portefølje
 INSERT INTO yggdrasil_portfolios (name, description) VALUES 
-('Integrated Operations', 'Portefølje for integrerte operasjoner og produksjonsoptimering');
+('Integrated Operations', 'Fagportefølje for integrerte operasjoner og produksjonsoptimering');
 
--- Sett roller for porteføljen
-INSERT INTO users (email, display_name, title, is_yggdrasil_member) VALUES
-('john.doe@akerbp.com', 'John Doe', 'Portfolio Owner - Integrated Operations', TRUE),
-('jane.smith@akerbp.com', 'Jane Smith', 'Digital Portfolio Manager', TRUE),
-('eric.hansen@akerbp.com', 'Eric Hansen', 'Lead Expert - Operations', TRUE);
+-- Set professional roles for the portfolio (not administrative positions)
+INSERT INTO users (email, display_name, professional_title, yggdrasil_member, expertise_areas) VALUES
+('john.doe@akerbp.com', 'John Doe', 'Portfolio Owner - Integrated Operations', TRUE, 'Production Systems,Operations Management'),
+('jane.smith@akerbp.com', 'Jane Smith', 'Digital Portfolio Manager', TRUE, 'Digital Transformation,Process Optimization'),
+('eric.hansen@akerbp.com', 'Eric Hansen', 'Lead Expert - Operations', TRUE, 'Operations Excellence,Maintenance Systems');
 
 UPDATE yggdrasil_portfolios SET 
     portfolio_owner_id = (SELECT id FROM users WHERE email = 'john.doe@akerbp.com'),
     digital_portfolio_manager_id = (SELECT id FROM users WHERE email = 'jane.smith@akerbp.com'),
     lead_expert_id = (SELECT id FROM users WHERE email = 'eric.hansen@akerbp.com')
 WHERE name = 'Integrated Operations';
+
+-- Add expertise areas
+INSERT INTO user_expertise (user_id, expertise_area, proficiency_level, is_primary_expertise) VALUES
+((SELECT id FROM users WHERE email = 'john.doe@akerbp.com'), 'Production Systems', 'expert', TRUE),
+((SELECT id FROM users WHERE email = 'jane.smith@akerbp.com'), 'Digital Transformation', 'expert', TRUE),
+((SELECT id FROM users WHERE email = 'eric.hansen@akerbp.com'), 'Operations Excellence', 'expert', TRUE);
 ```
 
-### Initiativ med Team
+### Faglig Samarbeid og Kommunikasjon
+```sql
+-- Professional communication lines for the project
+-- SME reports professionally to project lead
+INSERT INTO professional_collaborations (from_user_id, to_user_id, collaboration_type, context_type, context_id) VALUES
+((SELECT id FROM users WHERE email = 'sme.operations@akerbp.com'),
+ (SELECT id FROM users WHERE email = 'project.lead@akerbp.com'),
+ 'reports_to', 'initiative', 
+ (SELECT id FROM yggdrasil_initiatives WHERE name = 'Production Optimization Platform'));
+
+-- Solution architect coordinates with business analyst
+INSERT INTO professional_collaborations (from_user_id, to_user_id, collaboration_type, context_type, context_id) VALUES
+((SELECT id FROM users WHERE email = 'solution.architect@akerbp.com'),
+ (SELECT id FROM users WHERE email = 'business.analyst@akerbp.com'),
+ 'collaborates_with', 'initiative', 
+ (SELECT id FROM yggdrasil_initiatives WHERE name = 'Production Optimization Platform'));
+
+-- Project lead coordinates with other project leads
+INSERT INTO professional_collaborations (from_user_id, to_user_id, collaboration_type, context_type, context_id) VALUES
+((SELECT id FROM users WHERE email = 'project.lead@akerbp.com'),
+ (SELECT id FROM users WHERE email = 'other.project.lead@akerbp.com'),
+ 'coordinates_with', 'general', NULL);
+
+-- Digital Portfolio Manager consults with leadership
+INSERT INTO professional_collaborations (from_user_id, to_user_id, collaboration_type, context_type, context_id) VALUES
+((SELECT id FROM users WHERE email = 'jane.smith@akerbp.com'),
+ (SELECT id FROM users WHERE email = 'lars.erik@akerbp.com'),
+ 'escalates_to', 'portfolio', 
+ (SELECT id FROM yggdrasil_portfolios WHERE name = 'Integrated Operations'));
+```
 ```sql
 -- Opprett initiativ i porteføljen
 INSERT INTO yggdrasil_initiatives (name, description, portfolio_id, initiative_type) VALUES
@@ -479,7 +578,34 @@ INSERT INTO initiative_person_roles (initiative_id, user_id, role_definition_id,
  (SELECT id FROM role_definitions WHERE role_name = 'Project Owner'), TRUE);
 ```
 
-### Applikasjon med Komplett Team
+### Initiativ med Fagteam
+```sql
+-- Create initiative in the portfolio
+INSERT INTO yggdrasil_initiatives (name, description, portfolio_id, initiative_type) VALUES
+('Production Optimization Platform', 'Digital platform for production optimization', 
+ (SELECT id FROM yggdrasil_portfolios WHERE name = 'Integrated Operations'), 'project');
+
+-- Set professional team (not hierarchical reporting)
+INSERT INTO initiative_person_roles (initiative_id, user_id, role_definition_id, is_team_lead, responsibility_areas) VALUES
+-- Project Owner (professional leader for business)
+((SELECT id FROM yggdrasil_initiatives WHERE name = 'Production Optimization Platform'),
+ (SELECT id FROM users WHERE email = 'project.owner@akerbp.com'),
+ (SELECT id FROM role_definitions WHERE role_name = 'Project Owner'), TRUE, 'Business objectives, stakeholder management'),
+
+-- Technical Project Lead (professional leader for technical)
+((SELECT id FROM yggdrasil_initiatives WHERE name = 'Production Optimization Platform'),
+ (SELECT id FROM users WHERE email = 'tech.lead@akerbp.com'),
+ (SELECT id FROM role_definitions WHERE role_name = 'Technical Project Lead'), TRUE, 'Technical delivery, team coordination'),
+
+-- Subject matter experts and specialists
+((SELECT id FROM yggdrasil_initiatives WHERE name = 'Production Optimization Platform'),
+ (SELECT id FROM users WHERE email = 'solution.architect@akerbp.com'),
+ (SELECT id FROM role_definitions WHERE role_name = 'Solution Architect'), FALSE, 'Technical architecture, integration design'),
+
+((SELECT id FROM yggdrasil_initiatives WHERE name = 'Production Optimization Platform'),
+ (SELECT id FROM users WHERE email = 'business.analyst@akerbp.com'),
+ (SELECT id FROM role_definitions WHERE role_name = 'Business Analyst'), FALSE, 'Requirements analysis, process mapping');
+```
 ```sql
 -- Koble applikasjon til initiativ og sett team
 UPDATE applications SET 
@@ -497,17 +623,46 @@ INSERT INTO application_person_roles (application_id, user_id, role_definition_i
  (SELECT id FROM role_definitions WHERE role_name = 'Business Analyst'), TRUE);
 ```
 
+### Applikasjon med Fagroller
+```sql
+-- Connect application to initiative and professional portfolio
+UPDATE applications SET 
+    primary_initiative_id = (SELECT id FROM yggdrasil_initiatives WHERE name = 'Production Optimization Platform'),
+    yggdrasil_portfolio_id = (SELECT id FROM yggdrasil_portfolios WHERE name = 'Integrated Operations')
+WHERE id = 123;
+
+-- Set professional roles for the application (based on work, not hierarchy)
+INSERT INTO application_person_roles (application_id, user_id, role_definition_id, is_lead_role, collaboration_notes) VALUES
+-- Solution architect leading technical design
+(123, (SELECT id FROM users WHERE email = 'solution.architect@akerbp.com'), 
+ (SELECT id FROM role_definitions WHERE role_name = 'Solution Architect'), TRUE, 
+ 'Leads technical design, coordinates with developers and business analyst'),
+
+-- Developers implementing solution
+(123, (SELECT id FROM users WHERE email = 'developer1@akerbp.com'),
+ (SELECT id FROM role_definitions WHERE role_name = 'Developer'), FALSE,
+ 'Frontend development, works closely with solution architect'),
+
+-- Business analyst ensuring business requirements
+(123, (SELECT id FROM users WHERE email = 'business.analyst@akerbp.com'),
+ (SELECT id FROM role_definitions WHERE role_name = 'Business Analyst'), TRUE,
+ 'Requirements management, user story definition'),
+
+-- SME contributing domain knowledge
+(123, (SELECT id FROM users WHERE email = 'operations.sme@akerbp.com'),
+ (SELECT id FROM role_definitions WHERE role_name = 'Subject Matter Expert'), FALSE,
+ 'Production expertise, validates solutions against operational needs');
+```
+
 ---
 
 ## 🔍 Funksjonsendringer i AppTrack
-
-### App Form Endringer
-**Erstatt eksisterende felt:**
+**Replace existing fields:**
 ```php
-// Istedenfor fritekst-felt:
+// Instead of free text fields:
 // <input name="delivery_responsible" type="text">
 
-// Ny strukturert tilnærming:
+// New structured approach:
 ?>
 <div class="form-group-horizontal">
     <label for="primaryInitiative" class="form-label">Initiative/Project</label>
@@ -542,7 +697,7 @@ INSERT INTO application_person_roles (application_id, user_id, role_definition_i
 
 ### Dashboard Filters Enhancement
 ```php
-// Nye filtreringsalternativer i dashboard
+// New filtering options in dashboard
 $filters = [
     'show_mine_only' => [
         'name' => 'Show My Applications',
@@ -559,23 +714,28 @@ $filters = [
 ];
 ```
 
-### Nye Views og Reports
+### Nye Views og Reports (Faglig Fokus)
 ```php
-// Organisasjonsoversikt
-public function getOrganizationHierarchy() {
+// Professional organization overview (not administrative)
+public function getYggdrasilProfessionalStructure() {
     $sql = "
     SELECT 
         yp.name as portfolio_name,
         yp.description as portfolio_description,
         po.display_name as portfolio_owner,
+        po.professional_title as owner_expertise,
         dpm.display_name as digital_portfolio_manager,
+        dpm.professional_title as dpm_expertise,
         le.display_name as lead_expert,
-        COUNT(yi.id) as initiative_count,
-        COUNT(a.id) as application_count
+        le.professional_title as expert_area,
+        COUNT(DISTINCT yi.id) as active_initiatives,
+        COUNT(DISTINCT a.id) as supported_applications,
+        GROUP_CONCAT(DISTINCT ue.expertise_area) as portfolio_expertise_areas
     FROM yggdrasil_portfolios yp
     LEFT JOIN users po ON yp.portfolio_owner_id = po.id
     LEFT JOIN users dpm ON yp.digital_portfolio_manager_id = dpm.id  
     LEFT JOIN users le ON yp.lead_expert_id = le.id
+    LEFT JOIN user_expertise ue ON (ue.user_id = po.id OR ue.user_id = dpm.id OR ue.user_id = le.id)
     LEFT JOIN yggdrasil_initiatives yi ON yp.id = yi.portfolio_id AND yi.is_active = 1
     LEFT JOIN applications a ON yp.id = a.yggdrasil_portfolio_id
     WHERE yp.is_active = 1
@@ -583,23 +743,28 @@ public function getOrganizationHierarchy() {
     ORDER BY yp.name";
 }
 
-// Resource allocation oversikt
-public function getResourceAllocation($portfolio_id = null) {
+// Professional resource allocation (who works on what)
+public function getProfessionalResourceAllocation($portfolio_id = null) {
     $sql = "
     SELECT 
         u.display_name,
-        u.title,
-        rd.role_name,
+        u.professional_title,
+        GROUP_CONCAT(DISTINCT ue.expertise_area) as expertise_areas,
+        rd.role_name as current_role,
         yi.name as initiative_name,
         a.short_description as application_name,
         apr.allocation_percentage,
-        apr.start_date,
-        apr.end_date
+        apr.collaboration_notes,
+        pc.collaboration_type,
+        collaborator.display_name as collaborates_with
     FROM application_person_roles apr
     JOIN users u ON apr.user_id = u.id
     JOIN role_definitions rd ON apr.role_definition_id = rd.id
     JOIN applications a ON apr.application_id = a.id
     LEFT JOIN yggdrasil_initiatives yi ON apr.initiative_id = yi.id
+    LEFT JOIN user_expertise ue ON u.id = ue.user_id AND ue.is_primary_expertise = 1
+    LEFT JOIN professional_collaborations pc ON u.id = pc.from_user_id
+    LEFT JOIN users collaborator ON pc.to_user_id = collaborator.id
     WHERE apr.end_date IS NULL OR apr.end_date > CURRENT_DATE";
     
     if ($portfolio_id) {
@@ -607,6 +772,38 @@ public function getResourceAllocation($portfolio_id = null) {
     }
     
     $sql .= " ORDER BY u.display_name, apr.start_date";
+}
+
+// Professional collaboration network
+public function getProfessionalCollaborationNetwork($user_id = null) {
+    $sql = "
+    SELECT 
+        from_user.display_name as person,
+        from_user.professional_title as person_role,
+        pc.collaboration_type,
+        to_user.display_name as collaborates_with,
+        to_user.professional_title as collaborator_role,
+        pc.context_type,
+        pc.relationship_strength,
+        CASE 
+            WHEN pc.context_type = 'initiative' THEN yi.name
+            WHEN pc.context_type = 'portfolio' THEN yp.name
+            WHEN pc.context_type = 'application' THEN a.short_description
+            ELSE 'General'
+        END as context_name
+    FROM professional_collaborations pc
+    JOIN users from_user ON pc.from_user_id = from_user.id
+    JOIN users to_user ON pc.to_user_id = to_user.id
+    LEFT JOIN yggdrasil_initiatives yi ON pc.context_type = 'initiative' AND pc.context_id = yi.id
+    LEFT JOIN yggdrasil_portfolios yp ON pc.context_type = 'portfolio' AND pc.context_id = yp.id
+    LEFT JOIN applications a ON pc.context_type = 'application' AND pc.context_id = a.id
+    WHERE pc.is_active = 1";
+    
+    if ($user_id) {
+        $sql .= " AND (pc.from_user_id = :user_id OR pc.to_user_id = :user_id)";
+    }
+    
+    $sql .= " ORDER BY from_user.display_name, pc.relationship_strength DESC";
 }
 ```
 

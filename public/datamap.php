@@ -945,8 +945,6 @@ try {
             
             menu.style.left = x + 'px';
             menu.style.top = y + 'px';
-            
-            log('📋 Context menu shown for connection');
         }
         
         // Generate submenu items for connecting comment to other nodes
@@ -2240,58 +2238,57 @@ try {
         function deleteConnection(connectionElement) {
             if (confirm('Are you sure you want to delete this connection? This action cannot be undone.')) {
                 try {
-                    // Find the connection data by examining the DOM structure
-                    // Drawflow connections have a specific structure we can identify
-                    const connectionId = connectionElement.classList[1]; // Usually connection_1, connection_2, etc.
+                    let connectionInfo = null;
                     
-                    if (connectionId) {
-                        // Remove the connection element from DOM
-                        connectionElement.remove();
-                        
-                        // Also clean up the connection data from editor's internal data structure
-                        // This is a bit complex because we need to find which nodes were connected
-                        updateConnectionDataAfterDelete();
-                        
-                        autoSave();
-                        log('🔗 Connection deleted');
+                    // Parse connection info from CSS classes
+                    // DrawFlow uses patterns like: node_in_node-2, node_out_node-1, output_1, input_1
+                    const classes = Array.from(connectionElement.classList);
+                    
+                    let fromNodeId = null;
+                    let toNodeId = null;
+                    let fromOutput = null;
+                    let toInput = null;
+                    
+                    // Extract node IDs and connection points from classes
+                    classes.forEach(className => {
+                        if (className.startsWith('node_out_node-')) {
+                            fromNodeId = className.replace('node_out_node-', '');
+                        } else if (className.startsWith('node_in_node-')) {
+                            toNodeId = className.replace('node_in_node-', '');
+                        } else if (className.startsWith('output_')) {
+                            fromOutput = className.replace('output_', '');
+                        } else if (className.startsWith('input_')) {
+                            toInput = className.replace('input_', '');
+                        }
+                    });
+                    
+                    if (fromNodeId && toNodeId && fromOutput && toInput) {
+                        connectionInfo = {
+                            fromNodeId: fromNodeId,
+                            toNodeId: toNodeId,
+                            fromOutput: 'output_' + fromOutput,
+                            toInput: 'input_' + toInput
+                        };
+                    }
+                    
+                    if (connectionInfo) {
+                        // Use DrawFlow's official API to remove the connection
+                        editor.removeSingleConnection(
+                            connectionInfo.fromNodeId, 
+                            connectionInfo.toNodeId, 
+                            connectionInfo.fromOutput, 
+                            connectionInfo.toInput
+                        );
                     } else {
-                        log('❌ Could not identify connection to delete');
+                        console.error('Could not identify connection to delete');
+                        console.error('Available classes: ' + Array.from(connectionElement.classList).join(', '));
                     }
                 } catch (error) {
-                    log('❌ Error deleting connection: ' + error.message);
+                    console.error('Error deleting connection: ' + error.message);
                 }
             }
         }
-        
-        // Clean up connection data after manual deletion
-        function updateConnectionDataAfterDelete() {
-            // This function ensures the editor's internal state matches the DOM
-            // by rebuilding the connection data from visible connections
-            if (!editor || !editor.drawflow || !editor.drawflow.drawflow || !editor.drawflow.drawflow.Home) {
-                return;
-            }
-            
-            const nodes = editor.drawflow.drawflow.Home.data || {};
-            
-            // Clear all existing connections in data
-            Object.keys(nodes).forEach(nodeId => {
-                const node = nodes[nodeId];
-                if (node.outputs) {
-                    Object.keys(node.outputs).forEach(outputKey => {
-                        node.outputs[outputKey].connections = [];
-                    });
-                }
-            });
-            
-            // Rebuild connections based on what's actually visible in DOM
-            const visibleConnections = document.querySelectorAll('.connection');
-            visibleConnections.forEach(conn => {
-                // This is a simplified approach - in a more complex scenario,
-                // you might need more sophisticated connection tracking
-                log('🔧 Rebuilding connection data from DOM');
-            });
-        }
-        
+
         // Function to update all connection positions - useful after layout changes
         function updateAllConnectionPositions() {
             if (!editor || !editor.drawflow || !editor.drawflow.drawflow || !editor.drawflow.drawflow.Home) {
