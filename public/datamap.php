@@ -2537,7 +2537,7 @@ try {
                 if (result.success && result.diagram_data) {
                     const diagramData = result.diagram_data;
                     
-                    if (editor && diagramData && diagramData.drawflow) {
+                    if (editor && diagramData && diagramData.drawflow && diagramData.drawflow.Home && diagramData.drawflow.Home.data) {
                         editor.import(diagramData);
                         const nodeCount = Object.keys(diagramData.drawflow.Home.data || {}).length;
                         
@@ -2571,8 +2571,11 @@ try {
                             
                             // FIX: Update connection positions after import
                             // This fixes the issue where connection lines don't align properly with input/output circles
-                            Object.keys(diagramData.drawflow.Home.data || {}).forEach(nodeId => {
-                                editor.updateConnectionNodes('node-' + nodeId);
+                            const nodeData = diagramData.drawflow.Home.data || {};
+                            Object.keys(nodeData).forEach(nodeId => {
+                                if (nodeData[nodeId] && nodeData[nodeId].id) {
+                                    editor.updateConnectionNodes('node-' + nodeId);
+                                }
                             });
                             
                             // Update comment connections after everything is loaded
@@ -2584,7 +2587,11 @@ try {
                         log(`📂 Loaded diagram with ${nodeCount} nodes`);
                         updateSaveStatus('saved');
                     } else {
-                        log('📂 No diagram data found - starting with empty canvas');
+                        // Handle empty or invalid diagram data
+                        log('📂 Invalid or empty diagram data - starting with empty canvas');
+                        window.commentConnections = {};
+                        nodeCounter = 1;
+                        updateSaveStatus('saved');
                     }
                 } else {
                     log('📂 No saved diagram found - starting fresh');
@@ -2616,7 +2623,11 @@ try {
                 }
                 
                 log('🗑️ Diagram cleared');
-                autoSave();
+                
+                // Force save empty diagram to ensure database has valid empty structure
+                setTimeout(() => {
+                    saveDiagram(false); // Manual save to ensure it's saved immediately
+                }, 100);
             }
         }
         
