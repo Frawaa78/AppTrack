@@ -1,0 +1,636 @@
+/* DataMap Core Styles - Refactored Version */
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.content-wrapper {
+    height: calc(100vh - 60px); /* Account for topbar */
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+}
+
+.sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    background: #f8f9fa;
+    border-right: 1px solid #ddd;
+    margin-top: 0;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-header {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 20px;
+    margin: 0;
+    box-shadow: none;
+    flex-shrink: 0;
+}
+
+.app-header button {
+    transition: all 0.2s;
+}
+
+.app-header button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.app-title {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.app-meta {
+    color: #666;
+    font-size: 14px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-left: 10px;
+}
+
+.status-badge.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-badge.development {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.archived {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.editor-section {
+    background: #fff;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.toolbar {
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    padding: 8px 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.toolbar-left {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 8px;
+    margin-right: 20px;
+}
+
+.toolbar-group:last-child {
+    margin-right: 0;
+}
+
+.toolbar-label {
+    font-weight: 500;
+    color: #666;
+    margin-right: 8px;
+    font-size: 14px;
+}
+
+.toolbar button {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.toolbar button:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.toolbar button.primary {
+    background: #4EA5D9;
+    color: white;
+    border-color: #4EA5D9;
+}
+
+.toolbar button.primary:hover {
+    background: #3d8bb3;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.auto-save-indicator {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    color: #666;
+    padding: 6px 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.auto-save-indicator i {
+    margin-right: 6px;
+}
+
+.sidebar-section {
+    background: transparent;
+    border-radius: 0;
+    margin-bottom: 0;
+    box-shadow: none;
+    border-bottom: 1px solid #ddd;
+}
+
+.sidebar-header {
+    padding: 15px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    border-radius: 0;
+}
+
+.sidebar-content {
+    padding: 10px;
+}
+
+.node-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12.6px;
+}
+
+.node-item:hover {
+    background: #e9ecef;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.node-item:last-child {
+    margin-bottom: 0;
+}
+
+.node-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.action-btn:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.action-btn.primary {
+    background: #4EA5D9;
+    color: white;
+    border-color: #4EA5D9;
+}
+
+.action-btn.primary:hover {
+    background: #3d8bb3;
+}
+
+.action-btn.danger {
+    background: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+.action-btn.danger:hover {
+    background: #c82333;
+}
+
+/* Editor and DrawFlow specific styling */
+.editor-container {
+    position: relative;
+    height: 100%;
+    min-height: 400px;
+    overflow: hidden;
+}
+
+#drawflow {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 400px;
+    position: relative;
+    background: #f8f9fa;
+    background-image: 
+        linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* REFACTORED VERSION INDICATOR */
+body[data-version="refactored"]::before {
+    content: "🔧 REFACTORED VERSION";
+    position: fixed;
+    top: 65px;
+    right: 10px;
+    background: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    z-index: 9999;
+    font-weight: bold;
+}
+
+/* DrawFlow Node Styling - Enhanced cursor management */
+.drawflow .drawflow-node,
+.drawflow-node {
+    cursor: move !important; /* Move cursor for dragging nodes - force override */
+}
+
+.drawflow .drawflow-node.dragging,
+.drawflow-node.dragging {
+    cursor: move !important; /* Move cursor while dragging - force override */
+}
+
+.drawflow .drawflow-node-content,
+.drawflow-node-content {
+    position: relative;
+    background: white;
+    border: 2px solid #4EA5D9;
+    border-radius: 8px;
+    padding: 12px;
+    min-width: 150px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    cursor: move !important; /* Move cursor for node content - force override */
+}
+
+/* All child elements within nodes should inherit move cursor unless specifically overridden */
+.drawflow .drawflow-node *,
+.drawflow-node * {
+    cursor: move !important;
+}
+
+/* Text input elements override the move cursor with highest specificity */
+.drawflow .drawflow-node-content input,
+.drawflow .drawflow-node-content textarea,
+.drawflow .drawflow-node-content [contenteditable="true"],
+.drawflow-node-content input,
+.drawflow-node-content textarea,
+.drawflow-node-content [contenteditable="true"],
+.drawflow .node-title,
+.drawflow .node-description,
+.node-title,
+.node-description {
+    cursor: text !important;
+}
+
+.drawflow .drawflow-node-content button,
+.drawflow-node-content button {
+    cursor: pointer !important;
+}
+
+.drawflow-node:hover .drawflow-node-content {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    transform: translateY(-1px);
+    transition: all 0.2s;
+}
+
+.drawflow-node.selected .drawflow-node-content {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+}
+
+/* Editor Container Styling */
+#drawflow {
+    background: #f8f9fa;
+    background-image: 
+        linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Context Menu Styles */
+.custom-context-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    padding: 4px 0;
+    min-width: 160px;
+    z-index: 10000;
+    font-size: 14px;
+    user-select: none;
+}
+
+.context-menu-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.15s;
+    position: relative;
+}
+
+.context-menu-item:hover {
+    background-color: #f8f9fa;
+}
+
+.context-menu-item.danger {
+    color: #dc3545;
+}
+
+.context-menu-item.danger:hover {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.context-menu-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.context-menu-item.disabled:hover {
+    background-color: transparent;
+}
+
+.context-menu-item.has-submenu {
+    position: relative;
+}
+
+.submenu-arrow {
+    margin-left: auto;
+    font-size: 10px;
+}
+
+.context-menu-divider {
+    height: 1px;
+    background: #eee;
+    margin: 4px 0;
+}
+
+.context-submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    padding: 4px 0;
+    min-width: 140px;
+    z-index: 10001;
+    font-size: 14px;
+}
+
+.context-submenu .context-menu-item {
+    padding: 6px 10px;
+}
+
+.context-submenu .context-menu-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Node Drag Handle Styling - REMOVED (no longer needed) */
+/* Grip handle removed per user request */
+
+/* Hide any remaining grip handles from database templates */
+/* Strong override for drawflow-theme.css */
+.drawflow .node-drag-handle,
+.node-drag-handle {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Also hide by specific icon */
+.drawflow .fa-grip,
+.fa-grip {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Hide any element with grip in the class name */
+.drawflow [class*="grip"],
+[class*="grip"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Also hide by specific icon */
+.fa-grip {
+    display: none !important;
+}
+
+/* Hide any element with grip in the class name */
+[class*="grip"] {
+    display: none !important;
+}
+
+/* Text Editing Styles */
+.node-title {
+    font-weight: bold;
+    cursor: text; /* Text cursor for input */
+    flex: 1;
+    outline: none;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    transition: all 0.2s;
+}
+
+.node-title:focus {
+    background: #fff !important;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25) !important;
+}
+
+.node-description {
+    font-size: 10px;
+    color: #666;
+    cursor: text; /* Text cursor for textarea */
+    border: 1px solid transparent;
+    background: transparent;
+    resize: none;
+    width: 100%;
+    outline: none;
+    min-height: 18px;
+    line-height: 1.3;
+    border-radius: 3px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    overflow: hidden; /* Hide scrollbar */
+    transition: all 0.2s;
+}
+
+.node-description:focus {
+    background: #fff !important;
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25) !important;
+}
+
+/* Auto-resize textarea functionality */
+.node-description.auto-resize {
+    height: auto;
+    min-height: 18px;
+}
+
+/* Ensure text elements are interactive */
+.drawflow-node-content .node-title,
+.drawflow-node-content .node-description {
+    pointer-events: auto;
+    user-select: text;
+}
+
+/* Enhanced node styling */
+.drawflow-node-content {
+    background: white; 
+    border: 2px solid #4EA5D9; 
+    border-radius: 8px; 
+    padding: 7px; 
+    min-width: 150px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+}
+
+.drawflow-node-content:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    transform: translateY(-1px);
+}
+
+/* Connection line styles */
+.connection {
+    cursor: pointer;
+    transition: stroke-width 0.2s;
+}
+
+.connection:hover {
+    stroke-width: 3px;
+}
+
+/* Comment node specific styles */
+.comment-node .drawflow-node-content {
+    background: #fff3cd;
+    border-color: #ffc107;
+    border-style: dashed;
+}
+
+.comment-node .node-title {
+    color: #856404;
+}
+
+.comment-node .node-description {
+    color: #856404;
+}
+
+/* Comment Connection Styles */
+.comment-connection {
+    z-index: 1;
+    pointer-events: none;
+}
+
+.comment-path {
+    stroke: #F6EC55;
+    stroke-width: 2px;
+    stroke-dasharray: 8,4;
+    fill: none;
+    pointer-events: stroke;
+    cursor: pointer;
+    transition: stroke-width 0.2s;
+}
+
+.comment-path:hover {
+    stroke-width: 3px;
+    stroke: #e6d84a;
+}
+
+/* Animation for comment connections */
+.comment-path.animated {
+    stroke-dasharray: 8,4;
+    animation: dash-move 1s linear infinite;
+}
+
+@keyframes dash-move {
+    to {
+        stroke-dashoffset: -12;
+    }
+}
+
+/* Visual feedback for updating connections */
+.connection.updating {
+    stroke-dasharray: 5,5;
+    animation: dash 1s linear infinite;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: -10;
+    }
+}
