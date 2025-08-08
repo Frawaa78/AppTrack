@@ -334,6 +334,10 @@ window.DataMapCore = {
                             info.output_class,
                             info.input_class
                         );
+                        // Update indicators after removal
+                        setTimeout(() => {
+                            this.updateConnectionIndicators();
+                        }, 50);
                     }, 50); // Small delay to ensure connection is fully created before removal
                     return;
                 }
@@ -878,17 +882,35 @@ window.DataMapCore = {
             
             // Update each node's connections using DrawFlow's built-in method
             Object.keys(nodes).forEach(nodeId => {
-                if (this.editor && typeof this.editor.updateConnectionNodes === 'function') {
-                    this.editor.updateConnectionNodes(`node-${nodeId}`);
-                    updatedNodes++;
+                try {
+                    if (this.editor && typeof this.editor.updateConnectionNodes === 'function') {
+                        this.editor.updateConnectionNodes(`node-${nodeId}`);
+                        updatedNodes++;
+                    }
+                } catch (nodeError) {
+                    // Silently handle common DOM timing errors
+                    if (nodeError.message.includes('offsetWidth') || nodeError.message.includes('Cannot read properties')) {
+                        console.log(`📝 Deferred connection update for node ${nodeId} (DOM timing)`);
+                    } else {
+                        console.warn(`⚠️ Could not update connections for node ${nodeId}:`, nodeError.message);
+                    }
                 }
             });
             
             // Also force a complete redraw by triggering DrawFlow's internal positioning
             setTimeout(() => {
                 Object.keys(nodes).forEach(nodeId => {
-                    if (this.editor && typeof this.editor.updateConnectionNodes === 'function') {
-                        this.editor.updateConnectionNodes(`node-${nodeId}`);
+                    try {
+                        if (this.editor && typeof this.editor.updateConnectionNodes === 'function') {
+                            this.editor.updateConnectionNodes(`node-${nodeId}`);
+                        }
+                    } catch (nodeError) {
+                        // Silently handle common DOM timing errors
+                        if (nodeError.message.includes('offsetWidth') || nodeError.message.includes('Cannot read properties')) {
+                            console.log(`📝 Deferred retry for node ${nodeId} (DOM timing)`);
+                        } else {
+                            console.warn(`⚠️ Could not update connections for node ${nodeId} (retry):`, nodeError.message);
+                        }
                     }
                 });
                 
@@ -905,9 +927,18 @@ window.DataMapCore = {
                             const inputNodeId = nodeInClass.replace('node_in_node-', '');
                             
                             // Force update both nodes
-                            if (this.editor && typeof this.editor.updateConnectionNodes === 'function') {
-                                this.editor.updateConnectionNodes(`node-${outputNodeId}`);
-                                this.editor.updateConnectionNodes(`node-${inputNodeId}`);
+                            try {
+                                if (this.editor && typeof this.editor.updateConnectionNodes === 'function') {
+                                    this.editor.updateConnectionNodes(`node-${outputNodeId}`);
+                                    this.editor.updateConnectionNodes(`node-${inputNodeId}`);
+                                }
+                            } catch (connectionError) {
+                                // Silently handle common DOM timing errors
+                                if (connectionError.message.includes('offsetWidth') || connectionError.message.includes('Cannot read properties')) {
+                                    console.log(`📝 Deferred connection ${outputNodeId}-${inputNodeId} (DOM timing)`);
+                                } else {
+                                    console.warn(`⚠️ Could not force update connection nodes ${outputNodeId}-${inputNodeId}:`, connectionError.message);
+                                }
                             }
                         }
                     }
@@ -1095,6 +1126,62 @@ window.DataMapCore = {
         console.log('📋 Context menu initialized');
     },
     
+    // Helper function to check if a node has any unused input ports
+    hasUnusedInputs: function(nodeData) {
+        if (!nodeData || !nodeData.inputs) return false;
+        
+        const inputs = nodeData.inputs;
+        for (const inputKey in inputs) {
+            const input = inputs[inputKey];
+            if (!input.connections || input.connections.length === 0) {
+                return true;
+            }
+        }
+        return false;
+    },
+    
+    // Helper function to check if a node has any unused output ports
+    hasUnusedOutputs: function(nodeData) {
+        if (!nodeData || !nodeData.outputs) return false;
+        
+        const outputs = nodeData.outputs;
+        for (const outputKey in outputs) {
+            const output = outputs[outputKey];
+            if (!output.connections || output.connections.length === 0) {
+                return true;
+            }
+        }
+        return false;
+    },
+    
+    // Find the first unused input port (for smart removal)
+    findFirstUnusedInput: function(nodeData) {
+        if (!nodeData || !nodeData.inputs) return null;
+        
+        const inputs = nodeData.inputs;
+        for (const inputKey in inputs) {
+            const input = inputs[inputKey];
+            if (!input.connections || input.connections.length === 0) {
+                return inputKey;
+            }
+        }
+        return null;
+    },
+    
+    // Find the first unused output port (for smart removal)
+    findFirstUnusedOutput: function(nodeData) {
+        if (!nodeData || !nodeData.outputs) return null;
+        
+        const outputs = nodeData.outputs;
+        for (const outputKey in outputs) {
+            const output = outputs[outputKey];
+            if (!output.connections || output.connections.length === 0) {
+                return outputKey;
+            }
+        }
+        return null;
+    },
+    
     // Show custom context menu
     showContextMenu: function(event, nodeElement) {
         this.hideContextMenu(); // Hide any existing menu
@@ -1130,15 +1217,17 @@ window.DataMapCore = {
                 { icon: 'fas fa-trash', text: 'Delete', action: () => this.deleteNode(nodeId), danger: true }
             ];
         } else {
-            // Get current input/output counts for validation
+            // Get current input/output counts and availability for validation
             const currentInputs = Object.keys(nodeData.inputs || {}).length || 1;
             const currentOutputs = Object.keys(nodeData.outputs || {}).length || 1;
+            const hasUnusedInputs = this.hasUnusedInputs(nodeData);
+            const hasUnusedOutputs = this.hasUnusedOutputs(nodeData);
             
             menuItems = [
                 { icon: 'fas fa-plus-circle', text: 'Add Input', action: () => this.addNodeInput(nodeId) },
                 { icon: 'fas fa-plus-circle', text: 'Add Output', action: () => this.addNodeOutput(nodeId) },
-                { icon: 'fas fa-minus-circle', text: 'Remove Input', action: () => this.removeNodeInput(nodeId), disabled: currentInputs <= 1 },
-                { icon: 'fas fa-minus-circle', text: 'Remove Output', action: () => this.removeNodeOutput(nodeId), disabled: currentOutputs <= 1 },
+                { icon: 'fas fa-minus-circle', text: 'Remove Input', action: () => this.removeNodeInput(nodeId), disabled: currentInputs <= 1 || !hasUnusedInputs },
+                { icon: 'fas fa-minus-circle', text: 'Remove Output', action: () => this.removeNodeOutput(nodeId), disabled: currentOutputs <= 1 || !hasUnusedOutputs },
                 { divider: true },
                 { icon: 'fas fa-trash', text: 'Delete', action: () => this.deleteNode(nodeId), danger: true }
             ];
@@ -1336,57 +1425,136 @@ window.DataMapCore = {
     },
     
     deleteConnection: function(connectionElement) {
-        if (confirm('Are you sure you want to delete this connection? This action cannot be undone.')) {
-            try {
-                let connectionInfo = null;
-                
-                // Parse connection info from CSS classes
-                const classes = Array.from(connectionElement.classList);
-                
-                let fromNodeId = null;
-                let toNodeId = null;
-                let fromOutput = null;
-                let toInput = null;
-                
-                // Extract node IDs and connection points from classes
-                classes.forEach(className => {
-                    if (className.startsWith('node_out_node-')) {
-                        fromNodeId = className.replace('node_out_node-', '');
-                    } else if (className.startsWith('node_in_node-')) {
-                        toNodeId = className.replace('node_in_node-', '');
-                    } else if (className.startsWith('output_')) {
-                        fromOutput = className.replace('output_', '');
-                    } else if (className.startsWith('input_')) {
-                        toInput = className.replace('input_', '');
-                    }
-                });
-                
-                if (fromNodeId && toNodeId && fromOutput && toInput) {
-                    connectionInfo = {
-                        fromNodeId: fromNodeId,
-                        toNodeId: toNodeId,
-                        fromOutput: 'output_' + fromOutput,
-                        toInput: 'input_' + toInput
-                    };
+        try {
+            let connectionInfo = null;
+            
+            // Parse connection info from CSS classes
+            const classes = Array.from(connectionElement.classList);
+            
+            let fromNodeId = null;
+            let toNodeId = null;
+            let fromOutput = null;
+            let toInput = null;
+            
+            // Extract node IDs and connection points from classes
+            classes.forEach(className => {
+                if (className.startsWith('node_out_node-')) {
+                    fromNodeId = className.replace('node_out_node-', '');
+                } else if (className.startsWith('node_in_node-')) {
+                    toNodeId = className.replace('node_in_node-', '');
+                } else if (className.startsWith('output_')) {
+                    fromOutput = className.replace('output_', '');
+                } else if (className.startsWith('input_')) {
+                    toInput = className.replace('input_', '');
                 }
-                
-                if (connectionInfo) {
-                    // Use DrawFlow's official API to remove the connection
-                    this.editor.removeSingleConnection(
-                        connectionInfo.fromNodeId, 
-                        connectionInfo.toNodeId, 
-                        connectionInfo.fromOutput, 
-                        connectionInfo.toInput
-                    );
-                    console.log('🗑️ Connection deleted');
-                    this.autoSave();
-                } else {
-                    console.error('Could not identify connection to delete');
-                    console.error('Available classes: ' + Array.from(connectionElement.classList).join(', '));
-                }
-            } catch (error) {
-                console.error('Error deleting connection: ' + error.message);
+            });
+            
+            if (fromNodeId && toNodeId && fromOutput && toInput) {
+                connectionInfo = {
+                    fromNodeId: fromNodeId,
+                    toNodeId: toNodeId,
+                    fromOutput: 'output_' + fromOutput,
+                    toInput: 'input_' + toInput
+                };
             }
+            
+            if (connectionInfo) {
+                console.log(`🔍 Deleting connection: ${connectionInfo.fromNodeId}[${connectionInfo.fromOutput}] -> ${connectionInfo.toNodeId}[${connectionInfo.toInput}]`);
+                
+                try {
+                    // Get DrawFlow's internal data structure
+                    const drawflowData = this.editor.drawflow.drawflow.Home.data;
+                    
+                    // Remove from output side - both node data and DrawFlow data
+                    const outputNodeData = this.editor.getNodeFromId(connectionInfo.fromNodeId);
+                    if (outputNodeData && outputNodeData.outputs && outputNodeData.outputs[connectionInfo.fromOutput]) {
+                        const connections = outputNodeData.outputs[connectionInfo.fromOutput].connections;
+                        const connectionIndex = connections.findIndex(conn => 
+                            conn.node === connectionInfo.toNodeId && conn.output === connectionInfo.toInput
+                        );
+                        
+                        if (connectionIndex !== -1) {
+                            connections.splice(connectionIndex, 1);
+                            console.log(`✅ Removed connection from output data: ${connectionInfo.fromNodeId}[${connectionInfo.fromOutput}]`);
+                        }
+                    }
+                    
+                    // Also remove from DrawFlow's internal data structure
+                    if (drawflowData[connectionInfo.fromNodeId] && 
+                        drawflowData[connectionInfo.fromNodeId].outputs && 
+                        drawflowData[connectionInfo.fromNodeId].outputs[connectionInfo.fromOutput]) {
+                        
+                        const drawflowConnections = drawflowData[connectionInfo.fromNodeId].outputs[connectionInfo.fromOutput].connections;
+                        const drawflowIndex = drawflowConnections.findIndex(conn => 
+                            conn.node === connectionInfo.toNodeId && conn.output === connectionInfo.toInput
+                        );
+                        
+                        if (drawflowIndex !== -1) {
+                            drawflowConnections.splice(drawflowIndex, 1);
+                            console.log(`✅ Removed connection from DrawFlow output data: ${connectionInfo.fromNodeId}[${connectionInfo.fromOutput}]`);
+                        }
+                    }
+                    
+                    // Remove from input side - both node data and DrawFlow data
+                    const inputNodeData = this.editor.getNodeFromId(connectionInfo.toNodeId);
+                    if (inputNodeData && inputNodeData.inputs && inputNodeData.inputs[connectionInfo.toInput]) {
+                        const connections = inputNodeData.inputs[connectionInfo.toInput].connections;
+                        const connectionIndex = connections.findIndex(conn => 
+                            conn.node === connectionInfo.fromNodeId && conn.input === connectionInfo.fromOutput
+                        );
+                        
+                        if (connectionIndex !== -1) {
+                            connections.splice(connectionIndex, 1);
+                            console.log(`✅ Removed connection from input data: ${connectionInfo.toNodeId}[${connectionInfo.toInput}]`);
+                        }
+                    }
+                    
+                    // Also remove from DrawFlow's internal data structure
+                    if (drawflowData[connectionInfo.toNodeId] && 
+                        drawflowData[connectionInfo.toNodeId].inputs && 
+                        drawflowData[connectionInfo.toNodeId].inputs[connectionInfo.toInput]) {
+                        
+                        const drawflowConnections = drawflowData[connectionInfo.toNodeId].inputs[connectionInfo.toInput].connections;
+                        const drawflowIndex = drawflowConnections.findIndex(conn => 
+                            conn.node === connectionInfo.fromNodeId && conn.input === connectionInfo.fromOutput
+                        );
+                        
+                        if (drawflowIndex !== -1) {
+                            drawflowConnections.splice(drawflowIndex, 1);
+                            console.log(`✅ Removed connection from DrawFlow input data: ${connectionInfo.toNodeId}[${connectionInfo.toInput}]`);
+                        }
+                    }
+                    
+                    console.log('🗑️ Connection deleted via context menu');
+                    
+                    // Force remove visual connection element
+                    if (connectionElement && connectionElement.parentNode) {
+                        connectionElement.remove();
+                        console.log('🧹 Manually removed visual connection element');
+                    }
+                    
+                    // Update connection indicators
+                    this.updateConnectionIndicators();
+                    
+                    // Force refresh to ensure visual consistency
+                    setTimeout(() => {
+                        this.forceRefreshConnectionIndicators();
+                    }, 50);
+                    
+                    // Delay auto-save to ensure data structure is updated
+                    setTimeout(() => {
+                        this.autoSave();
+                    }, 100);
+                    
+                } catch (deleteError) {
+                    console.error('❌ Error during manual connection deletion:', deleteError);
+                }
+            } else {
+                console.error('Could not identify connection to delete');
+                console.error('Available classes: ' + Array.from(connectionElement.classList).join(', '));
+            }
+        } catch (error) {
+            console.error('Error deleting connection: ' + error.message);
         }
     },
     
@@ -1445,9 +1613,17 @@ window.DataMapCore = {
             return;
         }
         
-        console.log(`➖ Removing input from node ${nodeId} (current: ${currentInputs} inputs, ${currentOutputs} outputs)`);
+        // Check if there are any unused inputs
+        if (!this.hasUnusedInputs(nodeData)) {
+            console.log(`⚠️ Cannot remove input: all inputs on node ${nodeId} are connected. Delete connections first.`);
+            return;
+        }
         
-        const newNodeId = this.recreateNodeWithPorts(nodeId, currentInputs - 1, currentOutputs);
+        // Find the first unused input to remove
+        const unusedInput = this.findFirstUnusedInput(nodeData);
+        console.log(`➖ Removing unused input ${unusedInput} from node ${nodeId} (current: ${currentInputs} inputs, ${currentOutputs} outputs)`);
+        
+        const newNodeId = this.recreateNodeWithPorts(nodeId, currentInputs - 1, currentOutputs, unusedInput);
         if (newNodeId) {
             console.log(`✅ Successfully removed input from node ${nodeId} → ${newNodeId}`);
         }
@@ -1471,9 +1647,17 @@ window.DataMapCore = {
             return;
         }
         
-        console.log(`➖ Removing output from node ${nodeId} (current: ${currentInputs} inputs, ${currentOutputs} outputs)`);
+        // Check if there are any unused outputs
+        if (!this.hasUnusedOutputs(nodeData)) {
+            console.log(`⚠️ Cannot remove output: all outputs on node ${nodeId} are connected. Delete connections first.`);
+            return;
+        }
         
-        const newNodeId = this.recreateNodeWithPorts(nodeId, currentInputs, currentOutputs - 1);
+        // Find the first unused output to remove
+        const unusedOutput = this.findFirstUnusedOutput(nodeData);
+        console.log(`➖ Removing unused output ${unusedOutput} from node ${nodeId} (current: ${currentInputs} inputs, ${currentOutputs} outputs)`);
+        
+        const newNodeId = this.recreateNodeWithPorts(nodeId, currentInputs, currentOutputs - 1, null, unusedOutput);
         if (newNodeId) {
             console.log(`✅ Successfully removed output from node ${nodeId} → ${newNodeId}`);
         }
@@ -1485,14 +1669,19 @@ window.DataMapCore = {
     },
     
     // Save node connections before recreation (based on original datamap.php)
-    saveNodeConnections: function(nodeId) {
+    saveNodeConnections: function(nodeId, skipInputPort = null, skipOutputPort = null) {
         const connections = { inputs: [], outputs: [] };
         const nodeData = this.editor.drawflow.drawflow.Home.data[nodeId];
         
         if (!nodeData) return connections;
         
-        // Save input connections
+        // Save input connections (skip the port that will be removed)
         Object.keys(nodeData.inputs || {}).forEach(inputKey => {
+            if (skipInputPort && inputKey === skipInputPort) {
+                console.log(`⏭️ Skipping connections for input port ${inputKey} (will be removed)`);
+                return;
+            }
+            
             const input = nodeData.inputs[inputKey];
             if (input.connections) {
                 input.connections.forEach(conn => {
@@ -1505,8 +1694,13 @@ window.DataMapCore = {
             }
         });
         
-        // Save output connections
+        // Save output connections (skip the port that will be removed)
         Object.keys(nodeData.outputs || {}).forEach(outputKey => {
+            if (skipOutputPort && outputKey === skipOutputPort) {
+                console.log(`⏭️ Skipping connections for output port ${outputKey} (will be removed)`);
+                return;
+            }
+            
             const output = nodeData.outputs[outputKey];
             if (output.connections) {
                 output.connections.forEach(conn => {
@@ -1574,7 +1768,7 @@ window.DataMapCore = {
         
         console.log(`🔗 Starting connection restoration for node ${nodeId}`);
         
-        // Longer delay to ensure node is fully created and initialized
+        // Longer delay to ensure node is fully created and initialized before restoring connections
         setTimeout(() => {
             let restoredCount = 0;
             
@@ -1584,6 +1778,13 @@ window.DataMapCore = {
             if (!nodeData) {
                 console.log(`❌ Node ${nodeId} not found in editor data for connection restoration`);
                 console.log(`📋 Available nodes: [${Object.keys(this.editor.drawflow.drawflow.Home.data).join(', ')}]`);
+                return;
+            }
+            
+            // Verify DOM element exists and is ready
+            const nodeElement = document.getElementById(`node-${nodeId}`);
+            if (!nodeElement) {
+                console.log(`❌ Node element ${nodeId} not found in DOM for connection restoration`);
                 return;
             }
             
@@ -1608,8 +1809,8 @@ window.DataMapCore = {
                         
                         // If the original input port doesn't exist, find the best available one
                         if (!availableInputs.includes(conn.inputKey)) {
-                            // Strategy: Use the first available input or distribute evenly
-                            targetInput = this.findBestAvailablePort(availableInputs, usedInputs, 'input');
+                            // Strategy: Try to preserve relative positioning by finding closest port
+                            targetInput = this.findBestAvailablePort(availableInputs, usedInputs, 'input', conn.inputKey);
                             console.log(`🔄 Redirecting input connection from port ${conn.inputKey} to ${targetInput}`);
                         }
                         
@@ -1621,10 +1822,51 @@ window.DataMapCore = {
                             );
                             
                             if (!connectionExists) {
-                                this.editor.addConnection(conn.sourceNodeId, nodeId, conn.sourceOutput, targetInput);
-                                usedInputs[targetInput] = (usedInputs[targetInput] || 0) + 1;
-                                restoredCount++;
-                                console.log(`✅ Restored input: ${conn.sourceNodeId}[${conn.sourceOutput}] → ${nodeId}[${targetInput}]`);
+                                try {
+                                    // First attempt immediate connection
+                                    this.editor.addConnection(conn.sourceNodeId, nodeId, conn.sourceOutput, targetInput);
+                                    usedInputs[targetInput] = (usedInputs[targetInput] || 0) + 1;
+                                    console.log(`✅ Restored input: ${conn.sourceNodeId}[${conn.sourceOutput}] → ${nodeId}[${targetInput}]`);
+                                    restoredCount++;
+                                } catch (error) {
+                                    // If immediate fails, try multiple delayed attempts with exponential backoff
+                                    console.log(`🔄 Input connection failed immediately (${error.message}), starting retry sequence...`);
+                                    
+                                    const retryAttempts = [100, 300, 600]; // 100ms, 300ms, 600ms delays
+                                    let retryIndex = 0;
+                                    
+                                    const attemptRetry = () => {
+                                        if (retryIndex < retryAttempts.length) {
+                                            setTimeout(() => {
+                                                try {
+                                                    // Check if nodes and DOM elements still exist
+                                                    const sourceElement = document.getElementById(`node-${conn.sourceNodeId}`);
+                                                    const targetElement = document.getElementById(`node-${nodeId}`);
+                                                    
+                                                    if (!sourceElement || !targetElement) {
+                                                        console.log(`❌ DOM elements missing for retry ${retryIndex + 1}: source=${!!sourceElement}, target=${!!targetElement}`);
+                                                        retryIndex++;
+                                                        attemptRetry();
+                                                        return;
+                                                    }
+                                                    
+                                                    this.editor.addConnection(conn.sourceNodeId, nodeId, conn.sourceOutput, targetInput);
+                                                    usedInputs[targetInput] = (usedInputs[targetInput] || 0) + 1;
+                                                    console.log(`✅ Restored input (retry ${retryIndex + 1}): ${conn.sourceNodeId}[${conn.sourceOutput}] → ${nodeId}[${targetInput}]`);
+                                                    restoredCount++;
+                                                } catch (retryError) {
+                                                    console.log(`⏱️ Retry ${retryIndex + 1} failed: ${retryError.message}`);
+                                                    retryIndex++;
+                                                    attemptRetry();
+                                                }
+                                            }, retryAttempts[retryIndex]);
+                                        } else {
+                                            console.log(`❌ All retry attempts exhausted for input: ${conn.sourceNodeId}[${conn.sourceOutput}] → ${nodeId}[${targetInput}]`);
+                                        }
+                                    };
+                                    
+                                    attemptRetry();
+                                }
                             } else {
                                 console.log(`⏭️ Connection already exists: ${conn.sourceNodeId}[${conn.sourceOutput}] → ${nodeId}[${targetInput}]`);
                             }
@@ -1648,8 +1890,8 @@ window.DataMapCore = {
                         
                         // If the original output port doesn't exist, find the best available one
                         if (!availableOutputs.includes(conn.outputKey)) {
-                            // Strategy: Use the first available output or distribute evenly
-                            sourceOutput = this.findBestAvailablePort(availableOutputs, usedOutputs, 'output');
+                            // Strategy: Try to preserve relative positioning by finding closest port
+                            sourceOutput = this.findBestAvailablePort(availableOutputs, usedOutputs, 'output', conn.outputKey);
                             console.log(`🔄 Redirecting output connection from port ${conn.outputKey} to ${sourceOutput}`);
                         }
                         
@@ -1661,10 +1903,51 @@ window.DataMapCore = {
                             );
                             
                             if (!connectionExists) {
-                                this.editor.addConnection(nodeId, conn.targetNodeId, sourceOutput, conn.targetInput);
-                                usedOutputs[sourceOutput] = (usedOutputs[sourceOutput] || 0) + 1;
-                                restoredCount++;
-                                console.log(`✅ Restored output: ${nodeId}[${sourceOutput}] → ${conn.targetNodeId}[${conn.targetInput}]`);
+                                try {
+                                    // First attempt immediate connection
+                                    this.editor.addConnection(nodeId, conn.targetNodeId, sourceOutput, conn.targetInput);
+                                    usedOutputs[sourceOutput] = (usedOutputs[sourceOutput] || 0) + 1;
+                                    console.log(`✅ Restored output: ${nodeId}[${sourceOutput}] → ${conn.targetNodeId}[${conn.targetInput}]`);
+                                    restoredCount++;
+                                } catch (error) {
+                                    // If immediate fails, try multiple delayed attempts with exponential backoff
+                                    console.log(`🔄 Output connection failed immediately (${error.message}), starting retry sequence...`);
+                                    
+                                    const retryAttempts = [100, 300, 600]; // 100ms, 300ms, 600ms delays
+                                    let retryIndex = 0;
+                                    
+                                    const attemptRetry = () => {
+                                        if (retryIndex < retryAttempts.length) {
+                                            setTimeout(() => {
+                                                try {
+                                                    // Check if nodes and DOM elements still exist
+                                                    const sourceElement = document.getElementById(`node-${nodeId}`);
+                                                    const targetElement = document.getElementById(`node-${conn.targetNodeId}`);
+                                                    
+                                                    if (!sourceElement || !targetElement) {
+                                                        console.log(`❌ DOM elements missing for retry ${retryIndex + 1}: source=${!!sourceElement}, target=${!!targetElement}`);
+                                                        retryIndex++;
+                                                        attemptRetry();
+                                                        return;
+                                                    }
+                                                    
+                                                    this.editor.addConnection(nodeId, conn.targetNodeId, sourceOutput, conn.targetInput);
+                                                    usedOutputs[sourceOutput] = (usedOutputs[sourceOutput] || 0) + 1;
+                                                    console.log(`✅ Restored output (retry ${retryIndex + 1}): ${nodeId}[${sourceOutput}] → ${conn.targetNodeId}[${conn.targetInput}]`);
+                                                    restoredCount++;
+                                                } catch (retryError) {
+                                                    console.log(`⏱️ Retry ${retryIndex + 1} failed: ${retryError.message}`);
+                                                    retryIndex++;
+                                                    attemptRetry();
+                                                }
+                                            }, retryAttempts[retryIndex]);
+                                        } else {
+                                            console.log(`❌ All retry attempts exhausted for output: ${nodeId}[${sourceOutput}] → ${conn.targetNodeId}[${conn.targetInput}]`);
+                                        }
+                                    };
+                                    
+                                    attemptRetry();
+                                }
                             } else {
                                 console.log(`⏭️ Connection already exists: ${nodeId}[${sourceOutput}] → ${conn.targetNodeId}[${conn.targetInput}]`);
                             }
@@ -1679,26 +1962,29 @@ window.DataMapCore = {
                 }
             });
             
-            console.log(`🔗 Restored ${restoredCount} connections for node ${nodeId}`);
+            console.log(`🔗 Attempting to restore ${savedConnections.inputs.length + savedConnections.outputs.length} connections for node ${nodeId}`);
             
             // Update connection positions after restoration
             setTimeout(() => {
                 this.updateAllConnectionPositions();
                 console.log(`🔧 Connection positions updated for node ${nodeId}`);
                 
-                // Update connection indicators after connections are restored
-                this.updateConnectionIndicators();
+                // Update connection indicators after connections are restored - with additional delay
+                setTimeout(() => {
+                    this.updateConnectionIndicators();
+                    console.log(`🎨 Connection indicators updated for node ${nodeId}`);
+                }, 250);
                 
                 // Trigger save to ensure connection state is persisted
                 setTimeout(() => {
                     this.autoSave();
-                }, 200);
+                }, 300);
             }, 100);
-        }, 200); // Increased delay to ensure node is fully ready
+        }, 300); // Increased delay to ensure node is fully ready
     },
     
-    // Find the best available port for connection restoration (based on original datamap.php)
-    findBestAvailablePort: function(availablePorts, usedPorts, portType) {
+    // Find the best available port for connection restoration (respects original positioning)
+    findBestAvailablePort: function(availablePorts, usedPorts, portType, originalPort = null) {
         if (!availablePorts || availablePorts.length === 0) {
             console.log(`❌ No available ${portType} ports`);
             return null;
@@ -1709,33 +1995,55 @@ window.DataMapCore = {
             return availablePorts[0];
         }
         
-        // Find the least used port
-        let leastUsedPort = availablePorts[0];
-        let minUsage = usedPorts[leastUsedPort] || 0;
+        // If original port is still available, prefer it
+        if (originalPort && availablePorts.includes(originalPort)) {
+            console.log(`📌 Using original ${portType} port: ${originalPort}`);
+            return originalPort;
+        }
+        
+        // For removed middle port, try to preserve relative positioning
+        if (originalPort) {
+            const originalIndex = parseInt(originalPort.split('_')[1]) || 1;
+            
+            // Try to find a port close to the original position
+            const sortedPorts = availablePorts.sort((a, b) => {
+                const aIndex = parseInt(a.split('_')[1]) || 1;
+                const bIndex = parseInt(b.split('_')[1]) || 1;
+                return Math.abs(aIndex - originalIndex) - Math.abs(bIndex - originalIndex);
+            });
+            
+            // Prefer the closest available port that's not overloaded
+            for (const port of sortedPorts) {
+                const usage = usedPorts[port] || 0;
+                if (usage === 0) {
+                    console.log(`📌 Using closest empty ${portType} port: ${port} (was ${originalPort})`);
+                    return port;
+                }
+            }
+            
+            // If no empty ports, use the closest one
+            console.log(`📌 Using closest ${portType} port: ${sortedPorts[0]} (was ${originalPort})`);
+            return sortedPorts[0];
+        }
+        
+        // Fallback: Find the least used port
+        let bestPort = null;
+        let minUsage = Infinity;
         
         availablePorts.forEach(port => {
             const usage = usedPorts[port] || 0;
             if (usage < minUsage) {
                 minUsage = usage;
-                leastUsedPort = port;
+                bestPort = port;
             }
         });
         
-        // Prefer the first port if it's not significantly more used than the least used
-        const firstPort = availablePorts[0];
-        const firstPortUsage = usedPorts[firstPort] || 0;
-        
-        if (firstPortUsage <= minUsage + 1) {
-            console.log(`📌 Using first available ${portType} port: ${firstPort} (usage: ${firstPortUsage})`);
-            return firstPort;
-        } else {
-            console.log(`📌 Using least used ${portType} port: ${leastUsedPort} (usage: ${minUsage})`);
-            return leastUsedPort;
-        }
+        console.log(`📌 Using least used ${portType} port: ${bestPort} (usage: ${minUsage})`);
+        return bestPort;
     },
     
     // Recreate node with different number of ports while preserving connections
-    recreateNodeWithPorts: function(nodeId, newInputs, newOutputs) {
+    recreateNodeWithPorts: function(nodeId, newInputs, newOutputs, skipInputPort = null, skipOutputPort = null) {
         const nodeData = this.editor.drawflow.drawflow.Home.data[nodeId];
         if (!nodeData) return null;
         
@@ -1759,8 +2067,8 @@ window.DataMapCore = {
             console.log(`💾 Preserving current text - Title: "${currentTitle}", Description: "${currentDescription}"`);
         }
         
-        // Save connections using the sophisticated system
-        const savedConnections = this.saveNodeConnections(nodeId);
+        // Save connections using the sophisticated system (skip ports that will be removed)
+        const savedConnections = this.saveNodeConnections(nodeId, skipInputPort, skipOutputPort);
         
         console.log(`💾 Saved ${savedConnections.inputs.length} input and ${savedConnections.outputs.length} output connections`);
         
@@ -1801,7 +2109,7 @@ window.DataMapCore = {
         const y = nodeData.pos_y;
         const nodeClass = nodeData.class;
         const data = {
-            ...nodeData.data,
+            ...(nodeData.data || {}), // Ensure data object exists
             title: currentTitle,
             description: currentDescription
         };
@@ -1817,6 +2125,9 @@ window.DataMapCore = {
             nodeData.inputs = {};
             nodeData.outputs = {};
             
+            // Ensure data object exists and update it
+            nodeData.data = data;
+            
             // Add new inputs
             for (let i = 1; i <= newInputs; i++) {
                 nodeData.inputs[`input_${i}`] = { connections: [] };
@@ -1829,18 +2140,24 @@ window.DataMapCore = {
             
             // Update the DOM element to match new port structure
             if (nodeElement) {
+                console.log(`🔄 Updating DOM for node ${nodeId} with ${newInputs} inputs and ${newOutputs} outputs`);
+                
                 const inputsContainer = nodeElement.querySelector('.inputs');
                 const outputsContainer = nodeElement.querySelector('.outputs');
                 
-                // Clear existing input/output elements
+                // Clear existing input/output elements and their event listeners
                 if (inputsContainer) {
                     inputsContainer.innerHTML = '';
                     // Add new input elements
                     for (let i = 1; i <= newInputs; i++) {
                         const inputDiv = document.createElement('div');
                         inputDiv.classList.add('input', `input_${i}`);
+                        // Ensure proper DrawFlow attributes
+                        inputDiv.setAttribute('data-connection', 'input');
+                        inputDiv.setAttribute('data-input', `input_${i}`);
                         inputsContainer.appendChild(inputDiv);
                     }
+                    console.log(`✅ Created ${newInputs} input elements`);
                 }
                 
                 if (outputsContainer) {
@@ -1849,16 +2166,43 @@ window.DataMapCore = {
                     for (let i = 1; i <= newOutputs; i++) {
                         const outputDiv = document.createElement('div');
                         outputDiv.classList.add('output', `output_${i}`);
+                        // Ensure proper DrawFlow attributes
+                        outputDiv.setAttribute('data-connection', 'output');
+                        outputDiv.setAttribute('data-output', `output_${i}`);
                         outputsContainer.appendChild(outputDiv);
                     }
+                    console.log(`✅ Created ${newOutputs} output elements`);
                 }
+                
+                // Force DrawFlow to re-initialize the node's connection points
+                setTimeout(() => {
+                    // Trigger DrawFlow's internal node initialization - with error handling
+                    if (this.editor && this.editor.updateNodeDataFromId) {
+                        try {
+                            // Ensure node data exists before updating
+                            const nodeData = this.editor.drawflow.drawflow.Home.data[nodeId];
+                            if (nodeData && nodeData.data) {
+                                this.editor.updateNodeDataFromId(nodeId);
+                            } else {
+                                console.log(`⚠️ Skipping DrawFlow update - node data incomplete for ${nodeId}`);
+                            }
+                        } catch (error) {
+                            console.log(`⚠️ DrawFlow updateNodeDataFromId failed: ${error.message}`);
+                        }
+                    }
+                }, 100);
+            } else {
+                console.log(`⚠️ Node element not found for ${nodeId} during DOM update`);
             }
             
             console.log(`✅ Node ${nodeId} structure updated successfully`);
             
-            // Restore connections after a short delay to ensure DOM is ready
+            // Restore connections after a longer delay to ensure DOM is fully ready
             setTimeout(() => {
                 console.log('🔄 Restoring connections...');
+                
+                // Clear any existing connections to prevent duplicates
+                this.clearNodeConnections(nodeId);
                 
                 // Restore regular connections using the sophisticated system
                 this.restoreNodeConnections(nodeId, savedConnections);
@@ -1912,8 +2256,11 @@ window.DataMapCore = {
                     // Force update of all connection lines to fix positioning
                     this.updateAllConnectionPositions();
                     
-                    // Update connection indicators after recreation
-                    this.updateConnectionIndicators();
+                    // Update connection indicators after recreation with delay to ensure DOM is ready
+                    setTimeout(() => {
+                        this.updateConnectionIndicators();
+                        console.log('🔄 Connection indicators updated after node recreation');
+                    }, 200);
                 }, 100);
                 
                 console.log(`🎉 Node recreation complete with ${restoredComments} comment connections restored`);
@@ -2723,6 +3070,8 @@ window.DataMapCore = {
     // Update visual indicators for connected inputs/outputs
     updateConnectionIndicators: function() {
         try {
+            console.log('🔄 Updating connection indicators...');
+            
             // Remove all existing connection indicators
             document.querySelectorAll('.drawflow .input, .drawflow .output').forEach(element => {
                 element.classList.remove('connected', 'unavailable', 'available');
@@ -2730,21 +3079,41 @@ window.DataMapCore = {
             
             const data = this.editor.export();
             if (!data.drawflow || !data.drawflow.Home || !data.drawflow.Home.data) {
+                console.log('⚠️ No diagram data found for connection indicators');
                 return;
             }
+            
+            let connectedCount = 0;
             
             // Mark connected inputs and outputs
             Object.keys(data.drawflow.Home.data).forEach(nodeId => {
                 const node = data.drawflow.Home.data[nodeId];
+                if (!node) return;
                 
                 // Check outputs
                 if (node.outputs) {
                     Object.keys(node.outputs).forEach(outputKey => {
                         const output = node.outputs[outputKey];
                         if (output.connections && output.connections.length > 0) {
-                            const outputElement = document.querySelector(`#node-${nodeId} .outputs .${outputKey}`);
+                            // Try multiple selectors to find the output element
+                            let outputElement = document.querySelector(`#node-${nodeId} .outputs .${outputKey}`);
+                            if (!outputElement) {
+                                outputElement = document.querySelector(`#node-${nodeId} .output.${outputKey}`);
+                            }
+                            if (!outputElement) {
+                                // Fallback: find by class only within the node
+                                const nodeElement = document.getElementById(`node-${nodeId}`);
+                                if (nodeElement) {
+                                    outputElement = nodeElement.querySelector(`.${outputKey}`);
+                                }
+                            }
+                            
                             if (outputElement) {
                                 outputElement.classList.add('connected');
+                                connectedCount++;
+                                console.log(`✅ Marked output ${nodeId}.${outputKey} as connected`);
+                            } else {
+                                console.log(`⚠️ Could not find output element ${nodeId}.${outputKey}`);
                             }
                         }
                     });
@@ -2755,19 +3124,51 @@ window.DataMapCore = {
                     Object.keys(node.inputs).forEach(inputKey => {
                         const input = node.inputs[inputKey];
                         if (input.connections && input.connections.length > 0) {
-                            const inputElement = document.querySelector(`#node-${nodeId} .inputs .${inputKey}`);
+                            // Try multiple selectors to find the input element
+                            let inputElement = document.querySelector(`#node-${nodeId} .inputs .${inputKey}`);
+                            if (!inputElement) {
+                                inputElement = document.querySelector(`#node-${nodeId} .input.${inputKey}`);
+                            }
+                            if (!inputElement) {
+                                // Fallback: find by class only within the node
+                                const nodeElement = document.getElementById(`node-${nodeId}`);
+                                if (nodeElement) {
+                                    inputElement = nodeElement.querySelector(`.${inputKey}`);
+                                }
+                            }
+                            
                             if (inputElement) {
                                 inputElement.classList.add('connected');
+                                connectedCount++;
+                                console.log(`✅ Marked input ${nodeId}.${inputKey} as connected`);
+                            } else {
+                                console.log(`⚠️ Could not find input element ${nodeId}.${inputKey}`);
                             }
                         }
                     });
                 }
             });
             
-            console.log('✅ Connection indicators updated');
+            console.log(`✅ Connection indicators updated - ${connectedCount} ports marked as connected`);
         } catch (error) {
             console.log('⚠️ Error updating connection indicators:', error.message);
         }
+    },
+    
+    // Force refresh of all connection indicators (utility function for debugging)
+    forceRefreshConnectionIndicators: function() {
+        console.log('🔄 Force refreshing all connection indicators...');
+        
+        // Clear all existing indicators
+        document.querySelectorAll('.drawflow .input, .drawflow .output').forEach(element => {
+            element.classList.remove('connected', 'unavailable', 'available');
+        });
+        
+        // Wait a moment then update
+        setTimeout(() => {
+            this.updateConnectionIndicators();
+            console.log('✅ Force refresh complete');
+        }, 100);
     }
 };
 
@@ -2781,5 +3182,10 @@ window.exportDiagram = function() { window.DataMapCore.exportDiagram(); };
 window.updateAllConnectionPositions = function() { 
     if (window.DataMapCore && window.DataMapCore.updateAllConnectionPositions) {
         window.DataMapCore.updateAllConnectionPositions(); 
+    }
+};
+window.forceRefreshConnectionIndicators = function() {
+    if (window.DataMapCore && window.DataMapCore.forceRefreshConnectionIndicators) {
+        window.DataMapCore.forceRefreshConnectionIndicators();
     }
 };
