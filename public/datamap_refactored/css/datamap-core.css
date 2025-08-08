@@ -308,11 +308,32 @@ body[data-version="refactored"]::before {
 .drawflow .drawflow-node,
 .drawflow-node {
     cursor: move !important; /* Move cursor for dragging nodes - force override */
+    /* Ensure entire node area is clickable for cursor detection */
+    box-sizing: border-box !important;
 }
 
 .drawflow .drawflow-node.dragging,
 .drawflow-node.dragging {
     cursor: move !important; /* Move cursor while dragging - force override */
+}
+
+/* Target all DrawFlow internal elements to ensure cursor coverage */
+.drawflow .drawflow-node .drawflow_content_node,
+.drawflow-node .drawflow_content_node,
+.drawflow .drawflow-node .inputs,
+.drawflow-node .inputs,
+.drawflow .drawflow-node .outputs,
+.drawflow-node .outputs {
+    cursor: move !important;
+    box-sizing: border-box !important;
+}
+
+/* Override any inline cursor styles from DrawFlow library */
+.drawflow .drawflow-node[style*="cursor"],
+.drawflow-node[style*="cursor"],
+.drawflow .drawflow-node .drawflow_content_node[style*="cursor"],
+.drawflow-node .drawflow_content_node[style*="cursor"] {
+    cursor: move !important;
 }
 
 .drawflow .drawflow-node-content,
@@ -326,11 +347,20 @@ body[data-version="refactored"]::before {
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     cursor: move !important; /* Move cursor for node content - force override */
+    box-sizing: border-box !important;
 }
 
 /* All child elements within nodes should inherit move cursor unless specifically overridden */
 .drawflow .drawflow-node *,
-.drawflow-node * {
+.drawflow-node *,
+.drawflow .drawflow-node .drawflow_content_node *,
+.drawflow-node .drawflow_content_node * {
+    cursor: move !important;
+}
+
+/* Force move cursor on all padding/container divs inside any node */
+.drawflow-node div[style*="padding"],
+.drawflow-node .drawflow_content_node > div {
     cursor: move !important;
 }
 
@@ -575,19 +605,87 @@ body[data-version="refactored"]::before {
     stroke-width: 3px;
 }
 
+/* Visual feedback for connected inputs/outputs */
+.drawflow .input.connected,
+.drawflow .output.connected {
+    background-color: #28a745 !important;
+    border-color: #1e7e34 !important;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25) !important;
+}
+
+/* Visual feedback for unavailable inputs/outputs during dragging */
+.drawflow .input.unavailable,
+.drawflow .output.unavailable {
+    background-color: #dc3545 !important;
+    border-color: #c82333 !important;
+    opacity: 0.7 !important;
+    cursor: not-allowed !important;
+}
+
+/* Visual feedback for available inputs/outputs during dragging */
+.drawflow .input.available,
+.drawflow .output.available {
+    background-color: #007bff !important;
+    border-color: #0056b3 !important;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+    animation: pulse-available 0.8s infinite;
+}
+
+@keyframes pulse-available {
+    0% { box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); }
+    50% { box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.15); }
+    100% { box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); }
+}
+
+.connection:hover {
+    stroke-width: 3px;
+}
+
 /* Comment node specific styles */
 .comment-node .drawflow-node-content {
     background: #fff3cd;
     border-color: #ffc107;
     border-style: dashed;
+    cursor: move !important; /* Force move cursor for comment nodes */
 }
 
-.comment-node .node-title {
-    color: #856404;
+/* Ensure comment nodes show move cursor on hover and drag - target all DrawFlow internal elements */
+.comment-node,
+.comment-node .drawflow-node,
+.comment-node .drawflow-node-content,
+.comment-node .drawflow_content_node,
+.comment-node .inputs,
+.comment-node .outputs {
+    cursor: move !important;
+    box-sizing: border-box !important;
 }
 
+.comment-node:hover,
+.comment-node .drawflow-node:hover,
+.comment-node .drawflow-node-content:hover,
+.comment-node .drawflow_content_node:hover {
+    cursor: move !important;
+}
+
+/* All elements inside comment nodes should show move cursor unless text editing */
+.comment-node *,
+.comment-node .drawflow-node *,
+.comment-node .drawflow-node-content *,
+.comment-node .drawflow_content_node * {
+    cursor: move !important;
+}
+
+/* Override for text editing elements in comment nodes */
+.comment-node .node-title,
 .comment-node .node-description {
     color: #856404;
+    cursor: text !important; /* Override for text editing */
+}
+
+/* Force move cursor on all padding/container divs inside comment nodes */
+.comment-node div[style*="padding"],
+.comment-node .drawflow_content_node > div {
+    cursor: move !important;
 }
 
 /* Comment Connection Styles */

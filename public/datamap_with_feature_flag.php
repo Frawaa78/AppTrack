@@ -6,7 +6,7 @@ session_start();
 //=============================================================================
 // REFACTORING CONTROL PANEL
 //=============================================================================
-$USE_REFACTORED_VERSION = false; // Sett til true når klar for testing
+$USE_REFACTORED_VERSION = true; // Sett til true når klar for testing
 
 // VIKTIG: Ikke exit her - vi må prosessere data først!
 // if ($USE_REFACTORED_VERSION) vil bli sjekket etter at data er lastet

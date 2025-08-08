@@ -224,6 +224,7 @@ window.DataMapCore = {
                                 // Force update all connection positions after diagram load
                                 setTimeout(() => {
                                     this.updateAllConnectionPositions();
+                                    this.updateConnectionIndicators(); // Update connection indicators after load
                                     console.log('🔧 Connection positions updated after diagram load');
                                 }, 200);
                                 
@@ -320,6 +321,24 @@ window.DataMapCore = {
                 input_class: info.input_class
             });
             
+            // Check if we need to enforce single connection rule
+            if (this.shouldEnforceSingleConnection()) {
+                const connectionAllowed = this.validateSingleConnection(info);
+                if (!connectionAllowed) {
+                    // Remove the connection that was just created
+                    console.log('🚫 Connection not allowed - removing duplicate connection');
+                    setTimeout(() => {
+                        this.editor.removeSingleConnection(
+                            info.output_id,
+                            info.input_id,
+                            info.output_class,
+                            info.input_class
+                        );
+                    }, 50); // Small delay to ensure connection is fully created before removal
+                    return;
+                }
+            }
+            
             // Debug: Check all connections after creation
             setTimeout(() => {
                 console.log('🔍 All connections after creation:');
@@ -349,9 +368,15 @@ window.DataMapCore = {
                     });
                 }
                 this.autoSave();
+                this.updateConnectionIndicators(); // Update visual indicators
             }, 100);
         });
-        this.editor.on('connectionRemoved', () => this.autoSave());
+        this.editor.on('connectionRemoved', () => {
+            this.autoSave();
+            setTimeout(() => {
+                this.updateConnectionIndicators(); // Update visual indicators after removal
+            }, 50);
+        });
         
         // Set up custom drag handling
         this.setupCustomDragHandling();
@@ -1382,7 +1407,7 @@ window.DataMapCore = {
             // Delay auto-save to allow connection restoration to complete
             setTimeout(() => {
                 this.autoSave();
-            }, 1000);
+            }, 1500);
         }
     },
     
@@ -1404,7 +1429,7 @@ window.DataMapCore = {
         // Delay auto-save to allow connection restoration to complete
         setTimeout(() => {
             this.autoSave();
-        }, 1000);
+        }, 1500);
     },
     
     // Remove input from node with connection preservation
@@ -1430,7 +1455,7 @@ window.DataMapCore = {
         // Delay auto-save to allow connection restoration to complete
         setTimeout(() => {
             this.autoSave();
-        }, 1000);
+        }, 1500);
     },
     
     // Remove output from node with connection preservation
@@ -1456,7 +1481,7 @@ window.DataMapCore = {
         // Delay auto-save to allow connection restoration to complete
         setTimeout(() => {
             this.autoSave();
-        }, 1000);
+        }, 1500);
     },
     
     // Save node connections before recreation (based on original datamap.php)
@@ -1660,6 +1685,14 @@ window.DataMapCore = {
             setTimeout(() => {
                 this.updateAllConnectionPositions();
                 console.log(`🔧 Connection positions updated for node ${nodeId}`);
+                
+                // Update connection indicators after connections are restored
+                this.updateConnectionIndicators();
+                
+                // Trigger save to ensure connection state is persisted
+                setTimeout(() => {
+                    this.autoSave();
+                }, 200);
             }, 100);
         }, 200); // Increased delay to ensure node is fully ready
     },
@@ -1878,6 +1911,9 @@ window.DataMapCore = {
                     
                     // Force update of all connection lines to fix positioning
                     this.updateAllConnectionPositions();
+                    
+                    // Update connection indicators after recreation
+                    this.updateConnectionIndicators();
                 }, 100);
                 
                 console.log(`🎉 Node recreation complete with ${restoredComments} comment connections restored`);
@@ -2624,6 +2660,113 @@ window.DataMapCore = {
             console.log('✅ Cursor styling applied to all nodes');
         } catch (error) {
             console.log('⚠️ Error applying cursor styling:', error.message);
+        }
+    },
+    
+    // Check if single connection rule should be enforced
+    shouldEnforceSingleConnection: function() {
+        // You can add configuration logic here if needed
+        // For now, always enforce the rule
+        return true;
+    },
+    
+    // Validate if a new connection should be allowed based on single connection rule
+    validateSingleConnection: function(connectionInfo) {
+        const outputNodeId = connectionInfo.output_id;
+        const inputNodeId = connectionInfo.input_id;
+        const outputClass = connectionInfo.output_class;
+        const inputClass = connectionInfo.input_class;
+        
+        // Use DrawFlow's internal connection data for more accurate checking
+        const drawflowData = this.editor.drawflow.drawflow.Home.data;
+        
+        console.log(`🔍 Validating connection: ${outputNodeId}[${outputClass}] -> ${inputNodeId}[${inputClass}]`);
+        
+        // Check if output already has a connection (excluding the one just created)
+        const outputNode = drawflowData[outputNodeId];
+        if (outputNode && outputNode.outputs && outputNode.outputs[outputClass]) {
+            const outputConnections = outputNode.outputs[outputClass].connections;
+            console.log(`📊 Output ${outputClass} on node ${outputNodeId} has ${outputConnections?.length || 0} connections`);
+            
+            // Filter out the connection we just tried to create to get existing connections
+            const existingConnections = outputConnections?.filter(conn => {
+                return !(conn.node === inputNodeId && conn.output === inputClass);
+            }) || [];
+            
+            if (existingConnections.length > 0) {
+                console.log(`🚫 Output ${outputClass} on node ${outputNodeId} already has ${existingConnections.length} existing connection(s)`);
+                return false;
+            }
+        }
+        
+        // Check if input already has a connection (excluding the one just created)
+        const inputNode = drawflowData[inputNodeId];
+        if (inputNode && inputNode.inputs && inputNode.inputs[inputClass]) {
+            const inputConnections = inputNode.inputs[inputClass].connections;
+            console.log(`📊 Input ${inputClass} on node ${inputNodeId} has ${inputConnections?.length || 0} connections`);
+            
+            // Filter out the connection we just tried to create to get existing connections
+            const existingConnections = inputConnections?.filter(conn => {
+                return !(conn.node === outputNodeId && conn.input === outputClass);
+            }) || [];
+            
+            if (existingConnections.length > 0) {
+                console.log(`🚫 Input ${inputClass} on node ${inputNodeId} already has ${existingConnections.length} existing connection(s)`);
+                return false;
+            }
+        }
+        
+        console.log(`✅ Connection allowed: ${outputClass} -> ${inputClass}`);
+        return true;
+    },
+    
+    // Update visual indicators for connected inputs/outputs
+    updateConnectionIndicators: function() {
+        try {
+            // Remove all existing connection indicators
+            document.querySelectorAll('.drawflow .input, .drawflow .output').forEach(element => {
+                element.classList.remove('connected', 'unavailable', 'available');
+            });
+            
+            const data = this.editor.export();
+            if (!data.drawflow || !data.drawflow.Home || !data.drawflow.Home.data) {
+                return;
+            }
+            
+            // Mark connected inputs and outputs
+            Object.keys(data.drawflow.Home.data).forEach(nodeId => {
+                const node = data.drawflow.Home.data[nodeId];
+                
+                // Check outputs
+                if (node.outputs) {
+                    Object.keys(node.outputs).forEach(outputKey => {
+                        const output = node.outputs[outputKey];
+                        if (output.connections && output.connections.length > 0) {
+                            const outputElement = document.querySelector(`#node-${nodeId} .outputs .${outputKey}`);
+                            if (outputElement) {
+                                outputElement.classList.add('connected');
+                            }
+                        }
+                    });
+                }
+                
+                // Check inputs
+                if (node.inputs) {
+                    Object.keys(node.inputs).forEach(inputKey => {
+                        const input = node.inputs[inputKey];
+                        if (input.connections && input.connections.length > 0) {
+                            const inputElement = document.querySelector(`#node-${nodeId} .inputs .${inputKey}`);
+                            if (inputElement) {
+                                inputElement.classList.add('connected');
+                            }
+                        }
+                    });
+                }
+            });
+            
+            console.log('✅ Connection indicators updated');
+        } catch (error) {
+            console.log('⚠️ Error updating connection indicators:', error.message);
         }
     }
 };
